@@ -93,8 +93,10 @@ Do not introduce a second icon family, and do not hand-author a new outline path
 
 Composed from three parts, not one asset:
 
-- **Chef hat** — `assets/brand/chef-hat.svg`, **the supplied brand icon used as-is**. Two paths: outline `#924B03`, fill `#FEDAB6`. The delivered file was a colour trace (`assets/brand/source/png-to-svg-converter.svg`) containing a white background rect and ~95 JPEG-noise speckle paths; those were removed, the viewBox was cropped to the glyph, and nothing was redrawn. Silhouette overlap with the mockup's hat is 0.919 — the mockup rendered a thinner stroke over a cream fill, so its 1:1 ink weight differs from the icon's by design, and the icon wins.
+- **Chef hat** — `assets/brand/chef-hat.svg`, **the supplied brand icon used as-is**. Two paths: outline `#924B03`, fill a horizontal gradient `#FAF0DD → #F7E2BE` matching the mockup's interior. The delivered file was a colour trace (`assets/brand/source/png-to-svg-converter.svg`) containing a white background rect and ~95 JPEG-noise speckle paths; those were removed, the viewBox was cropped to the glyph, and nothing was redrawn. Silhouette overlap with the mockup's hat is 0.919 — the mockup rendered a thinner stroke over a cream fill, so its 1:1 ink weight differs from the icon's by design, and the icon wins.
 - **Heart** — filled `#FDD484`, sitting between hat and wordmark, and again at 14 px leading the tagline.
+
+**Placement.** The hat is centred over the «و» — its optical centre sits at 90% of the wordmark's ink width and its base overlaps the top of the letter, exactly as the mockup places it. The heart sits between them, left of the hat. Geometry is defined once on a 140×100 unit box and scaled for every size, so the relationship cannot drift.
 - **Wordmark** — the bundled typeface at weight 800.
 
 Both parts are plain SVG and scale from a 24 px favicon to a splash screen without a second asset.
