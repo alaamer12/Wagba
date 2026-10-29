@@ -42,9 +42,13 @@ These decide arguments about features, not just about pixels.
 
 ## Language
 
-The MVP ships in **Egyptian Arabic only**, right-to-left. The architecture keeps the door open for more locales without touching component code — the rules for that are in [../tech/conventions.md](../tech/conventions.md#language-and-rtl).
+The MVP ships in **Arabic and English**. Arabic is primary and right-to-left; English is left-to-right. Direction switches with the locale rather than being fixed per screen.
 
-Every string that appears on screen is owned by [../design/ui-copy.md](../design/ui-copy.md).
+**Dialect is a deferred dimension, not a deferred language.** Egyptian Arabic is the voice of the Arabic copy, and dialect-specific variants will arrive later without touching components: the catalog stores a dialect tag beside the language tag, defaulting to `ar` today even though `eg` is the more accurate value. That placeholder is knowingly imprecise and exists to keep the shape right.
+
+Meal titles and descriptions are never translated. Cooks write in their own words and buyers read exactly that.
+
+Every string that appears on screen is owned by [../design/ui-copy.md](../design/ui-copy.md); the mechanics are in [../tech/conventions.md](../tech/conventions.md#language-and-direction).
 
 ## Where it goes after the MVP
 
@@ -60,4 +64,4 @@ Deferred, in rough order of value. None of it is designed; listing it here keeps
 
 ## Status
 
-The product shape is settled. The open items are tracked in [../decisions.md](../decisions.md) — one is live: whether on-screen copy follows the Egyptian-dialect mandate or the MSA wording in the mockups.
+The product shape is settled. Two things are tracked as open in [../decisions.md](../decisions.md): the English copy needs a review pass, and the default discovery radius is a starting guess that only real usage can tune.

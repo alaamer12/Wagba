@@ -12,7 +12,8 @@
 | Hosting | Railway | One service plus a persistent volume at `/pb_data` |
 | Lint and format | Biome | Single tool; `.vue` support is experimental, see [conventions.md](conventions.md#biome) |
 | Tests | Vitest, Playwright | Bar defined in [conventions.md](conventions.md#verification) |
-| i18n | vue-i18n | One locale shipped, RTL from day one |
+| i18n | vue-i18n | `ar` (RTL) and `en` (LTR); dialect dimension reserved, see [conventions.md](conventions.md#language-and-direction) |
+| Validation | zod | Parses PocketBase responses at the service boundary |
 
 ## System shape
 
@@ -45,8 +46,9 @@ src/
   components/   presentational, no data fetching
   stores/       Pinia: session, meals, favorites, location, feed cache
   services/     the only place the PocketBase SDK is imported
+  types/        zod schemas per collection, types inferred from them
   composables/  geolocation, whatsapp, image compression, freshness probe
-  i18n/         ar-EG message file, RTL helpers
+  i18n/         ar and en message files, locale resolution, direction helpers
   assets/       the generated avatar seed, illustration, fonts
 ```
 
@@ -71,6 +73,8 @@ PocketBase has no anonymous auth provider, so the account is provisioned rather 
 - The credentials in device storage are readable by anyone with the device unlocked and the app debugged. For a home-cooking listing app that is an acceptable trade; it is not acceptable for anything monetary.
 
 The profile fields (name, WhatsApp number, location text) are collected later, at the first publish attempt. See [../product/flows.md](../product/flows.md#first-post).
+
+**Preferences are device-only.** Language and dialect live in device storage beside the credential, seeded from the OS locale on first launch and changeable in Settings. They are not fields on the user record, so a reinstall re-detects rather than restores. The alternative — syncing a preference to a backend identity that cannot survive a reinstall either — buys nothing.
 
 ## Environments
 

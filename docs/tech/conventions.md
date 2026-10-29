@@ -54,13 +54,30 @@ Stores: `session`, `meals`, `favorites`, `location`, `feedCache`. Each exposes s
 
 `src/services/` is the only layer that imports the PocketBase SDK. Everything above it receives plain typed objects. This is what makes Vitest practical: mock the service, not the SDK, and the test reads like the feature.
 
-## Language and RTL
+## Language and direction
 
-- **Every user-visible string goes through `vue-i18n`**, even though there is one locale. A hardcoded Arabic string is a bug on sight.
-- Message keys are named by screen and element, e.g. `home.empty.title`, and the key list is kept in sync with [../design/ui-copy.md](../design/ui-copy.md). When ui-copy changes, the message file changes in the same commit.
-- **No string concatenation.** Interpolate: `t('home.card.distance', { n })`. Arabic word order does not survive joined fragments.
-- `dir="rtl"` on the document root. Logical CSS properties only — `margin-inline-start`, `inset-inline-end`, `padding-inline`. A physical `left` or `right` in a new stylesheet needs a comment explaining why mirroring is wrong there.
-- Test at both text extremes; see [design-system.md#right-to-left](../design/design-system.md#right-to-left).
+**App strings are catalogued; user content is never translated.** Meal titles and descriptions are stored once, as typed, and rendered as typed. There is no `title_ar` column and no machine translation. The catalog, the locale list, and the fallback chain are owned by [../design/ui-copy.md](../design/ui-copy.md).
+
+- **Every user-visible string goes through `vue-i18n`.** A hardcoded Arabic string is a bug on sight, in both locales.
+- Message keys are flat and named by screen and element: `home.empty.title`. No nesting, no logic inside messages.
+- **`en` and `ar` must have identical key sets.** A Vitest parity test fails the build when they diverge; that test is the only guard against a second locale full of holes.
+- **No string concatenation.** Interpolate — `t('home.card.distance', { n })`. Word order differs between the locales and joined fragments do not survive it.
+- **Direction is a runtime value, not a stylesheet.** `dir` is `rtl` for `ar` and `ltr` for `en`, set from the active locale, and Quasar mirrors its components from it. Logical CSS properties only — `margin-inline-start`, `inset-inline-end`, `padding-inline`. A physical `left` or `right` needs a comment explaining why mirroring is wrong there.
+- Directional icons mirror; brand marks, the WhatsApp glyph, and photographs never mirror. Full rules in [../design/design-system.md#direction](../design/design-system.md#direction).
+- Testing a locale means testing a direction. Every screen is checked in `ar` and in `en`, at both text-length extremes.
+
+**Dialect** is a dimension the catalog shape reserves and nothing implements yet. Keys resolve dialect → language → `ar`. Do not add dialect logic to components; when it arrives it changes the resolver and nothing else.
+
+**Loading.** Both locales are bundled. On-demand loading is the documented upgrade path, triggered by more than two locales or a catalog large enough to matter in the initial payload. It stays deferred because lazy loading makes the interface depend on a network call: a first launch offline would render unlabelled controls.
+
+## Runtime validation
+
+PocketBase records are validated with **zod** at the service boundary, one schema per collection in `src/types/`.
+
+- Every list and detail response is parsed before it reaches a store. A schema drift — a renamed field, a new enum value, a dropped relation expansion — fails loudly at the edge instead of surfacing as `undefined` inside a card.
+- Types are *inferred* from the schemas (`z.infer`) rather than hand-written twice. A hand-maintained interface duplicating a schema is a second source of truth that quietly goes stale.
+- Hooks and migrations are the source of truth for the schema; the zod file mirrors them, and both change in the same commit.
+- Roughly 13 KB gzipped. Accepted for one dependency that removes a class of silent production bug; not adopted for anything beyond the boundary.
 
 ## Naming
 

@@ -5,7 +5,7 @@ How Wagba looks and what it says.
 | File | Read it for |
 |---|---|
 | [design-system.md](design-system.md) | Color, type, spacing, components, iconography, elevation, motion, right-to-left rules |
-| [ui-copy.md](ui-copy.md) | Every on-screen string, with the dialect decision still open |
+| [ui-copy.md](ui-copy.md) | The message catalog: every key in Arabic and English, with dialects reserved |
 | [mockups.md](mockups.md) | Which mockup covers which screen, what was adopted, and what to ignore |
 
 The mockups themselves live in `../../screens/`, outside this tree, because they are binary assets rather than documentation.

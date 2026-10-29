@@ -55,7 +55,7 @@ Do not implement these. Each was drawn, then reversed by a decision.
 | «اختر منطقتك» area dropdown | 3.png | Free-text location field, plus automatic GPS capture | The gazetteer was dropped; typed text is a label, not a lookup |
 | Location Selection bottom sheet with «استخدم موقعي الحالي» | not drawn | Automatic capture with a permission prompt | Same reason |
 | Active notifications toggle | 2.png | Disabled placeholder row | Notifications are deferred; a switch that does nothing is worse than no switch |
-| MSA copy throughout | all | Egyptian column of [ui-copy.md](ui-copy.md) | Dialect decision deferred; the mandate is Egyptian |
+| MSA copy throughout | all | Egyptian column of [ui-copy.md](ui-copy.md) | The mockups are MSA; the Arabic voice is Egyptian, with MSA recorded as a candidate dialect variant rather than shipping |
 | «وجبات حواليك» section title and chips «قريب / القاهرة / الجيزة / القليوبية» | 1.png | Chips remain as search suggestions; the governorate names are not matching keys | Discovery is numeric, not textual |
 
 ## What the mockups get right

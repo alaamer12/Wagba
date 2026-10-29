@@ -8,6 +8,7 @@ Statuses: **settled** (evidence-backed, do not revisit without new information),
 - [Identity](#identity) — anonymous provisioning, phone OTP deferred
 - [Location and discovery](#location-and-discovery) — the six entries that took the most work to get right
 - [Data and search](#data-and-search) — search normalization, favorites
+- [Language and copy](#language-and-copy) — two locales, a catalog instead of columns, dialect reserved
 - [Product reversals](#product-reversals) — where this build contradicts the original spec
 - [Device and tooling](#device-and-tooling) — WhatsApp, photos, Biome, i18n
 - [Open](#open)
@@ -144,6 +145,39 @@ Nine cells cover roughly three cell-widths, so the moment the radius exceeds the
 **Why:** the mockups already designed it, it is personal rather than social, and a saved list that vanishes on cache clear is worse than no save button.
 **Status:** settled.
 
+## Language and copy
+
+### Two locales, resolved through a catalog
+
+**Chosen:** `ar` and `en` ship. One key per string in `src/i18n/messages/{locale}.json`, resolved at runtime, direction switched from the active locale.
+**Rejected:** per-locale content columns (`title_ar`, `title_en`), and language switching as a build-time flavour.
+**Why:** the suffix-column approach is the classic anti-pattern — it doubles every schema change, forces a migration for each new language, and leaks translation into storage where it cannot be swapped. A catalog keyed by message identity means a third language is a file, not a migration. It also cleanly separates the two things that get conflated: **UI text is ours and catalogued; meal text is the cook's and never translated.**
+**Status:** settled.
+
+### Locales bundled, lazy loading deferred
+
+**Chosen:** both locales in the build, with the catalog shaped flat so per-locale chunks are a config change later.
+**Rejected:** loading locales on demand from the start.
+**Why:** on-demand loading makes the interface itself depend on a network call — a first launch offline would render unlabelled buttons. Two locales cost roughly 10 KB.
+**Status:** settled. Revisit if a third locale arrives or the catalog grows enough to matter in the initial payload.
+
+### Dialect is a reserved dimension
+
+**Chosen:** the resolver supports dialect → language → `ar`, with the dialect tag defaulting to `ar`. No dialect files exist beyond the default.
+**Rejected:** waiting for a real dialect taxonomy before building the shape; shipping MSA and Egyptian as separate languages.
+**Why:** dialects are not languages — a Syrian speaker reads Egyptian Arabic more easily than English, and modelling them as peer languages would make the fallback chain wrong. Storing `dialect = 'ar'` is knowingly imprecise: `eg` is the accurate value and the placeholder exists to keep the shape correct rather than to describe the copy.
+**Status:** settled, deferred to a later version.
+
+### Language and dialect are device preferences
+
+**Chosen:** stored in device storage beside the credential, seeded from the OS locale.
+**Rejected:** fields on the user record.
+**Why:** the backend identity cannot survive a reinstall either, so syncing the preference to it restores nothing. Device-local is also the only option consistent with not storing anything about a user beyond what contact requires.
+**Consequence:** a reinstall re-detects the language from the phone rather than restoring the user's last choice.
+**Status:** settled.
+
+
+
 ## Product reversals
 
 These entries exist because the mockups and the original spec disagree with this build. Anyone implementing from pictures will otherwise implement the wrong thing.
@@ -202,12 +236,12 @@ oxlint was the serious alternative and is what the Quasar repository itself now 
 **Cost accepted:** experimental `.vue` parsing, per-file rule overrides that hide genuinely unused variables, and formatter output that can change between minor versions.
 **Status:** settled, with the highest revisit-likelihood of anything in this file. Re-check when Biome closes #4726.
 
-### vue-i18n with full RTL from day one
+### vue-i18n with direction switching from day one
 
-**Chosen:** every string through i18n with a single `ar-EG` locale, `dir="rtl"`, logical CSS properties only.
-**Rejected:** hardcoded Arabic strings; a plain constants file.
-**Why:** the architecture requirement was that more languages arrive later without breaking anything, and retrofitting RTL is a rewrite, not a refactor.
-**Status:** settled.
+**Chosen:** every string through i18n, `ar` and `en` locales, `dir` driven by the active locale, logical CSS properties only.
+**Rejected:** hardcoded strings in either language; a plain constants file; fixed RTL with English bolted on later.
+**Why:** retrofitting direction is a rewrite, not a refactor — every physical `left` and every mirrored icon has to be found and re-judged. Two locales from the start is the cheapest way to keep the layout honest.
+**Status:** settled. Catalog shape and fallback chain in [design/ui-copy.md](design/ui-copy.md#the-model).
 
 ### Offline: cached feed with a staleness banner
 
@@ -224,14 +258,12 @@ oxlint was the serious alternative and is what the Quasar repository itself now 
 
 ## Open
 
-### On-screen dialect: Egyptian or the mockups' MSA
-
-**The conflict:** the product mandate is Egyptian Arabic throughout. The mockups are written largely in Modern Standard Arabic — «لا توجد وجبات حاليًا» rather than «لسه مفيش وجبات قريبة منك» — and contain at least one typo («أبدأ» where the imperative requires «ابدأ»).
-**Why it is still open:** the decision was deferred deliberately rather than argued.
-**Interim rule:** implement from the Egyptian column of [design/ui-copy.md](design/ui-copy.md) and treat mockup text as placeholder.
-**Owner:** product.
-
 ### The 10 km default radius
 
 Nothing validates that a cook nine kilometres away will accept an order. It is one constant in one file, chosen as a plausible starting point, and it should be the first thing tuned after launch.
 **Owner:** product, after real usage.
+
+### English copy review
+
+The English strings in [design/ui-copy.md](design/ui-copy.md) are a first draft written by a non-native review gap: they are consistent, but nobody has signed off on tone. They ship only after a review pass.
+**Owner:** product.

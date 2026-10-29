@@ -23,7 +23,7 @@ Design mockups live in `../screens/` as binary assets.
 
 **Design**
 - `design/design-system.md` — color, type, space, components, iconography, RTL rules
-- `design/ui-copy.md` — every on-screen string, Egyptian and mockup variants
+- `design/ui-copy.md` — the message catalog: every key in Arabic and English, dialect dimension reserved
 - `design/mockups.md` — what each mockup covers, what was adopted, what to ignore
 
 **Tech**

@@ -51,6 +51,8 @@ CREATE INDEX meals_owner_idx     ON meals (user);
 
 The composite `(latitude, longitude)` index is mandatory, not a micro-optimization: a lat-only index measured 4 to 10 times slower than the pair on the same query.
 
+**Content is never translated.** `title`, `description`, and `location_text` hold the cook's words exactly as typed, in whatever language or mix of languages they used. There are no `title_ar` / `title_en` columns, no per-locale copies, and no machine translation. App interface strings are a separate concern living in a message catalog — see [../design/ui-copy.md](../design/ui-copy.md#the-model). If translation of user content ever becomes a feature, it arrives as a derived cache table keyed by meal and locale, never as columns on this one.
+
 **Hidden fields still filter.** PocketBase excludes them from responses but evaluates them server-side, which is exactly the shape discovery needs: the coordinate participates in every query and appears in no payload.
 
 ## favorites

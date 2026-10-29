@@ -94,23 +94,24 @@ Do not introduce a second icon family.
 
 Shadows are soft and barely present. Transitions are short and plain. No entrance animation on list items, no parallax, no bounce.
 
-## Right-to-left
+## Direction
 
-The app is right-to-left. This is a layout rule, not a string translation.
+The app ships in Arabic (right-to-left) and English (left-to-right). Direction is a runtime value driven by the active locale, so every screen has two correct states and both are reviewed.
 
-- Set `dir="rtl"` on the document root; Quasar handles the bulk of component mirroring from it.
+- Set `dir` on the document root from the locale; Quasar mirrors the bulk of its components from it.
 - Use logical CSS properties — `margin-inline-start`, `padding-inline-end`, `inset-inline-start`. Physical properties like `left` and `right` will not mirror.
 - **Mirror directional icons:** chevrons, back arrows, and any "next" affordance.
 - **Do not mirror:** the WhatsApp glyph, camera, search, star, social brand marks, and any photographic content.
-- Numerals stay Latin digits; Egyptian users read both, and prices and distances align better with Latin digits.
-- Verify every screen at both extremes of text length. Arabic runs shorter than English for the same meaning, and longer than a Latin mockup suggests.
+- Numerals stay Latin digits in both locales; prices and distances align better with them.
+- Arabic needs more line height than Latin at the same size. Do not tighten leading to match a Latin comp.
+- Verify every screen in both directions at both extremes of text length. Arabic runs shorter than English for the same meaning and longer than a Latin mockup suggests.
 
 ## Principles
 
 1. Warmth first — every screen should feel like home.
 2. Fewest elements possible per screen.
 3. Large readable text, unmistakable buttons.
-4. Egyptian Arabic for all interface text.
+4. Arabic and English for all interface text; Egyptian dialect for the Arabic until dialects exist as a dimension.
 5. No social-network affordances.
 6. Cards stay clean; density moves to the details page.
 

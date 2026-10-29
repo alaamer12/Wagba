@@ -26,7 +26,7 @@
 - Favorites: a saved-meals list, stored server-side per account.
 
 ### Content and chrome
-- Egyptian Arabic, right-to-left.
+- Arabic and English, with direction switched per locale.
 - Warm visual identity per [../design/design-system.md](../design/design-system.md).
 - Settings: account, my meals, favorites, share app, about, terms and privacy, contact us, version.
 - Cached last feed with a staleness banner when offline; freshness probe on reconnect. Behavior in [screens.md#home](screens.md#2-home--meals) and [../tech/discovery.md](../tech/discovery.md#offline).
@@ -46,7 +46,9 @@ Everything below is a deliberate absence, not an oversight. Each one is what mak
 | Built-in or third-party delivery | The cook states whether they deliver; that is all. |
 | Notifications | Deferred. PocketBase realtime makes it cheap later. |
 | Phone-number sign-in and OTP | Deferred to v1.1. SMS to Egypt costs about $0.40 per message through Twilio. Reasoning in [../decisions.md](../decisions.md). |
-| Additional languages | Egyptian Arabic only in the MVP. |
+| Languages beyond Arabic and English | Two locales ship. The catalog accepts a third without code changes, which is the whole reason it is a catalog. |
+| Dialects as selectable variants | The dimension is reserved in the catalog and defaults to `ar`; Egyptian-specific and MSA-specific variants arrive later. |
+| Translation of meal text | Cooks write in their own words and buyers read exactly that. No machine translation, no per-locale copies. |
 | Full social profile | Profile exists to enable contact. |
 | Complex filters | Search plus the nearby feed is the whole surface. |
 | Exact address published by the system | Coordinates are never returned to other users. Cooks may type a detailed location as free text, which is display-only. |
