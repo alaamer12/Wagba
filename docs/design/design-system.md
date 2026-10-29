@@ -117,4 +117,4 @@ The app ships in Arabic (right-to-left) and English (left-to-right). Direction i
 
 ## Working with the mockups
 
-The mockups in `screens/` are the visual reference, and they are not the spec. Where they disagree with [../product/screens.md](../product/screens.md), that file wins. [mockups.md](mockups.md) lists every known divergence.
+The mockups in `mockups/` are the visual reference, and they are not the spec. Where they disagree with [../product/screens.md](../product/screens.md), that file wins. [mockups.md](mockups.md) lists every known divergence.

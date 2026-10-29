@@ -205,7 +205,7 @@ These entries exist because the mockups and the original spec disagree with this
 
 ### Share and rate rows added
 
-Neither was in the spec; both appear in the mockups and both are trivial. The rate row was initially reported as not existing in the mockups — it is there, on the About screen in `screens/3.png`, last row of the bottom group with a star icon.
+Neither was in the spec; both appear in the mockups and both are trivial. The rate row was initially reported as not existing in the mockups — it is there, on the About screen in `mockups/3.png`, last row of the bottom group with a star icon.
 **Status:** settled.
 
 ## Device and tooling

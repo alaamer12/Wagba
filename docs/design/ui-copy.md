@@ -202,4 +202,4 @@ No mockup or spec source; drafted here because the flows require them.
 
 1. **English is unreviewed.** Every `en` cell is a first draft for a native reviewer, not approved copy.
 2. **Dialect.** Deferred. The `msa` column is recorded as a candidate variant, and `dialect` stores `ar` until `eg` exists. See [../decisions.md](../decisions.md#dialect-is-a-reserved-dimension).
-3. **Mockup transcriptions.** Rows sourced from `screens/*.png` were read off images and may carry small errors, including at least one typo in the original («أبدأ» where the imperative is «ابدأ»).
+3. **Mockup transcriptions.** Rows sourced from `mockups/*.png` were read off images and may carry small errors, including at least one typo in the original («أبدأ» where the imperative is «ابدأ»).

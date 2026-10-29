@@ -11,7 +11,7 @@ Wagba (وجبة) is an Egyptian app for finding homemade meals cooked near you a
 | [tech/](tech/README.md) | Stack, architecture, data model, discovery, device integrations, conventions, releases |
 | [decisions.md](decisions.md) | Contested choices, what was rejected, and the measurements behind it |
 
-Design mockups live in `../screens/` as binary assets.
+Design mockups live in `../mockups/` as binary assets.
 
 ## Full document list
 

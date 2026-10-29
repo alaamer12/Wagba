@@ -1,6 +1,6 @@
 # Wagba — Mockups
 
-> Catalogue of the design references in `screens/`, what each covers, and every place they disagree with the spec. [../product/screens.md](../product/screens.md) is authoritative on behavior; this file is authoritative on which mockup elements to ignore.
+> Catalogue of the design references in `mockups/`, what each covers, and every place they disagree with the spec. [../product/screens.md](../product/screens.md) is authoritative on behavior; this file is authoritative on which mockup elements to ignore.
 
 The mockups are the visual target and were drawn before the technical decisions in [../decisions.md](../decisions.md). Where they conflict with the spec, the spec wins, and the conflict is recorded below rather than silently dropped.
 
@@ -8,11 +8,11 @@ The mockups are the visual target and were drawn before the technical decisions 
 
 | File | Contents |
 |---|---|
-| `screens/1.png` | Home with meals · Meal Details · Add Meal |
-| `screens/2.png` | Home empty state · Account/profile card · Settings |
-| `screens/3.png` | Profile setup · My Meals · About |
-| `screens/decoration.png` | Not a screen. Cream background with wheat sprigs and small hearts in the corners, used behind About and empty states |
-| `screens/empty-meals state.png` | My Meals empty state |
+| `mockups/1.png` | Home with meals · Meal Details · Add Meal |
+| `mockups/2.png` | Home empty state · Account/profile card · Settings |
+| `mockups/3.png` | Profile setup · My Meals · About |
+| `mockups/decoration.png` | Not a screen. Cream background with wheat sprigs and small hearts in the corners, used behind About and empty states |
+| `mockups/empty-meals state.png` | My Meals empty state |
 
 All five are right-to-left, on the palette in [design-system.md](design-system.md), with the three-slot bottom bar and raised center add button.
 
