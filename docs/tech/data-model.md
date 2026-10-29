@@ -12,14 +12,17 @@ Auth collection. Provisioned silently by the app, never by a human. See [archite
 |---|---|---|---|
 | `username` | text | yes | Generated, e.g. `dev_k3m9xq`. Serves as the PocketBase identifier |
 | `password` | hidden | yes | Random 32 chars, generated on device |
-| `name` | text | at first post | Display name |
+| `display_name` | text | at first post | Free text, not unique. May be Arabic, English, or a mix |
+| `handle` | text, unique | at first post | Public ASCII handle, generated from `display_name`, editable once then frozen. Rules in [identity.md](identity.md#handle) |
 | `whatsapp` | text | at first post | Stored as E.164 digits, normalized at write. See [integrations.md#whatsapp](integrations.md#whatsapp) |
 | `location_text` | text | at first post | The cook's own wording, display-only |
-| `avatar` | image | no | Absent means a generated illustrated avatar |
+| `avatar` | image | no | Uploaded photo. Absent means the deterministic avatar from [identity.md](identity.md#avatar) |
 | `facebook_url`, `instagram_url`, `tiktok_url` | url | no | Shown on Meal Details only when set |
 | `created`, `updated` | auto | — | |
 
-**Not stored:** email, address, date of birth, coordinates, or anything that identifies a physical location beyond `location_text`.
+**Not stored:** email, address, date of birth, coordinates, or anything that identifies a physical location beyond `location_text`. The avatar is also not stored as data — it is recomputed from the handle.
+
+`username` is the private credential identifier and is never shown, searched, or shared. `handle` is the only public name; the two must not be conflated.
 
 ## meals
 

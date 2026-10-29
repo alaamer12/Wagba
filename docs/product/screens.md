@@ -99,7 +99,9 @@ Each screen below follows the same shape: **Purpose → Elements → Behavior �
 
 **When it appears.** The first time a user tries to add a meal while their details are incomplete, and from Settings for editing.
 
-**Fields.** Name (required), avatar (optional; a generated illustrated avatar is used when absent), WhatsApp number (required), location text (required), and optional Facebook, Instagram, and TikTok links.
+**Fields.** Display name (required; free text, duplicates allowed), **handle** (generated from the display name, shown with an edit field and a warning that it freezes after saving), **avatar preview** (generated from the handle, no picker — a photo upload replaces it later), WhatsApp number (required), location text (required), and optional Facebook, Instagram, and TikTok links.
+
+**Rejection.** A display name that produces no usable Latin text — emoji only, digits only, punctuation only — is refused with a request to use letters. The app never invents a handle the user has not seen.
 
 **Behavior.** Saving returns the user to whatever they were doing. There is no email, no password, and no phone verification — see [../tech/architecture.md](../tech/architecture.md#identity).
 

@@ -29,6 +29,7 @@ Design mockups live in `../mockups/` as binary assets.
 **Tech**
 - `tech/architecture.md` — stack, system shape, app layering, identity, environments, config
 - `tech/data-model.md` — collections, fields, indexes, access rules, search, migrations
+- `tech/identity.md` — handle generation from the display name, and the deterministic avatar
 - `tech/discovery.md` — the nearby query, distance math, coordinate privacy, location buffer, offline
 - `tech/integrations.md` — WhatsApp handoff, photos, GPS, share and rate
 - `tech/conventions.md` — Biome, Vue and Pinia patterns, i18n, naming, definition of done

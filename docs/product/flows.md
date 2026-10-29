@@ -40,7 +40,7 @@ That is the whole product. Anything that lengthens step 1, 2, or 3 is a defect.
 
 1. Tap **Add Meal** from anywhere.
 2. The app finds the profile incomplete and routes to **Profile Setup** first.
-3. Enter name, WhatsApp number, and location text; avatar and social links optional. Save returns to the form.
+3. Enter display name, WhatsApp number, and location text. The handle is generated from the display name, shown once for editing, and freezes on save; avatar and social links are optional. Save returns to the form.
 4. A GPS fix is captured for the meal. If permission is denied, publishing is blocked with a stated reason.
 5. Fill the meal: up to five photos, name required, the rest optional.
 6. Publish. The meal appears in Home for nearby buyers and in My Meals.

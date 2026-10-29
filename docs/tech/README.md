@@ -6,6 +6,7 @@ How Wagba is built. Everything a user cannot see.
 |---|---|
 | [architecture.md](architecture.md) | Stack, system shape, app layering, anonymous identity, environments, configuration |
 | [data-model.md](data-model.md) | Collections, fields, indexes, access rules, search normalization, migrations |
+| [identity.md](identity.md) | Handle derivation, the transliteration table, deterministic avatar assembly, part-set versioning |
 | [discovery.md](discovery.md) | The nearby query, the distance math, coordinate privacy, the location buffer, offline behavior |
 | [integrations.md](integrations.md) | WhatsApp handoff, photos, GPS, share and rate |
 | [conventions.md](conventions.md) | Biome, Vue and Pinia patterns, i18n and RTL rules, naming, the definition of done |

@@ -90,6 +90,7 @@ Message catalogs are flat key-value objects with no nesting and no logic. `en` m
 | `meal.delivery` | فيه توصيل | Delivery available | — |
 | `meal.cook.label` | صاحب الوجبة | The cook | صاحب الوجبة |
 | `meal.gone` | الوجبة دي اتشالت | This meal is gone | — |
+| `avatar.alt` | صورة رمزية | Profile picture | — |
 
 ## Add and edit meal
 
@@ -131,6 +132,11 @@ Message catalogs are flat key-value objects with no nesting and no logic. `en` m
 | `profile.whatsapp.placeholder` | مثال: 010 1234 5678 | e.g. 010 1234 5678 | مثال: 010 1234 5678 |
 | `profile.location.label` | المكان | Location | المنطقة |
 | `profile.social.heading` | روابط التواصل | Social links | روابط التواصل الاجتماعي (اختياري) |
+| `profile.displayName.label` | الاسم | Name | الاسم |
+| `profile.handle.label` | اسم المستخدم | Username | — |
+| `profile.handle.hint` | بنعمله من اسمك — مش هينفع تغيره بعد كده | Made from your name. It can't be changed later | — |
+| `profile.handle.frozen` | الاسم ده ثابت | This is permanent | — |
+| `profile.avatar.hint` | الصورة اتولدت من اسم المستخدم. تقدر تحط صورة من عندك بعدين | Generated from your username. You can replace it with your own photo later | — |
 | `profile.save` | احفظ ومتابعة | Save | حفظ البيانات |
 | `profile.edit` | تعديل البيانات | Edit details | تعديل البيانات |
 
@@ -184,6 +190,8 @@ No mockup or spec source; drafted here because the flows require them.
 | `error.photo.tooLarge` | الصورة كبيرة أوي | That photo is too large |
 | `error.photo.limit` | خمس صور كفاية للوجبة الواحدة | Five photos per meal |
 | `error.field.required` | {field} مطلوب | {field} is required |
+| `error.displayName.letters` | اكتب اسم فيه حروف | Use a name with letters |
+| `error.handle.taken` | الاسم ده متاخد، جرب غيره | That username is taken, try another |
 | `error.whatsapp.missing` | الواتساب مش نصبان على الموبايل ده | WhatsApp is not installed on this device |
 
 ## About

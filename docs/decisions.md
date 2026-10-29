@@ -9,6 +9,7 @@ Statuses: **settled** (evidence-backed, do not revisit without new information),
 - [Location and discovery](#location-and-discovery) — the six entries that took the most work to get right
 - [Data and search](#data-and-search) — search normalization, favorites
 - [Language and copy](#language-and-copy) — two locales, a catalog instead of columns, dialect reserved
+- [Public identity](#public-identity) — handle derivation, numbering, freezing, deterministic avatars
 - [Product reversals](#product-reversals) — where this build contradicts the original spec
 - [Device and tooling](#device-and-tooling) — WhatsApp, photos, Biome, i18n
 - [Open](#open)
@@ -177,6 +178,45 @@ Nine cells cover roughly three cell-widths, so the moment the radius exceeds the
 **Status:** settled.
 
 
+
+## Public identity
+
+### The handle is transliterated, not Franco
+
+**Chosen:** per-letter Egyptian-phonetic mapping, letters only — `محمد احمد` → `mhmdahmd`. No Franco digits (no `m7md`, no `3omar`).
+**Rejected:** Arabizi digits; academic IJMES transliteration (`muḥammad`); random handles.
+**Why:** Franco is a chat alphabet with no standard — the Wikipedia entry documents the digit map and notes it varies by region and writer, so the same name yields different strings. A permanent public handle gets said aloud and pasted into links, where `m7md` reads as noise. Academic transliteration carries diacritics that would have to be stripped anyway.
+**Cost accepted:** letters collide. ز ذ ظ all map to `z`, ث س ص all map to `s`, so distinct Arabic names can produce identical slugs. The numeric suffix absorbs this, which is why it is mandatory rather than a collision fallback.
+**Status:** settled. Table and pipeline in [tech/identity.md](tech/identity.md#handle).
+
+### Every handle carries a number
+
+**Chosen:** `<slug><3 random digits>`, retrying with four then five on collision — `mhmdahmd482`.
+**Rejected:** sequential counters (`mhmdahmd2`); a separator (`slug-482`); no suffix unless taken.
+**Why:** a suffix on every handle means no handle reveals whether its owner was first, and a random three-digit number roughly reveals nothing about signup order or volume. No separator was chosen over a hyphen because the handle then reads as one speakable token.
+**Status:** settled.
+
+### The handle is frozen after its first save
+
+**Chosen:** generated at Profile Setup, shown with an edit field, saved once, then permanently read-only.
+**Rejected:** silent generation; editable any time.
+**Why:** the handle is what a shared link contains. Freezing means a link never dies and never points at a different person; showing it first means the user is not stuck with something they never saw.
+**Status:** settled.
+
+### The handle is its own field, not the auth username
+
+**Chosen:** a unique `handle` beside the private `dev_xxx` credential username.
+**Rejected:** making the handle the PocketBase auth identifier.
+**Why:** the account is provisioned silently at first launch, before any display name exists, so it cannot carry a name-derived handle; reusing the auth field would move account creation to Profile Setup and rewrite flows already specified.
+**Status:** settled.
+
+### The avatar is deterministic and has no selector
+
+**Chosen:** an inline SVG assembled from a fixed part set, seeded by `fnv1a32("v1:" + handle)` → mulberry32, one draw per axis in a fixed order. No picker, no shuffle; a photo upload replaces it.
+**Rejected:** a stored generated avatar; a part-picker screen; a shuffle button.
+**Why:** a face that can be recomputed needs no storage, no migration, and no sync — and it is identical on every device. The picker was cut because the upload path already serves the same need, and every extra control is a screen to build and test.
+**Consequence:** the `v1:` prefix is load-bearing. Changing the part set without bumping it silently rewrites every existing face in the product.
+**Status:** settled.
 
 ## Product reversals
 
