@@ -243,22 +243,23 @@ oxlint was the serious alternative and is what the Quasar repository itself now 
 **Why this matters:** the alternative was guessing "Cairo or Tajawal", which would have produced a near-miss that never looks right and has no way to be improved. Naming the face lets the wordmark be set, not drawn.
 **Status:** settled.
 
-### The chef hat is traced, not drawn
+### The chef hat is the supplied brand icon
 
-**Chosen:** a single-silhouette path traced from `mockups/3.png` — `assets/brand/chef-hat.svg`.
-**Rejected:** Lucide's `chef-hat` verbatim; a hand-drawn three-circle parametric model.
-**Why:** Lucide's icon is taller than wide with a separate band rect and a visible seam; the mockup's hat is wider than tall, band merged, no seam, and carries a cream-to-sand gradient fill. A parametric fit over ten geometry parameters plateaued at **0.667** overlap. Tracing the reference silhouette reached **0.920** after smoothing, and 0.927 unsmoothed.
-**Cost accepted:** the shipped path has ~680 points because it follows a 39-pixel source; it is exact at the sizes the app uses and cannot be argued with, but it is not hand-clean vector art. A designer redrawing it would cut the point count an order of magnitude.
-**Status:** settled, with the redraw noted as optional cleanup.
+**Chosen:** `assets/brand/chef-hat.svg` — the delivered icon, used as-is. The white background rect and the JPEG-noise speckle paths were dropped, the viewBox cropped to the glyph. Two structural paths survive: outline `#924B03`, fill `#FEDAB6`. Original file kept at `assets/brand/source/png-to-svg-converter.svg`.
+**Rejected:** Lucide's `chef-hat` (wrong proportions, separate band, visible seam); a hand-drawn parametric model (plateaued at 0.667 overlap); tracing the mockup (reached 0.92 but it was a stand-in drawn before the real asset existed).
+**Why:** a supplied brand asset outranks any reconstruction. The mockup's hat is a *different rendition* — thinner stroke over a cream gradient — so the two will never score 100% against each other. Silhouette overlap is 0.919 and the difference is in stroke weight and fill colour, not shape.
+**Status:** settled. The traced path was retired when the icon arrived.
 
 ### 95% overlap is not achievable at mockup resolution
 
-Recorded because it will be asked again. Displacing a mask by **one pixel** and comparing it to itself gives: wordmark **0.782**, hat **0.419**, heart **0.788**. That is the ceiling — no rendering, however perfect, can beat a one-pixel offset of the original. The shipped assets score 0.726 / 0.920 / 0.946 against those ceilings, which puts the wordmark within 0.06 of a displaced perfect copy and the hat well above it. The gap that remains is rasterisation at 39 and 111 pixels, not shape or typeface error.
+Recorded because it will be asked again. Displacing a mask by **one pixel** and comparing it to itself gives: wordmark **0.782**, hat **0.419**, heart **0.788**. That is the ceiling — no rendering, however perfect, can beat a one-pixel offset of the original.
+
+The wordmark (0.726) and heart (0.946) sit against those ceilings, so their remaining gap is antialiasing at 111 and 17 pixels. The hat is a different case: the supplied icon is a solid shape with a thicker stroke than the mockup's ring, so ink overlap is not a meaningful comparison between them at all — silhouette overlap, which is, comes in at **0.919**, and the difference is stroke weight and fill colour, both of which the icon defines.
 **Status:** measurement note.
 
 ### Icons come from Lucide
 
-**Chosen:** Lucide (MIT) for every interface icon, stroke 2 on a 24-unit box, scaled with the icon. The chef hat borrows Lucide's construction language — round joins, uniform stroke, single outline — but not its path; see [the hat is traced](#the-chef-hat-is-traced-not-drawn).
+**Chosen:** Lucide (MIT) for every *interface* icon, stroke 2 on a 24-unit box, scaled with the icon. The brand hat is not an interface icon and comes from the supplied asset — see [the chef hat is the supplied brand icon](#the-chef-hat-is-the-supplied-brand-icon).
 **Rejected:** hand-authoring new outline paths for interface icons; mixing icon sets.
 **Why:** three hand-drawn attempts at the hat read as a cloud rather than a toque before a standard icon was tried. A standard shape drawn by eye is worse than the icon it imitates, and a single MIT-licensed family removes attribution ambiguity.
 **Evidence worth keeping:** the hat's stroke colour was sampled from `mockups/3.png` — average of 252 stroke pixels, `#B2691D` — rather than eyeballed; the first guess was `#B2621B`, within seven per channel.

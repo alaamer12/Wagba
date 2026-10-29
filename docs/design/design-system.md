@@ -93,7 +93,7 @@ Do not introduce a second icon family, and do not hand-author a new outline path
 
 Composed from three parts, not one asset:
 
-- **Chef hat** — `assets/brand/chef-hat.svg`. A single continuous silhouette traced from the mockup: three lobes flowing into a straight-sided band with no seam line, stroke `hat-stroke` at 3.3 on a 64-unit box, fill a horizontal gradient `#FAF0DD → #F7E2BE`. Lucide's `chef-hat` was the reference construction language, but its proportions are taller than wide and its band is a separate rect — it scored well below the traced silhouette against the mockup, so the shape is traced and only the stroke language is borrowed.
+- **Chef hat** — `assets/brand/chef-hat.svg`, **the supplied brand icon used as-is**. Two paths: outline `#924B03`, fill `#FEDAB6`. The delivered file was a colour trace (`assets/brand/source/png-to-svg-converter.svg`) containing a white background rect and ~95 JPEG-noise speckle paths; those were removed, the viewBox was cropped to the glyph, and nothing was redrawn. Silhouette overlap with the mockup's hat is 0.919 — the mockup rendered a thinner stroke over a cream fill, so its 1:1 ink weight differs from the icon's by design, and the icon wins.
 - **Heart** — filled `#FDD484`, sitting between hat and wordmark, and again at 14 px leading the tagline.
 - **Wordmark** — the bundled typeface at weight 800.
 
