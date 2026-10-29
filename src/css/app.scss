@@ -2,8 +2,8 @@
 // subset only — Latin falls back to the platform face, which is intentional:
 // this product speaks Arabic first.
 @font-face {
-  font-family: 'Baloo Bhaijaan 2';
-  src: url('../assets/fonts/BalooBhaijaan2-arabic.woff2') format('woff2-variations');
+  font-family: "Baloo Bhaijaan 2";
+  src: url("../assets/fonts/BalooBhaijaan2-arabic.woff2") format("woff2-variations");
   font-weight: 400 800;
   font-display: swap;
 }
@@ -15,8 +15,8 @@
   --cream: #faf1df;
   --surface: #fffcfa;
   --border: #e8d9c0;
-  --ink: #3f2205;
-  --brown-mid: #6b4e31;
+  --ink: rgb(63 34 5);
+  --brown-mid: rgb(107 78 49);
   --butter: #f5c518;
   --butter-soft: #fce9a8;
   --heart: #fdd484;

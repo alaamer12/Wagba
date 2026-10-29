@@ -1,6 +1,6 @@
-import type { LatLng } from "@shared/normalize";
 import { defineStore } from "pinia";
 import { computed, ref } from "vue";
+import type { LatLng } from "../../shared/normalize";
 import { useGeolocation } from "../composables/useGeolocation";
 
 export type LocationStatus = "idle" | "ready" | "denied" | "unavailable";

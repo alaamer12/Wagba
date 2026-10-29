@@ -1,0 +1,94 @@
+# Agent Instructions — Wagba
+
+Wagba is an Egyptian app for finding homemade meals cooked near you, then messaging the cook on WhatsApp. Quasar (Vue 3 + TypeScript) in a Capacitor shell, PocketBase as the only backend. **This file replaces an earlier copy that described a .NET/MAUI project; nothing here refers to that stack.**
+
+## Read first, every session
+
+| File | Why |
+|---|---|
+| [`docs/README.md`](docs/README.md) | The index; every document with one line of what it answers |
+| [`docs/tech/structure.md`](docs/tech/structure.md) | Folder authority and the boundary prohibitions you must not cross |
+| [`docs/tech/states.md`](docs/tech/states.md) | The ten region kinds and the ladder that picks one |
+| [`docs/decisions.md`](docs/decisions.md) | Settled choices with the measurements behind them — do not re-litigate without new evidence |
+
+## Toolchain
+
+| Thing | Value |
+|---|---|
+| Package manager | **bun only** (`bun install`, `bunx`). Never npm, pnpm, or yarn; never delete `bun.lock` |
+| Runtime | Node 24, bun 1.4.4 |
+| Backend | PocketBase **0.28.4**, untracked binary at `pocketbase/pocketbase.exe` (download the pinned release if missing) |
+| Android | `JAVA_HOME` = JDK 22, `ANDROID_HOME` = `D:\Android` (platform 36, build-tools 36), Gradle wrapper in `android/` |
+| Browser | system Chrome; Playwright uses `channel: 'chrome'` |
+
+## Commands
+
+```bash
+bun dev                 # Quasar dev server on :9000 (HMR)
+bun build               # SPA build into dist/spa
+bun run gate            # the only definition of done: lint → types → unit → hooks → db → build → e2e → docs
+bun run docs:check      # link checker over docs/
+bun tools/pb.mjs reset|serve|restart|stop|superuser
+bun tools/seed.mjs      # deterministic: 3 cooks, 12 meals
+bun tools/build-hooks.mjs   # esbuild the shared fold into the goja bundle
+```
+
+## Layout
+
+```
+src/pages        route surfaces              src/services   ONLY PocketBase SDK importer
+src/components   base | layout | present     src/stores     state + the only place `kind` is set
+src/composables  device boundaries           src/lib        pure logic (avatar, feed cache)
+shared/          the Arabic fold + distance — imported by the app AND bundled for the hook
+pocketbase/      pb_migrations (app API) + pb_hooks/main.pb.js + pb_data (ignored)
+tools/           gate, pb, seed, build-hooks, serve, linkcheck
+tests/unit       Vitest                      tests/e2e      Playwright state + behaviour matrix
+reference/       avatar.html, logo-parity.html — design sources, never bundled
+docs/ mockups/   specification and references
+scratch/ artifacts/   ignored: probes and gate evidence. Never durable.
+```
+
+## Boundary rules (from `structure.md`)
+
+1. `src/services/` is the **only** place `pocketbase` is imported.
+2. `src/components/**` never imports `services/` or `stores/` — pages wire, components render.
+3. `src/**` never imports from `pocketbase/**` or `android/**`.
+4. `shared/` never imports from `src/` and never uses Node built-ins (goja runs it).
+5. Schema changes go through `pb_migrations/` only. The dashboard is for content, never for fields, rules, or indexes.
+
+## PocketBase 0.28.4 rules — learned by running it
+
+- Migrations use the **`app` API** (`app.save`, `app.findCollectionByNameOrId`); `dao` is gone.
+- Field lists take **plain objects with `type`**; class instances silently produce a fieldless collection.
+- Base collections get **no timestamps** without an explicit `{ type: 'autodate' }` field.
+- `hidden: true` fields are dropped on **write** and blocked from **filtering** — never use them for data the client must set.
+- Each **hook handler runs in its own scope**: `require` shared code inside every handler.
+- The JS VM (goja) has **no `\p{…}`** property escapes; use explicit Unicode ranges.
+- Auth collections need an email identifier; the account uses a synthetic `<id>@wagba.local` that is never exposed.
+
+## Documentation obligations
+
+- **Same-change rule:** a change is done only when the doc that governs it is updated in that change (`structure.md` §5 lists the cases).
+- Adding, removing, or moving a document ⇒ update [`docs/README.md`](docs/README.md) and the directory README in the same change.
+- A document that states a rule names the test that enforces it, or says "review rule".
+- New reusable unit ⇒ a row in [`docs/tech/units.md`](docs/tech/units.md).
+
+## Verification
+
+- **Browser only.** No emulator, no `cap run`, no device. Playwright drives Chrome against the built SPA with a granted geolocation at Cairo coordinates.
+- The APK is **built and inspected**, not launched.
+- State coverage is one row per kind, forced with `?state=<kind>` (dev) or `window.__WAGBA_FORCE_STATE` (harness) — it injects facts, never bypasses `resolveRegion`.
+- Arabic must be asserted as DOM text, not pixels; screenshots wait for `document.fonts` and image decode.
+
+## Scratch and artifacts
+
+- `scratch/` — probes, downloads, logs. Delete when done; never commit.
+- `artifacts/` — gate logs, screenshots, APK. Written by the gate; never commit.
+
+## Never
+
+- Commit `pocketbase/pocketbase.exe`, `pb_data/`, `.env`, or anything under `scratch/`/`artifacts/`.
+- Run `git push`, deploy, or create accounts on external services.
+- Use `--no-verify` or bypass a failing gate; fix the cause.
+- Hand-edit schema in the dashboard, or add a column the canonical model does not define.
+- Edit `docs/` to match a bug instead of fixing the bug.

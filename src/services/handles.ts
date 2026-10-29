@@ -1,4 +1,4 @@
-import { fold, normalizeArabic } from "@shared/normalize";
+import { fold, normalizeArabic } from "../../shared/normalize";
 import { AppError } from "../types/errors";
 
 // Handle derivation: Egyptian-phonetic fold, letters only, then digits appended.
@@ -24,7 +24,7 @@ export function randomDigits(width: number): string {
   const max = 10 ** width;
   const buf = new Uint32Array(1);
   globalThis.crypto.getRandomValues(buf);
-  return String(buf[0] % max).padStart(width, "0");
+  return String((buf[0] as number) % max).padStart(width, "0");
 }
 
 export function candidate(slug: string, width = 3): string {

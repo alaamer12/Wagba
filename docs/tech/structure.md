@@ -30,7 +30,7 @@
 │  ├─ pb_hooks/main.pb.js    Thin hooks: search_key, cook enrichment, distance_km.
 │  ├─ pb_hooks/lib/          Generated CJS bundle (ignored in git, rebuilt by tools/build-hooks.mjs).
 │  └─ pb_data/               Local state (ignored).
-├─ tools/                    gate.mjs · pb.mjs · seed.mjs · build-hooks.mjs · linkcheck.mjs
+├─ tools/                    gate.ts · pb.mjs · seed.mjs · build-hooks.mjs · linkcheck.mjs
 ├─ tests/
 │  ├─ unit/                  Vitest: fold, handle, states ladder, schemas, stores.
 │  └─ e2e/                   Playwright: state matrix + behaviour matrix.
@@ -56,7 +56,7 @@
 
 | Decision | Single ground | Consumers | Protecting test |
 |---|---|---|---|
-| SDK isolation | `src/services/*.ts` | pages, stores, tests | `tools/gate.mjs` grep step *(M9)* |
+| SDK isolation | `src/services/*.ts` | pages, stores, tests | `tools/gate.ts` grep step *(M9)* |
 | Response shape | `src/types/schemas.ts` (zod) | services, stores, units | `tests/unit/schemas.test.ts` *(M3)* |
 | State kinds | `src/stores/region.ts` → `resolveRegion` | Region, pages, e2e matrix | `tests/unit/states.test.ts` *(M4)* |
 | Arabic fold | `shared/normalize.ts` | search service, PB hook | `tests/unit/normalize.test.ts` (10 passing) |

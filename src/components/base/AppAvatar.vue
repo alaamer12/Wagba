@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import hatUrl from '../../assets/brand/chef-hat.svg';
-import AvatarArt from './AvatarArt.vue';
+import { computed } from "vue";
+import hatUrl from "../../assets/brand/chef-hat.svg";
+import AvatarArt from "./AvatarArt.vue";
 
 const props = withDefaults(
   defineProps<{ src?: string; handle?: string; label?: string; size?: number }>(),
-  { src: '', handle: '', label: '', size: 40 },
+  { src: "", handle: "", label: "", size: 40 },
 );
 
 const style = computed(() => ({ width: `${props.size}px`, height: `${props.size}px` }));

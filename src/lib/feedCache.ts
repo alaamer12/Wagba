@@ -1,11 +1,11 @@
-import type { LatLng } from '@shared/normalize';
-import type { Meal } from '../types/schemas';
-import { read, write } from '../services/storage';
+import type { LatLng } from "../../shared/normalize";
+import { read, write } from "../services/storage";
+import type { Meal } from "../types/schemas";
 
 // Last good feed, so a dropped connection shows rows with a stale banner instead
 // of an error panel. Snapshot only — there are no offline writes.
 
-const KEY = 'feed-snapshot';
+const KEY = "feed-snapshot";
 
 export type FeedSnapshot = { items: Meal[]; at: number; lat: number; lng: number };
 

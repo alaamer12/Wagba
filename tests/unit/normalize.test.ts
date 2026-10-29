@@ -1,5 +1,5 @@
-import { distanceKm, fold, normalizeArabic, searchKey } from "@shared/normalize";
 import { describe, expect, it } from "vitest";
+import { distanceKm, fold, normalizeArabic, searchKey } from "../../shared/normalize";
 
 describe("normalizeArabic", () => {
   it("strips tashkeel and tatweel", () => {

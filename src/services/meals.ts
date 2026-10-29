@@ -1,4 +1,4 @@
-import { boundingBox, distanceKm, type LatLng, searchKey } from "@shared/normalize";
+import { boundingBox, distanceKm, type LatLng, searchKey } from "../../shared/normalize";
 import { toAppError } from "../types/errors";
 import { type Meal, MealSchema, MealsPageSchema } from "../types/schemas";
 import { fileUrl, pb } from "./pb";

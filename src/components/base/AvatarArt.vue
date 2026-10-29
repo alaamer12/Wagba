@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import { hairColour, pickAvatar } from '../../lib/avatar';
+import { computed } from "vue";
+import { hairColour, pickAvatar } from "../../lib/avatar";
 
 const props = defineProps<{ handle: string; label?: string }>();
 

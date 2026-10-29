@@ -70,7 +70,9 @@ export async function provision(): Promise<Profile> {
     // Already registered on this device but the session expired.
   }
   await pb.collection("users").authWithPassword(credential.email, credential.password);
-  return currentProfile();
+  const profile = await currentProfile();
+  if (!profile) throw new AppError("UNKNOWN");
+  return profile;
 }
 
 export async function currentProfile(): Promise<Profile | null> {

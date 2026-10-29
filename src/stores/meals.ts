@@ -1,11 +1,11 @@
-import type { LatLng } from "@shared/normalize";
 import { defineStore } from "pinia";
 import { computed, ref } from "vue";
+import type { LatLng } from "../../shared/normalize";
+import { loadFeed, saveFeed } from "../lib/feedCache";
 import { listNearby, searchMeals as searchService } from "../services/meals";
 import { type AppError, toAppError } from "../types/errors";
 import type { Meal } from "../types/schemas";
 import { type Facts, type Kind, resolveRegion } from "./region";
-import { loadFeed, saveFeed } from "../lib/feedCache";
 
 /**
  * The feed. Owns the only place `kind` is derived; pages read it, never assign it.
@@ -79,5 +79,18 @@ export const useMealsStore = defineStore("meals", () => {
     lastQuery.value = "";
   }
 
-  return { items, read, inFlight, narrow, error, lastQuery, cachedAt, hasRows, kind, load, search, reset };
+  return {
+    items,
+    read,
+    inFlight,
+    narrow,
+    error,
+    lastQuery,
+    cachedAt,
+    hasRows,
+    kind,
+    load,
+    search,
+    reset,
+  };
 });

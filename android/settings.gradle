@@ -1,3 +1,9 @@
+// Resolves the JDK 21 toolchain that Capacitor 8's Android build asks for; this
+// machine has 17/18/22 only.
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.8.0'
+}
+
 include ':app'
 include ':capacitor-cordova-android-plugins'
 project(':capacitor-cordova-android-plugins').projectDir = new File('./capacitor-cordova-android-plugins/')

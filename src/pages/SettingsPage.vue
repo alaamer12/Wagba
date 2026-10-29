@@ -40,7 +40,7 @@ onMounted(async () => {
     </template>
 
     <AppCard class="account">
-      <AppAvatar :src="avatarSrc" :handle="session.profile?.handle" :size="56" :label="t('avatar.alt')" />
+      <AppAvatar :src="avatarSrc" :handle="session.profile?.handle ?? ''" :size="56" :label="t('avatar.alt')" />
       <div class="account__text">
         <span class="account__name">{{ session.profile?.display_name }}</span>
         <span class="account__handle">@{{ session.profile?.handle }}</span>

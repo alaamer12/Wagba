@@ -14,7 +14,7 @@ const avatar = computed(() =>
 
 <template>
   <div class="cook-row">
-    <AppAvatar :src="avatar" :handle="meal.cook.handle" :size="44" :label="t('avatar.alt')" />
+    <AppAvatar :src="avatar" :handle="meal.cook.handle ?? ''" :size="44" :label="t('avatar.alt')" />
     <div class="cook-row__text">
       <span class="cook-row__label">{{ t('meal.cook.label') }}</span>
       <span class="cook-row__name">{{ meal.cook.display_name }}</span>

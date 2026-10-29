@@ -11,17 +11,17 @@ export type AvatarPick = {
 };
 
 export const PARTS = {
-  skin: ['#f4c9a8', '#e9b28d', '#d99a72', '#c07f57', '#8f5a3c'],
-  hair: ['short', 'wavy', 'curly', 'long', 'bun', 'hijab', 'bald'],
-  beard: ['none', 'stubble', 'beard'],
-  glasses: ['none', 'round', 'square'],
-  shirt: ['#4f7179', '#c76a4a', '#6b8f5e', '#8a6fa8', '#c9a227', '#5a6b8c'],
-  backdrop: ['#faf0dd', '#dff0e4', '#dce9f5', '#f8e2d0', '#ece4f6'],
+  skin: ["#f4c9a8", "#e9b28d", "#d99a72", "#c07f57", "#8f5a3c"],
+  hair: ["short", "wavy", "curly", "long", "bun", "hijab", "bald"],
+  beard: ["none", "stubble", "beard"],
+  glasses: ["none", "round", "square"],
+  shirt: ["#4f7179", "#c76a4a", "#6b8f5e", "#8a6fa8", "#c9a227", "#5a6b8c"],
+  backdrop: ["#faf0dd", "#dff0e4", "#dce9f5", "#f8e2d0", "#ece4f6"],
 } as const;
 
-export const HAIR_COLOURS = ['#251e19', '#3b312b', '#5b3a24', '#6e6e6e'];
+export const HAIR_COLOURS = ["#251e19", "#3b312b", "#5b3a24", "#6e6e6e"];
 
-export const AVATAR_VERSION = 'v1';
+export const AVATAR_VERSION = "v1";
 
 /** 32-bit FNV-1a over UTF-16 code units; stable across platforms. */
 export function fnv1a32(input: string): number {
@@ -45,7 +45,7 @@ export function mulberry32(seed: number): () => number {
   };
 }
 
-const AXES = ['skin', 'hair', 'beard', 'glasses', 'shirt', 'backdrop'] as const;
+const AXES = ["skin", "hair", "beard", "glasses", "shirt", "backdrop"] as const;
 
 export function pickAvatar(handle: string): AvatarPick {
   const rng = mulberry32(fnv1a32(`${AVATAR_VERSION}:${handle}`));
@@ -54,14 +54,14 @@ export function pickAvatar(handle: string): AvatarPick {
   // shift the others.
   for (const axis of AXES) {
     const list = PARTS[axis] as readonly string[];
-    pick[axis] = list[Math.floor(rng() * list.length)];
+    pick[axis] = list[Math.floor(rng() * list.length)] as string;
   }
   // The hijab rule runs after the draws so it never consumes randomness.
-  if (pick.hair === 'hijab') pick.beard = 'none';
+  if (pick.hair === "hijab") pick.beard = "none";
   return pick as AvatarPick;
 }
 
 export function hairColour(handle: string): string {
   const rng = mulberry32(fnv1a32(`hair:${AVATAR_VERSION}:${handle}`));
-  return HAIR_COLOURS[Math.floor(rng() * HAIR_COLOURS.length)];
+  return HAIR_COLOURS[Math.floor(rng() * HAIR_COLOURS.length)] as string;
 }
