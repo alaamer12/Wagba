@@ -77,7 +77,7 @@ onMounted(async () => {
     </template>
 
     <div class="intro">
-      <AppAvatar :src="avatarSrc" :size="76" :label="t('avatar.alt')" />
+      <AppAvatar :src="avatarSrc" :handle="handlePreview" :size="76" :label="t('avatar.alt')" />
       <p class="intro__sub">{{ session.isComplete ? t('settings.account.section') : t('profile.subtitle') }}</p>
       <p class="intro__hint">{{ t('profile.avatar.hint') }}</p>
     </div>

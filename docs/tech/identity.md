@@ -98,4 +98,6 @@ The SVG carries a generated `aria-label` naming the visible parts, in the user's
 
 ### Art source
 
-The part set is modularised from the supplied character in `avatar.html` — the original defines the construction: 610×610 box, flat fills with two gradient washes, strokes around 2.5–5 units, no outlines on the face. Variants are built to that grammar so the set stays one visual family. Until the full set lands, the generator runs against whatever part set exists; missing axes fall back to the source character's values.
+**v1 ships a programmatic part set**, not hand-drawn art: one flat SVG character assembled from the axes above, in the construction language of the reference (`avatar.html` — flat fills, no face outline, soft backdrop). The hand-drawn part set built from that reference with the avatar skill is deferred; because the assembler takes parts by id, replacing the art later means replacing `AvatarArt.vue` and bumping `AVATAR_VERSION`, with no change to selection logic.
+
+Assembly lives in `src/lib/avatar.ts` (hash, draw order, hijab rule) and `src/components/base/AvatarArt.vue` (the drawing). The unit test asserts determinism, three distinct faces for three handles, and that the hijab clears facial hair on every probe that draws it.

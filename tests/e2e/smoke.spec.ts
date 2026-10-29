@@ -16,6 +16,11 @@ test("home renders seeded meals nearest-first", async ({ page }, info) => {
   const first = await cards.first().locator("h3").innerText();
   expect(first.length).toBeGreaterThan(0);
 
+  await page.locator('[data-kind="ready"] article img').first().waitFor({ state: 'visible' });
+  await page.waitForFunction(() => {
+    const img = document.querySelector('[data-kind="ready"] article img') as HTMLImageElement | null;
+    return !!img && img.complete && img.naturalWidth > 0;
+  });
   await page.screenshot({
     path: `artifacts/screenshots/${info.project.name}/home.png`,
     fullPage: false,
@@ -40,5 +45,9 @@ test("meal details shows cook data and the WhatsApp action", async ({ page }, in
   });
   await page.locator('[data-kind="ready"] article').first().click();
   await expect(page.getByText("صاحب الوجبة")).toBeVisible({ timeout: 15_000 });
+  await page.waitForFunction(() => {
+    const img = document.querySelector('.hero img') as HTMLImageElement | null;
+    return !img || (img.complete && img.naturalWidth > 0);
+  });
   await page.screenshot({ path: `artifacts/screenshots/${info.project.name}/meal-details.png` });
 });

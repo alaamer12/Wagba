@@ -14,7 +14,8 @@ Location is `src/components/`.
 | AppCard | base | `base/AppCard.vue` | surface + border + soft shadow; optional padding/flat | Implemented |
 | AppChip | base | `base/AppChip.vue` | pill; active = butter fill | Implemented |
 | AppField | base | `base/AppField.vue` | label + input/textarea + hint/error; `defineModel` | Implemented |
-| AppAvatar | base | `base/AppAvatar.vue` | uploaded photo, else the brand hat as the placeholder | Implemented (placeholder until the part set lands) |
+| AppAvatar | base | `base/AppAvatar.vue` | uploaded photo, else `AvatarArt` from the handle, else the brand hat | Implemented |
+| AvatarArt | base | `base/AvatarArt.vue` | the v1 generated face: skin, hair incl. hijab, beard, glasses, shirt, backdrop | Implemented |
 | AppEmpty | base | `base/AppEmpty.vue` | illustration + title + body + action slot | Implemented |
 | AppSkeleton | base | `base/AppSkeleton.vue` | card-shaped shimmer blocks | Implemented |
 | AppBanner | base | `base/AppBanner.vue` | inline strip for `stale`; info/warning | Implemented |
@@ -38,6 +39,6 @@ Location is `src/components/`.
 
 ## Known gaps
 
-- **Generated avatars are not unit-backed yet.** `AppAvatar` renders the brand hat as the placeholder; the deterministic part set (skin, hair incl. hijab, facial hair, glasses, shirt, backdrop) lands in M6 and will replace the fallback inside this unit — no new unit, same interface.
+- **The avatar art is programmatic.** The part *axes* are implemented; the hand-drawn part set from `reference/avatar.html` is deferred. Swapping art does not change selection logic.
 - **Photo grid is absent.** Details shows the cover only. A `PhotoGrid` unit is needed when multiple photos are surfaced.
 - **No toast unit.** Errors currently render inline or as a banner; the toast surface in `error-ux.md` maps to Quasar's `Notify` when the first transient failure needs it.
