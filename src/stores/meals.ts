@@ -5,6 +5,7 @@ import { listNearby, searchMeals as searchService } from "../services/meals";
 import { type AppError, toAppError } from "../types/errors";
 import type { Meal } from "../types/schemas";
 import { type Facts, type Kind, resolveRegion } from "./region";
+import { loadFeed, saveFeed } from "../lib/feedCache";
 
 /**
  * The feed. Owns the only place `kind` is derived; pages read it, never assign it.
@@ -16,6 +17,7 @@ export const useMealsStore = defineStore("meals", () => {
   const narrow = ref(false);
   const error = ref<AppError | null>(null);
   const lastQuery = ref("");
+  const cachedAt = ref<number | null>(null);
 
   const hasRows = computed(() => items.value.length > 0);
 
@@ -37,9 +39,16 @@ export const useMealsStore = defineStore("meals", () => {
     try {
       items.value = await listNearby(center);
       read.value = true;
+      cachedAt.value = null;
+      void saveFeed(items.value, center);
     } catch (err) {
       error.value = toAppError(err);
       read.value = false;
+      const cached = await loadFeed();
+      if (cached) {
+        items.value = cached.items;
+        cachedAt.value = cached.at;
+      }
     } finally {
       inFlight.value = false;
     }
@@ -70,5 +79,5 @@ export const useMealsStore = defineStore("meals", () => {
     lastQuery.value = "";
   }
 
-  return { items, read, inFlight, narrow, error, lastQuery, hasRows, kind, load, search, reset };
+  return { items, read, inFlight, narrow, error, lastQuery, cachedAt, hasRows, kind, load, search, reset };
 });

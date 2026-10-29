@@ -35,6 +35,7 @@ Design mockups live in `../mockups/` as binary assets.
 - `tech/states.md` — region kinds and the precedence ladder
 - `tech/error-ux.md` — error codes and their surfaces
 - `tech/structure.md` — folder authority, boundary prohibitions, the authority table
+- `tech/lifecycle.md` — launch gate, cold/warm start, budgets
 - `tech/dev-loop.md` — how a change reaches a running app; the browser as the device
 - `tech/architecture.md` — stack, system shape, app layering, identity, environments, config
 - `tech/schema-reference.md` — storage of record: collections, indexes, hooks, denormalization register
