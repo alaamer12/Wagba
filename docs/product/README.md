@@ -2,12 +2,12 @@
 
 What Wagba is and how it behaves, independent of how it is built.
 
-| File | Read it for |
-|---|---|
+| File                       | Read it for                                                                              |
+| -------------------------- | ---------------------------------------------------------------------------------------- |
 | [overview.md](overview.md) | The idea, the problem, the audience, the design principles, and what comes after the MVP |
-| [scope.md](scope.md) | The MVP boundary — the single owner of what is in and what is deliberately out |
-| [screens.md](screens.md) | Every screen: purpose, elements, behavior, states |
-| [flows.md](flows.md) | The two journeys, step by step, including branch points |
+| [scope.md](scope.md)       | The MVP boundary — the single owner of what is in and what is deliberately out           |
+| [screens.md](screens.md)   | Every screen: purpose, elements, behavior, states                                        |
+| [flows.md](flows.md)       | The two journeys, step by step, including branch points                                  |
 
 **Reading order for a newcomer:** overview → scope → flows → screens.
 

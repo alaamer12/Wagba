@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Avatar</title>
+<style>
+  :root { --page: #f9f0df; }
+
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; }
+
+  body {
+    background: var(--page);
+    display: grid;
+    place-items: center;
+  }
+
+  .avatar {
+    width: min(240px, 70vw);
+    aspect-ratio: 1;
+  }
+
+  .avatar-art {
+    width: 100%;
+    height: 100%;
+    display: block;
+    border-radius: 50%;
+    overflow: hidden;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root { --page: #2a2118; }
+  }
+</style>
+</head>
+<body>
+  <div class="avatar">
+    <svg class="avatar-art" viewBox="40 40 610 610" role="img" aria-label="Smiling man with voluminous dark hair and a teal shirt">
+        <defs>
+          <linearGradient id="sun" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#fcd76e"/>
+            <stop offset="1" stop-color="#f9cb55"/>
+          </linearGradient>
+          <linearGradient id="tee" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#4f7179"/>
+            <stop offset=".5" stop-color="#628b93"/>
+            <stop offset="1" stop-color="#53767d"/>
+          </linearGradient>
+        </defs>
+
+        <!-- background -->
+        <rect x="40" y="40" width="610" height="610" fill="url(#sun)"/>
+
+        <!-- shirt -->
+        <path d="M40 600 C105 560 190 520 262 497 L426 504 C505 520 585 548 660 606 L660 660 L40 660 Z" fill="url(#tee)"/>
+
+        <!-- neck -->
+        <path d="M290 420 C288 465 286 488 284 504 C292 546 328 562 350 562 C382 562 410 545 414 508 C408 488 398 468 396 420 Z" fill="#ee8d6a"/>
+        <path d="M290 446 C318 482 372 484 396 450 L396 468 C372 498 318 496 290 466 Z" fill="#d9714f" opacity=".5"/>
+        <path d="M266 503 C284 552 326 566 350 566 C384 566 412 548 424 506" fill="none" stroke="#3f5f66" stroke-width="5" stroke-linecap="round"/>
+
+        <!-- ears -->
+        <ellipse cx="236" cy="336" rx="28" ry="38" fill="#e8805c" stroke="#7a3b28" stroke-width="3" stroke-opacity=".5"/>
+        <path d="M230 322 Q246 334 236 352" fill="none" stroke="#c9684a" stroke-width="5" stroke-linecap="round"/>
+        <ellipse cx="470" cy="324" rx="22" ry="36" fill="#e8805c" stroke="#7a3b28" stroke-width="3" stroke-opacity=".5"/>
+
+        <!-- face -->
+        <path d="M268 196 C258 260 254 340 262 392 C270 436 316 474 360 474 C408 474 450 436 458 392 C466 340 462 260 452 196 Z" fill="#f38e6c" stroke="#b9553a" stroke-width="3" stroke-opacity=".45"/>
+        <circle cx="306" cy="382" r="26" fill="#f07a5c" opacity=".28"/>
+        <circle cx="428" cy="378" r="24" fill="#f07a5c" opacity=".24"/>
+
+        <!-- hair -->
+        <path d="M216 292 C208 270 205 250 207 226 C204 182 232 160 258 150 C264 120 300 106 332 108 C352 90 396 90 412 108 C442 104 472 134 479 170 C491 192 489 236 479 272 C477 284 474 296 466 304 C458 306 452 302 450 292 C450 270 450 250 448 234 C428 236 408 222 386 208 C356 224 326 232 290 214 C284 244 276 278 268 306 C250 314 230 308 216 292 Z" fill="#251e19"/>
+        <path d="M300 150 C330 128 370 126 400 142" fill="none" stroke="#3b312b" stroke-width="6" stroke-linecap="round" opacity=".7"/>
+        <path d="M244 205 C256 178 280 166 302 164" fill="none" stroke="#3b312b" stroke-width="5" stroke-linecap="round" opacity=".6"/>
+        <path d="M425 150 C450 160 464 185 464 214" fill="none" stroke="#3b312b" stroke-width="5" stroke-linecap="round" opacity=".6"/>
+
+        <!-- brows -->
+        <path d="M303 281 Q326 262 352 272" fill="none" stroke="#2a1f1a" stroke-width="13" stroke-linecap="round"/>
+        <path d="M392 272 Q418 262 442 281" fill="none" stroke="#2a1f1a" stroke-width="13" stroke-linecap="round"/>
+
+        <!-- eyes -->
+        <ellipse cx="326" cy="306" rx="10" ry="11" fill="#1e1815"/>
+        <ellipse cx="416" cy="304" rx="10" ry="11" fill="#1e1815"/>
+
+        <!-- nose -->
+        <path d="M377 322 L371 346 Q381 356 394 347" fill="none" stroke="#bf6746" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity=".85"/>
+
+        <!-- smile -->
+        <path d="M336 376 Q370 414 405 374 Q370 386 336 376 Z" fill="#fffaf2" stroke="#a24a32" stroke-width="2.5" stroke-linejoin="round"/>
+      </svg>
+  </div>
+</body>
+</html>

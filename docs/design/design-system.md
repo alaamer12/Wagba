@@ -1,6 +1,6 @@
 # Wagba — Design System
 
-> The visual language: tokens, type, spacing, components, iconography, and right-to-left rules. What each screen *contains* is in [../product/screens.md](../product/screens.md); the literal Arabic strings are in [ui-copy.md](ui-copy.md).
+> The visual language: tokens, type, spacing, components, iconography, and right-to-left rules. What each screen _contains_ is in [../product/screens.md](../product/screens.md); the literal Arabic strings are in [ui-copy.md](ui-copy.md).
 
 The target feeling is **home, warm, simple, friendly** — a cozy kitchen, not a fast-food chain and not a delivery app. Every rule below serves that; where a rule and the feeling disagree, the feeling wins and this file gets updated.
 
@@ -8,24 +8,26 @@ The target feeling is **home, warm, simple, friendly** — a cozy kitchen, not a
 
 ### Core palette
 
-| Token | Use | Value |
-|---|---|---|
-| `cream` | Screen backgrounds, large empty areas | `#F8F1E3` |
-| `butter` | Primary CTAs and key accents | `#F5C518` / `#F0C040` |
-| `butter-soft` | Secondary button and tag backgrounds | `#FCE9A8` |
-| `brown-dark` | Primary text | `#3D2B1F` |
-| `brown-mid` | Secondary text, descriptions | `#6B4E31` |
-| `border-light` | Card and field borders | `#E8D9C0` |
-| `surface` | Card backgrounds | `#FFFCFA` |
-| `hat-stroke` | Logo line art: the chef hat and its band | `#B2691D` |
-| `olive` | Rare supporting accent | optional, use sparingly |
+| Token          | Use                                      | Value                   |
+| -------------- | ---------------------------------------- | ----------------------- |
+| `cream`        | Screen backgrounds, large empty areas    | `#F8F1E3`               |
+| `butter`       | Primary CTAs and key accents             | `#F5C518` / `#F0C040`   |
+| `butter-soft`  | Secondary button and tag backgrounds     | `#FCE9A8`               |
+| `brown-dark`   | Primary text                             | `#3D2B1F`               |
+| `brown-mid`    | Secondary text, descriptions             | `#6B4E31`               |
+| `border-light` | Card and field borders                   | `#E8D9C0`               |
+| `surface`      | Card backgrounds                         | `#FFFCFA`               |
+| `hat-stroke`   | Logo line art: the chef hat and its band | `#B2691D`               |
+| `olive`        | Rare supporting accent                   | optional, use sparingly |
 
 ### State colors
+
 - **Available** — default treatment.
 - **Unavailable** — status badge in a muted tone. The faded-card treatment from the original spec is superseded by badges; see [mockups.md](mockups.md#superseded-elements).
 - **Error and required** — a soft earthy red, never a saturated alert red.
 
 ### Color rules
+
 - The yellow is butter or mustard cream. A harsh or neon yellow breaks the identity immediately.
 - Beige dominates the surface area of every screen.
 - No pure black, no restaurant red, anywhere.
@@ -33,19 +35,19 @@ The target feeling is **home, warm, simple, friendly** — a cozy kitchen, not a
 
 ## Typography
 
-**Face.** **Baloo Bhaijaan 2**, weight 800. This is not a guess: the mockup's wordmark was identified by rendering fifteen Arabic display faces and scoring ink overlap against the reference at matched height — Baloo Bhaijaan 2 won at its natural width, every competitor only reached its score when squeezed, and the visually disqualifying differences (diamond dots in Rubik and Readex Pro, squarer counters in Changa) ruled the rest out. Bundled as `assets/fonts/BalooBhaijaan2-800.woff2` under the SIL OFL (`OFL.txt` beside it).
+**Face.** **Baloo Bhaijaan 2**, weight 800. This is not a guess: the mockup's wordmark was identified by rendering fifteen Arabic display faces and scoring ink overlap against the reference at matched height — Baloo Bhaijaan 2 won at its natural width, every competitor only reached its score when squeezed, and the visually disqualifying differences (diamond dots in Rubik and Readex Pro, squarer counters in Changa) ruled the rest out. Bundled as `src/assets/fonts/BalooBhaijaan2-800.woff2` under the SIL OFL (`OFL.txt` beside it).
 
 **Wordmark ink.** `#3F2205`, sampled from the mockup rather than taken from the palette. Latin and UI text use the palette browns.
 
 **Weights.** Headings semi-bold or bold; body regular; small descriptions regular or light.
 
-| Role | Size |
-|---|---|
-| Screen title | 22–26sp |
-| Card title | 17–19sp |
-| Body | 15–16sp |
-| Secondary and descriptions | 13–14sp |
-| Buttons | 16–17sp semi-bold |
+| Role                       | Size              |
+| -------------------------- | ----------------- |
+| Screen title               | 22–26sp           |
+| Card title                 | 17–19sp           |
+| Body                       | 15–16sp           |
+| Secondary and descriptions | 13–14sp           |
+| Buttons                    | 16–17sp semi-bold |
 
 Arabic needs more line height than Latin at the same size. Do not tighten leading to match a Latin mockup.
 
@@ -93,7 +95,7 @@ Do not introduce a second icon family, and do not hand-author a new outline path
 
 Composed from three parts, not one asset:
 
-- **Chef hat** — `assets/brand/chef-hat.svg`, **the supplied brand icon used as-is**. Two paths: outline `#924B03`, fill a horizontal gradient `#FAF0DD → #F7E2BE` matching the mockup's interior. The delivered file was a colour trace (`assets/brand/source/png-to-svg-converter.svg`) containing a white background rect and ~95 JPEG-noise speckle paths; those were removed, the viewBox was cropped to the glyph, and nothing was redrawn. Silhouette overlap with the mockup's hat is 0.919 — the mockup rendered a thinner stroke over a cream fill, so its 1:1 ink weight differs from the icon's by design, and the icon wins.
+- **Chef hat** — `src/assets/brand/chef-hat.svg`, **the supplied brand icon used as-is**. Two paths: outline `#924B03`, fill a horizontal gradient `#FAF0DD → #F7E2BE` matching the mockup's interior. The delivered file was a colour trace (`src/assets/brand/source/png-to-svg-converter.svg`) containing a white background rect and ~95 JPEG-noise speckle paths; those were removed, the viewBox was cropped to the glyph, and nothing was redrawn. Silhouette overlap with the mockup's hat is 0.919 — the mockup rendered a thinner stroke over a cream fill, so its 1:1 ink weight differs from the icon's by design, and the icon wins.
 - **Heart** — filled `#FDD484`, sitting between hat and wordmark, and again at 14 px leading the tagline.
 
 **Placement.** The hat is centred over the «و» — its optical centre sits just past 92% of the wordmark's ink width and its base overlaps the top of the letter, exactly as the mockup places it. The heart sits between them, left of the hat. Geometry is defined once on a 140×100 unit box and scaled for every size, so the relationship cannot drift.

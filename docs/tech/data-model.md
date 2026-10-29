@@ -8,17 +8,17 @@ Three collections. Two entities carry meaning (a person and a meal); the third i
 
 Auth collection. Provisioned silently by the app, never by a human. See [architecture.md#identity](architecture.md#identity).
 
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| `username` | text | yes | Generated, e.g. `dev_k3m9xq`. Serves as the PocketBase identifier |
-| `password` | hidden | yes | Random 32 chars, generated on device |
-| `display_name` | text | at first post | Free text, not unique. May be Arabic, English, or a mix |
-| `handle` | text, unique | at first post | Public ASCII handle, generated from `display_name`, editable once then frozen. Rules in [identity.md](identity.md#handle) |
-| `whatsapp` | text | at first post | Stored as E.164 digits, normalized at write. See [integrations.md#whatsapp](integrations.md#whatsapp) |
-| `location_text` | text | at first post | The cook's own wording, display-only |
-| `avatar` | image | no | Uploaded photo. Absent means the deterministic avatar from [identity.md](identity.md#avatar) |
-| `facebook_url`, `instagram_url`, `tiktok_url` | url | no | Shown on Meal Details only when set |
-| `created`, `updated` | auto | — | |
+| Field                                         | Type         | Required      | Notes                                                                                                                     |
+| --------------------------------------------- | ------------ | ------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `username`                                    | text         | yes           | Generated, e.g. `dev_k3m9xq`. Serves as the PocketBase identifier                                                         |
+| `password`                                    | hidden       | yes           | Random 32 chars, generated on device                                                                                      |
+| `display_name`                                | text         | at first post | Free text, not unique. May be Arabic, English, or a mix                                                                   |
+| `handle`                                      | text, unique | at first post | Public ASCII handle, generated from `display_name`, editable once then frozen. Rules in [identity.md](identity.md#handle) |
+| `whatsapp`                                    | text         | at first post | Stored as E.164 digits, normalized at write. See [integrations.md#whatsapp](integrations.md#whatsapp)                     |
+| `location_text`                               | text         | at first post | The cook's own wording, display-only                                                                                      |
+| `avatar`                                      | image        | no            | Uploaded photo. Absent means the deterministic avatar from [identity.md](identity.md#avatar)                              |
+| `facebook_url`, `instagram_url`, `tiktok_url` | url          | no            | Shown on Meal Details only when set                                                                                       |
+| `created`, `updated`                          | auto         | —             |                                                                                                                           |
 
 **Not stored:** email, address, date of birth, coordinates, or anything that identifies a physical location beyond `location_text`. The avatar is also not stored as data — it is recomputed from the handle.
 
@@ -26,23 +26,23 @@ Auth collection. Provisioned silently by the app, never by a human. See [archite
 
 ## meals
 
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| `id` | auto | yes | |
-| `user` | relation → users | yes | Single owner, cascade delete |
-| `title` | text | yes | |
-| `description` | text | no | |
-| `price` | number | no | EGP, integer |
-| `quantity` | number | no | |
-| `status` | select | yes | `available` \| `unavailable` |
-| `photos` | files, max 5 | yes | First is the cover |
-| `delivery_option` | select | no | `pickup` \| `delivery` |
-| `available_time` | text | no | Free text |
-| `location_text` | text | yes | Display-only label, copied from the form |
-| `latitude` | number | yes | **Hidden field**: never serialized to API responses |
-| `longitude` | number | yes | **Hidden field**: same |
-| `search_key` | text | yes | Normalized, computed by hook. See [search](#search) |
-| `created`, `updated` | auto | — | |
+| Field                | Type             | Required | Notes                                               |
+| -------------------- | ---------------- | -------- | --------------------------------------------------- |
+| `id`                 | auto             | yes      |                                                     |
+| `user`               | relation → users | yes      | Single owner, cascade delete                        |
+| `title`              | text             | yes      |                                                     |
+| `description`        | text             | no       |                                                     |
+| `price`              | number           | no       | EGP, integer                                        |
+| `quantity`           | number           | no       |                                                     |
+| `status`             | select           | yes      | `available` \| `unavailable`                        |
+| `photos`             | files, max 5     | yes      | First is the cover                                  |
+| `delivery_option`    | select           | no       | `pickup` \| `delivery`                              |
+| `available_time`     | text             | no       | Free text                                           |
+| `location_text`      | text             | yes      | Display-only label, copied from the form            |
+| `latitude`           | number           | yes      | **Hidden field**: never serialized to API responses |
+| `longitude`          | number           | yes      | **Hidden field**: same                              |
+| `search_key`         | text             | yes      | Normalized, computed by hook. See [search](#search) |
+| `created`, `updated` | auto             | —        |                                                     |
 
 **Indexes**, declared as raw SQL in migrations:
 
@@ -60,11 +60,11 @@ The composite `(latitude, longitude)` index is mandatory, not a micro-optimizati
 
 ## favorites
 
-| Field | Type | Notes |
-|---|---|---|
-| `user` | relation → users | cascade delete |
-| `meal` | relation → meals | cascade delete |
-| `created` | auto | |
+| Field     | Type             | Notes          |
+| --------- | ---------------- | -------------- |
+| `user`    | relation → users | cascade delete |
+| `meal`    | relation → meals | cascade delete |
+| `created` | auto             |                |
 
 ```sql
 CREATE UNIQUE INDEX favorites_pair_idx ON favorites (user, meal);
@@ -76,11 +76,11 @@ Server-side rather than device-local because a saved meal that silently vanishes
 
 PocketBase API rules, enforced per collection.
 
-| Collection | List and view | Create and update | Delete |
-|---|---|---|---|
-| `meals` | `status = 'available'` **or** `user = @request.auth.id` | `user = @request.auth.id` | `user = @request.auth.id` |
-| `users` | `id = @request.auth.id` | `id = @request.auth.id` | `id = @request.auth.id` |
-| `favorites` | `user = @request.auth.id` | `user = @request.auth.id` | `user = @request.auth.id` |
+| Collection  | List and view                                           | Create and update         | Delete                    |
+| ----------- | ------------------------------------------------------- | ------------------------- | ------------------------- |
+| `meals`     | `status = 'available'` **or** `user = @request.auth.id` | `user = @request.auth.id` | `user = @request.auth.id` |
+| `users`     | `id = @request.auth.id`                                 | `id = @request.auth.id`   | `id = @request.auth.id`   |
+| `favorites` | `user = @request.auth.id`                               | `user = @request.auth.id` | `user = @request.auth.id` |
 
 Two consequences worth stating because they are easy to get wrong:
 - A buyer's list request can never return an unavailable meal, regardless of what the client asks for. The rule is the guarantee; the client's filter is only a performance hint.

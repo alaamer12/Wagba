@@ -4,16 +4,16 @@
 
 ## Stack
 
-| Layer | Choice | Notes |
-|---|---|---|
-| UI framework | Quasar CLI with Vite, Vue 3, TypeScript | Composition API, `<script setup>` |
-| Shell | Capacitor | Android and iOS; Android ships first |
-| Backend | PocketBase | Single Go binary, SQLite, embedded file storage, realtime, admin UI |
-| Hosting | Railway | One service plus a persistent volume at `/pb_data` |
-| Lint and format | Biome | Single tool; `.vue` support is experimental, see [conventions.md](conventions.md#biome) |
-| Tests | Vitest, Playwright | Bar defined in [conventions.md](conventions.md#verification) |
-| i18n | vue-i18n | `ar` (RTL) and `en` (LTR); dialect dimension reserved, see [conventions.md](conventions.md#language-and-direction) |
-| Validation | zod | Parses PocketBase responses at the service boundary |
+| Layer           | Choice                                  | Notes                                                                                                              |
+| --------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| UI framework    | Quasar CLI with Vite, Vue 3, TypeScript | Composition API, `<script setup>`                                                                                  |
+| Shell           | Capacitor                               | Android and iOS; Android ships first                                                                               |
+| Backend         | PocketBase                              | Single Go binary, SQLite, embedded file storage, realtime, admin UI                                                |
+| Hosting         | Railway                                 | One service plus a persistent volume at `/pb_data`                                                                 |
+| Lint and format | Biome                                   | Single tool; `.vue` support is experimental, see [conventions.md](conventions.md#biome)                            |
+| Tests           | Vitest, Playwright                      | Bar defined in [conventions.md](conventions.md#verification)                                                       |
+| i18n            | vue-i18n                                | `ar` (RTL) and `en` (LTR); dialect dimension reserved, see [conventions.md](conventions.md#language-and-direction) |
+| Validation      | zod                                     | Parses PocketBase responses at the service boundary                                                                |
 
 ## System shape
 
@@ -78,12 +78,12 @@ The profile fields (name, WhatsApp number, location text) are collected later, a
 
 ## Environments
 
-| Environment | PocketBase runs as | Data |
-|---|---|---|
-| Developer on Windows | `pocketbase.exe serve`, no container | Local `pb_data/`, seeded from fixtures |
-| Developer on Linux | Docker container | Bind-mounted volume |
-| CI | Docker container | Ephemeral, seeded per run |
-| Production | Railway service with a persistent volume mounted at `/pb_data` | Backed up by copying the volume |
+| Environment          | PocketBase runs as                                             | Data                                   |
+| -------------------- | -------------------------------------------------------------- | -------------------------------------- |
+| Developer on Windows | `pocketbase.exe serve`, no container                           | Local `pb_data/`, seeded from fixtures |
+| Developer on Linux   | Docker container                                               | Bind-mounted volume                    |
+| CI                   | Docker container                                               | Ephemeral, seeded per run              |
+| Production           | Railway service with a persistent volume mounted at `/pb_data` | Backed up by copying the volume        |
 
 The container image and the bare binary must be the **same PocketBase version**, pinned in this file and in the Docker tag. PocketBase ships fast and migrations are version-sensitive.
 
@@ -91,11 +91,11 @@ The container image and the bare binary must be the **same PocketBase version**,
 
 ## Configuration
 
-| Variable | Used by | Notes |
-|---|---|---|
-| `VITE_POCKETBASE_URL` | app | Public HTTPS endpoint of the PocketBase instance |
-| `PB_ADMIN_EMAIL` / `PB_ADMIN_PASSWORD` | deploy | Superuser for the dashboard; created on first boot |
-| `PB_BACKUP_PUBLIC_KEY` / `PB_BACKUP_PRIVATE_KEY` | PocketBase | Optional; enables the built-in S3 backup target |
+| Variable                                         | Used by    | Notes                                              |
+| ------------------------------------------------ | ---------- | -------------------------------------------------- |
+| `VITE_POCKETBASE_URL`                            | app        | Public HTTPS endpoint of the PocketBase instance   |
+| `PB_ADMIN_EMAIL` / `PB_ADMIN_PASSWORD`           | deploy     | Superuser for the dashboard; created on first boot |
+| `PB_BACKUP_PUBLIC_KEY` / `PB_BACKUP_PRIVATE_KEY` | PocketBase | Optional; enables the built-in S3 backup target    |
 
 No other secrets exist in MVP. There is no API key, no map provider, and no SMS provider account, because none of those features are in the build.
 

@@ -4,29 +4,29 @@
 
 Four Capacitor plugins are in the app. Nothing else touches native.
 
-| Plugin | Used for |
-|---|---|
+| Plugin                    | Used for              |
+| ------------------------- | --------------------- |
 | `@capacitor/app-launcher` | Opening `whatsapp://` |
-| `@capacitor/browser` | The `wa.me` fallback |
-| `@capacitor/geolocation` | Both coordinates |
-| `@capacitor/camera` | Meal photos |
+| `@capacitor/browser`      | The `wa.me` fallback  |
+| `@capacitor/geolocation`  | Both coordinates      |
+| `@capacitor/camera`       | Meal photos           |
 
 ## WhatsApp
 
 The original spec said "opens a WebView with a wa.me link". That is wrong on Android: an embedded WebView cannot hand off to the installed WhatsApp app, and Google blocks the `whatsapp://` scheme from inside one. The correct mechanism is launching the URL outside the app.
 
 ```ts
-import { AppLauncher } from '@capacitor/app-launcher'
-import { Browser } from '@capacitor/browser'
+import { AppLauncher } from "@capacitor/app-launcher";
+import { Browser } from "@capacitor/browser";
 
 export async function openWhatsApp(phone: string, mealTitle: string) {
-  const e164 = toE164(phone)
-  const text = encodeURIComponent(`السلام عليكم، شاهدت وجبتكم على تطبيق وجبة: ${mealTitle}`)
+  const e164 = toE164(phone);
+  const text = encodeURIComponent(`السلام عليكم، شاهدت وجبتكم على تطبيق وجبة: ${mealTitle}`);
 
   try {
-    await AppLauncher.openUrl({ url: `whatsapp://send?phone=${e164}&text=${text}` })
+    await AppLauncher.openUrl({ url: `whatsapp://send?phone=${e164}&text=${text}` });
   } catch {
-    await Browser.open({ url: `https://wa.me/${e164}?text=${text}` })
+    await Browser.open({ url: `https://wa.me/${e164}?text=${text}` });
   }
 }
 ```
@@ -39,17 +39,17 @@ export async function openWhatsApp(phone: string, mealTitle: string) {
 
 ```ts
 const toE164 = (raw: string) => {
-  const digits = raw.replace(/\D/g, '')
-  if (digits.startsWith('20')) return digits
-  return digits.replace(/^0/, '20')
-}
+  const digits = raw.replace(/\D/g, "");
+  if (digits.startsWith("20")) return digits;
+  return digits.replace(/^0/, "20");
+};
 ```
 
 **Normalize at write, not at tap.** The `whatsapp` field stores E.164 digits. A number saved as `010...` and converted only when the button is pressed will silently break the moment any other consumer reads that field — the admin dashboard, an export, a future SMS feature.
 
 ### Native configuration
 
-Android 11+ package visibility gates the *check*, not the launch. Declared anyway, because the UI needs to know whether WhatsApp exists before offering a button that does nothing:
+Android 11+ package visibility gates the _check_, not the launch. Declared anyway, because the UI needs to know whether WhatsApp exists before offering a button that does nothing:
 
 ```xml
 <queries>
@@ -87,13 +87,13 @@ When the deep link fails, `wa.me` opens in a browser context and shows a "Contin
 One-shot reads only. No watch, no background mode, no significant-change API.
 
 ```ts
-import { Geolocation } from '@capacitor/geolocation'
+import { Geolocation } from "@capacitor/geolocation";
 
 const fix = await Geolocation.getCurrentPosition({
   enableHighAccuracy: true,
   timeout: 10_000,
   maximumAge: 5 * 60_000,
-})
+});
 ```
 
 `maximumAge` lets a recent cached fix satisfy the request, which is what makes the buffer in [discovery.md#the-location-buffer](discovery.md#the-location-buffer) mostly a formality on Android.

@@ -76,15 +76,15 @@ The first rejection of zones was wrong. It was justified by "PocketBase has no `
 
 The second, correct rejection is **recall**. Testing each method against ground truth on 200k points:
 
-| Method | 1 km | 5 km | 10 km | Correct? |
-|---|---|---|---|---|
-| Box with composite `(lat,lng)` index | 0.7 ms | 7.8 ms | 27.6 ms | yes |
-| Box with lat-only index | 6.9 ms | 47 ms | 118 ms | yes |
-| R*Tree | 0.35 ms | 13.9 ms | 78.6 ms | yes |
-| Geohash, own cell + 8 neighbors, p6 | 0.55 ms | 0.63 ms | 0.52 ms | **no — 93% at 5 km, 2% at 10 km** |
-| Geohash, own cell + 8 neighbors, p5 | 21.6 ms | 21.9 ms | 18.3 ms | **no — 59% at 10 km** |
-| Geohash, cells covering the box | 2.5 ms | 20.1 ms | 52.4 ms | yes, slower than the box |
-| Full scan | 118 ms | 117 ms | 117 ms | yes |
+| Method                               | 1 km    | 5 km    | 10 km   | Correct?                          |
+| ------------------------------------ | ------- | ------- | ------- | --------------------------------- |
+| Box with composite `(lat,lng)` index | 0.7 ms  | 7.8 ms  | 27.6 ms | yes                               |
+| Box with lat-only index              | 6.9 ms  | 47 ms   | 118 ms  | yes                               |
+| R*Tree                               | 0.35 ms | 13.9 ms | 78.6 ms | yes                               |
+| Geohash, own cell + 8 neighbors, p6  | 0.55 ms | 0.63 ms | 0.52 ms | **no — 93% at 5 km, 2% at 10 km** |
+| Geohash, own cell + 8 neighbors, p5  | 21.6 ms | 21.9 ms | 18.3 ms | **no — 59% at 10 km**             |
+| Geohash, cells covering the box      | 2.5 ms  | 20.1 ms | 52.4 ms | yes, slower than the box          |
+| Full scan                            | 118 ms  | 117 ms  | 117 ms  | yes                               |
 
 Nine cells cover roughly three cell-widths, so the moment the radius exceeds the cell block the method silently loses most of the true matches — and it returns them fast. The box wins from 2 km up and needs no extra column. R*Tree wins only under about 1 km, and is unreachable anyway: PocketBase cannot manage virtual tables (issue #193, closed unsupported), and its raw SQL endpoint is superuser-only.
 
@@ -228,7 +228,7 @@ These entries exist because the mockups and the original spec disagree with this
 **Now:** the cook types whatever they like and buyers see exactly that. There is no granularity control.
 **Why:** the owner's intent was always two granularities — an abstracted area or a detailed location including street and building. The system enforces neither; the coordinate is what the system uses, and it is never shown.
 **Cost accepted:** a cook can publish their own address by typing it. Mitigation is limited to helper text on the field.
-**Status:** settled, and it softens the privacy principle from "never exposed" to "never exposed *by the system*".
+**Status:** settled, and it softens the privacy principle from "never exposed" to "never exposed _by the system_".
 
 ### The notifications toggle is disabled
 
@@ -255,7 +255,7 @@ Neither was in the spec; both appear in the mockups and both are trivial. The ra
 **Chosen:** `AppLauncher.openUrl` with `whatsapp://send`, falling back to `Browser.open` with `https://wa.me`.
 **Rejected:** the original spec's "open a WebView with a wa.me link", and a wa.me-only path.
 **Why:** an embedded WebView cannot hand off to the installed app and Android blocks the scheme from inside one. `Browser.open` is documented for http(s) only, so custom schemes need `AppLauncher`, which is the Capacitor equivalent of React Native's `Linking.openURL`.
-**Evidence:** wa.me inside a Custom Tab shows a "Continue to chat" interstitial — one extra tap, which is why it is the fallback and not the primary. `wa.me` requires E.164 digits with no `+`, so Egyptian `010…` becomes `2010…`; normalization happens at write time. Android 11+ needs a `<queries>` entry to *check* for WhatsApp, not to launch it.
+**Evidence:** wa.me inside a Custom Tab shows a "Continue to chat" interstitial — one extra tap, which is why it is the fallback and not the primary. `wa.me` requires E.164 digits with no `+`, so Egyptian `010…` becomes `2010…`; normalization happens at write time. Android 11+ needs a `<queries>` entry to _check_ for WhatsApp, not to launch it.
 **Status:** settled.
 
 ### Five photos, compressed on the client
@@ -285,9 +285,9 @@ oxlint was the serious alternative and is what the Quasar repository itself now 
 
 ### The chef hat is the supplied brand icon
 
-**Chosen:** `assets/brand/chef-hat.svg` — the delivered icon, used as-is. The white background rect and the JPEG-noise speckle paths were dropped, the viewBox cropped to the glyph. Two structural paths survive: outline `#924B03`, fill `#FEDAB6`. Original file kept at `assets/brand/source/png-to-svg-converter.svg`.
+**Chosen:** `src/assets/brand/chef-hat.svg` — the delivered icon, used as-is. The white background rect and the JPEG-noise speckle paths were dropped, the viewBox cropped to the glyph. Two structural paths survive: outline `#924B03`, fill `#FEDAB6`. Original file kept at `src/assets/brand/source/png-to-svg-converter.svg`.
 **Rejected:** Lucide's `chef-hat` (wrong proportions, separate band, visible seam); a hand-drawn parametric model (plateaued at 0.667 overlap); tracing the mockup (reached 0.92 but it was a stand-in drawn before the real asset existed).
-**Why:** a supplied brand asset outranks any reconstruction. The mockup's hat is a *different rendition* — thinner stroke over a cream gradient — so the two will never score 100% against each other. Silhouette overlap is 0.919 and the difference is in stroke weight and fill colour, not shape.
+**Why:** a supplied brand asset outranks any reconstruction. The mockup's hat is a _different rendition_ — thinner stroke over a cream gradient — so the two will never score 100% against each other. Silhouette overlap is 0.919 and the difference is in stroke weight and fill colour, not shape.
 **Status:** settled. The traced path was retired when the icon arrived.
 
 ### 95% overlap is not achievable at mockup resolution
@@ -299,7 +299,7 @@ The wordmark (0.726) and heart (0.946) sit against those ceilings, so their rema
 
 ### Icons come from Lucide
 
-**Chosen:** Lucide (MIT) for every *interface* icon, stroke 2 on a 24-unit box, scaled with the icon. The brand hat is not an interface icon and comes from the supplied asset — see [the chef hat is the supplied brand icon](#the-chef-hat-is-the-supplied-brand-icon).
+**Chosen:** Lucide (MIT) for every _interface_ icon, stroke 2 on a 24-unit box, scaled with the icon. The brand hat is not an interface icon and comes from the supplied asset — see [the chef hat is the supplied brand icon](#the-chef-hat-is-the-supplied-brand-icon).
 **Rejected:** hand-authoring new outline paths for interface icons; mixing icon sets.
 **Why:** three hand-drawn attempts at the hat read as a cloud rather than a toque before a standard icon was tried. A standard shape drawn by eye is worse than the icon it imitates, and a single MIT-licensed family removes attribution ambiguity.
 **Evidence worth keeping:** the hat's stroke colour was sampled from `mockups/3.png` — average of 252 stroke pixels, `#B2691D` — rather than eyeballed; the first guess was `#B2621B`, within seven per channel.

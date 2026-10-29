@@ -72,7 +72,7 @@ Marking a meal unavailable removes it from every buyer's Home and search immedia
 
 ## Summary
 
-| Story | Goal | Terminal action |
-|---|---|---|
-| Explorer | Find a meal, reach the cook | WhatsApp chat opens |
-| Cook | Publish and stay accurate | Publish, edit, or mark unavailable |
+| Story    | Goal                        | Terminal action                    |
+| -------- | --------------------------- | ---------------------------------- |
+| Explorer | Find a meal, reach the cook | WhatsApp chat opens                |
+| Cook     | Publish and stay accurate   | Publish, edit, or mark unavailable |

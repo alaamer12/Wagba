@@ -8,7 +8,7 @@
 
 ## The idea in one line
 
-*What are people around me cooking today?*
+_What are people around me cooking today?_
 
 Home cooking in Egypt is everywhere and impossible to find. It lives in Facebook groups, TikTok posts, and WhatsApp forwards, sorted by nothing useful. Wagba shows a person the meals being cooked near them right now, and connects them to the cook directly.
 

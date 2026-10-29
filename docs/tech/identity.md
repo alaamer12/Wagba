@@ -31,14 +31,14 @@ display name → normalise → per-letter map → lowercase → keep [a-z0-9]
 
 Egyptian pronunciation, which is what makes the handle recognisable to its owner. Letters may collide — ز ذ ظ all become `z` — and the numeric suffix is what absorbs the resulting duplicates. That collision tolerance is deliberate, not an oversight.
 
-| | | | |
-|---|---|---|---|
-| ا أ آ ء → `a` | إ → `e` | ب → `b` | ت ط → `t` |
-| ث س ص → `s` | ج → `g` | ح ه ة → `h` | خ → `kh` |
-| د ض → `d` | ذ ز ظ → `z` | ر → `r` | ش → `sh` |
-| ع → `a` | غ → `gh` | ف → `f` | ق ك → `k` |
-| ل → `l` | م → `m` | ن → `n` | و → `w` |
-| ي ى → `y` | | | |
+|               |             |             |           |
+| ------------- | ----------- | ----------- | --------- |
+| ا أ آ ء → `a` | إ → `e`     | ب → `b`     | ت ط → `t` |
+| ث س ص → `s`   | ج → `g`     | ح ه ة → `h` | خ → `kh`  |
+| د ض → `d`     | ذ ز ظ → `z` | ر → `r`     | ش → `sh`  |
+| ع → `a`       | غ → `gh`    | ف → `f`     | ق ك → `k` |
+| ل → `l`       | م → `m`     | ن → `n`     | و → `w`   |
+| ي ى → `y`     |             |             |           |
 
 Latin letters pass through lowercased. Anything else is dropped.
 
@@ -75,14 +75,14 @@ One `rng()` call per axis, in a fixed order, so the same handle always produces 
 
 ### Axes (v1)
 
-| Axis | Variants | Notes |
-|---|---|---|
-| Skin | 5 tones | Neutral range, not a hierarchy |
-| Hair | 7 | Short, wavy, curly, long, bun, **hijab**, bald |
-| Facial hair | 3 | None, stubble, beard |
-| Glasses | 3 | None, round, square |
-| Shirt | 6 colours | From the palette, plus two accent hues |
-| Backdrop | 5 colours | Warm cream, mint, sky, peach, lavender |
+| Axis        | Variants  | Notes                                          |
+| ----------- | --------- | ---------------------------------------------- |
+| Skin        | 5 tones   | Neutral range, not a hierarchy                 |
+| Hair        | 7         | Short, wavy, curly, long, bun, **hijab**, bald |
+| Facial hair | 3         | None, stubble, beard                           |
+| Glasses     | 3         | None, round, square                            |
+| Shirt       | 6 colours | From the palette, plus two accent hues         |
+| Backdrop    | 5 colours | Warm cream, mint, sky, peach, lavender         |
 
 Hair and facial hair are independent axes, so a hijab never overlaps a beard: the assembly rule clears facial hair when the hijab part is selected.
 

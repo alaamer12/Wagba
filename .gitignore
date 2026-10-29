@@ -42,3 +42,17 @@ desktop.ini
 .idea/
 .vscode/
 *.swp
+
+# --- Wagba additions ---
+scratch/
+artifacts/
+.iwts/
+pocketbase/pocketbase.exe
+pocketbase/pb_data/
+pocketbase/pb_hooks/lib/
+test-results/
+playwright-report/
+blob-report/
+reference/*.local.*
+android/app/build/
+android/.gradle/

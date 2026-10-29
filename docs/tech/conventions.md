@@ -9,13 +9,13 @@ One tool for lint, format, and import organization. No ESLint, no Prettier.
 ```json
 {
   "$schema": "https://biomejs.dev/schemas/2.6.4/schema.json",
-  "vcs": { "enabled": true, "client": "git", "useIgnoreFile": true },
+  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
   "formatter": { "enabled": true, "indentStyle": "space", "lineWidth": 100 },
   "linter": { "enabled": true, "domains": { "vue": "recommended" } },
   "assist": { "actions": { "source": { "organizeImports": "on" } } },
   "overrides": [
     {
-      "include": ["**/*.vue"],
+      "includes": ["**/*.vue"],
       "linter": {
         "rules": {
           "correctness": { "noUnusedVariables": "off", "noUnusedImports": "off" },
@@ -75,18 +75,18 @@ Stores: `session`, `meals`, `favorites`, `location`, `feedCache`. Each exposes s
 PocketBase records are validated with **zod** at the service boundary, one schema per collection in `src/types/`.
 
 - Every list and detail response is parsed before it reaches a store. A schema drift — a renamed field, a new enum value, a dropped relation expansion — fails loudly at the edge instead of surfacing as `undefined` inside a card.
-- Types are *inferred* from the schemas (`z.infer`) rather than hand-written twice. A hand-maintained interface duplicating a schema is a second source of truth that quietly goes stale.
+- Types are _inferred_ from the schemas (`z.infer`) rather than hand-written twice. A hand-maintained interface duplicating a schema is a second source of truth that quietly goes stale.
 - Hooks and migrations are the source of truth for the schema; the zod file mirrors them, and both change in the same commit.
 - Roughly 13 KB gzipped. Accepted for one dependency that removes a class of silent production bug; not adopted for anything beyond the boundary.
 
 ## Naming
 
-| Thing | Convention |
-|---|---|
-| Files | `kebab-case.vue`, `camelCase.ts` for composables and services |
-| Collections in PocketBase | plural snake_case: `meals`, `favorites`, `users` |
-| Fields | snake_case in the database, camelCase in TypeScript, mapped at the service boundary |
-| Routes | `/meals/:id`, `/add`, `/settings/my-meals` |
+| Thing                     | Convention                                                                          |
+| ------------------------- | ----------------------------------------------------------------------------------- |
+| Files                     | `kebab-case.vue`, `camelCase.ts` for composables and services                       |
+| Collections in PocketBase | plural snake_case: `meals`, `favorites`, `users`                                    |
+| Fields                    | snake_case in the database, camelCase in TypeScript, mapped at the service boundary |
+| Routes                    | `/meals/:id`, `/add`, `/settings/my-meals`                                          |
 
 ## Comments
 

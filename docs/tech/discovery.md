@@ -24,8 +24,8 @@ latitude  >= 30.0459 - dLat  && latitude  <= 30.0459 + dLat
 where
 
 ```ts
-const dLat = radiusKm / 111.19
-const dLng = radiusKm / (111.32 * Math.cos((lat * Math.PI) / 180))
+const dLat = radiusKm / 111.19;
+const dLng = radiusKm / (111.32 * Math.cos((lat * Math.PI) / 180));
 ```
 
 `geoDistance(lonA, latA, lonB, latB)` is built into PocketBase since v0.27: haversine in kilometres, Earth radius 6371, compiled to `6371 * acos(...)`. It is evaluated per surviving row, which is why the box comes first — the box is the index, the radius is the arithmetic.
@@ -35,18 +35,18 @@ const dLng = radiusKm / (111.32 * Math.cos((lat * Math.PI) / 180))
 ### The distance function
 
 ```ts
-const R = 6371 // km
+const R = 6371; // km
 export function haversineKm(
   a: { lat: number; lng: number },
   b: { lat: number; lng: number },
 ): number {
-  const toRad = (d: number) => (d * Math.PI) / 180
-  const dLat = toRad(b.lat - a.lat)
-  const dLng = toRad(b.lng - a.lng)
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(b.lat - a.lat);
+  const dLng = toRad(b.lng - a.lng);
   const h =
     Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) ** 2
-  return 2 * R * Math.asin(Math.sqrt(h))
+    Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
 }
 ```
 
@@ -58,7 +58,7 @@ Measured against Karney's WGS84 geodesic across 21 Cairo and Alexandria pairs, h
 
 ## Privacy
 
-The coordinate is the most sensitive thing this app handles, because for a home cook it *is* their address.
+The coordinate is the most sensitive thing this app handles, because for a home cook it _is_ their address.
 
 **What leaves the server to a stranger:**
 
