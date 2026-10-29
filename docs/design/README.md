@@ -1,0 +1,13 @@
+# Design
+
+How Wagba looks and what it says.
+
+| File | Read it for |
+|---|---|
+| [design-system.md](design-system.md) | Color, type, spacing, components, iconography, elevation, motion, right-to-left rules |
+| [ui-copy.md](ui-copy.md) | Every on-screen string, with the dialect decision still open |
+| [mockups.md](mockups.md) | Which mockup covers which screen, what was adopted, and what to ignore |
+
+The mockups themselves live in `../../screens/`, outside this tree, because they are binary assets rather than documentation.
+
+**Boundaries.** Screen behavior and content belong to [../product/screens.md](../product/screens.md). This directory owns appearance and wording. A component's *look* is here; what it *shows and does* is not. The one deliberate overlap: [mockups.md](mockups.md) records product decisions (adopted and rejected elements) because those decisions only make sense next to the pictures that contain them.
