@@ -17,6 +17,7 @@ The target feeling is **home, warm, simple, friendly** — a cozy kitchen, not a
 | `brown-mid` | Secondary text, descriptions | `#6B4E31` |
 | `border-light` | Card and field borders | `#E8D9C0` |
 | `surface` | Card backgrounds | `#FFFCFA` |
+| `hat-stroke` | Logo line art: the chef hat and its band | `#B2691D` |
 | `olive` | Rare supporting accent | optional, use sparingly |
 
 ### State colors
@@ -76,13 +77,21 @@ Appearance only. Content and behavior live in [../product/screens.md](../product
 
 **Toggle.** Active butter, inactive warm light gray.
 
-**Avatar.** Illustrated, generated from the cook's name. Never a bare letter on a colored disc.
+**Avatar.** Illustrated, generated from the cook's name. Never a bare letter on a colored disc. The illustration source is external and still to be chosen — lowest priority in the build, and the fallback until it lands is a neutral placeholder, not a letter-in-a-circle.
 
 ## Iconography
 
-Outline or soft-filled, medium stroke weight, dark or medium brown. The set in use: location pin, WhatsApp, camera, settings, search, bookmark, share, star, chevron, close.
+**Source: Lucide** (MIT licensed), stroke icons on a 24-unit box, stroke width 2 at that box and scaled with the icon. Outline style, round caps and joins, coloured `brown-dark` for interface icons and `hat-stroke` for the logo mark.
 
-Do not introduce a second icon family.
+The set in use: location pin, WhatsApp, camera, settings, search, bookmark, share, star, chevron, close.
+
+Do not introduce a second icon family, and do not hand-author a new outline path where a Lucide icon exists — a hand-drawn approximation of a standard shape was measurably worse than the icon it was imitating. See [../decisions.md](../decisions.md#icons-come-from-lucide).
+
+### The logo mark
+
+The wordmark lockup is composed, not a single asset: the Lucide `chef-hat` outline at `hat-stroke`, a small filled heart in `butter-soft` between the hat and the wordmark, and the wordmark itself set in the app typeface. A 16 px heart also leads the tagline.
+
+Both parts are plain SVG with `currentColor`-free explicit strokes, so they scale from 24 px favicon to a splash screen without a second asset. The wordmark glyphs come from the bundled typeface; if the brand later wants custom lettering, it replaces only that piece.
 
 ## Imagery and illustration
 

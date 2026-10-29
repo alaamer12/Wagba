@@ -236,6 +236,14 @@ oxlint was the serious alternative and is what the Quasar repository itself now 
 **Cost accepted:** experimental `.vue` parsing, per-file rule overrides that hide genuinely unused variables, and formatter output that can change between minor versions.
 **Status:** settled, with the highest revisit-likelihood of anything in this file. Re-check when Biome closes #4726.
 
+### Icons come from Lucide
+
+**Chosen:** Lucide (MIT) for every interface icon and for the chef hat in the logo mark, stroke 2 on a 24-unit box, scaled with the icon.
+**Rejected:** hand-authoring the paths; mixing icon sets.
+**Why:** the logo's decoration was reproduced three times by hand before this was settled, and each hand-drawn attempt read as a cloud rather than a toque until the Lucide `chef-hat` path was used. A standard shape drawn by eye is worse than the icon it imitates, and a single MIT-licensed family removes attribution ambiguity.
+**Evidence worth keeping:** the hat's stroke colour was sampled from `mockups/3.png` — average of 252 stroke pixels, `#B2691D` — rather than eyeballed; the first guess was `#B2621B`, within seven per channel.
+**Status:** settled. Avatar illustrations are a separate, still-open source and the lowest priority in the build.
+
 ### vue-i18n with direction switching from day one
 
 **Chosen:** every string through i18n, `ar` and `en` locales, `dir` driven by the active locale, logical CSS properties only.
