@@ -28,7 +28,7 @@ Statuses: **settled** (evidence-backed, do not revisit without new information),
 
 **Chosen:** PocketBase — one Go binary, SQLite, embedded file storage, realtime, admin dashboard.
 **Rejected:** Supabase (Postgres, full-text search, RLS, generous managed free tier) and Firebase (the backend the original data model named in passing).
-**Why:** full control and a backend that runs locally with no account. The search requirement that favored Postgres was solved without leaving PocketBase — see [search normalization](tech/data-model.md#search).
+**Why:** full control and a backend that runs locally with no account. The search requirement that favored Postgres was solved without leaving PocketBase — see [search normalization](tech/schema-reference.md#6-canonical-queries).
 **Cost accepted:** self-managed backups, upgrades, and the volume requirement in [tech/build-and-release.md](tech/build-and-release.md). Also: PocketBase left GitHub in October 2026; binaries and release notes now come from the maintainer's own site, so pin the version and record where it came from.
 **Status:** settled.
 
@@ -110,7 +110,7 @@ Nine cells cover roughly three cell-widths, so the moment the radius exceeds the
 **Chosen:** typed location text is a display label only.
 **Rejected:** a curated Egypt area table with centroids, for typed-name-to-coordinate resolution and a dropdown picker.
 **Why:** GPS removed the need for it on the publish side, and the browse side is numeric. The alternative would have meant owning a dataset forever, plus centroid accuracy problems, plus a maintenance task with no owner.
-**Note:** the offline type-ahead that would have used it was built and verified (16/16 on Arabic typos, transliterations, and rejections) before the requirement disappeared. The normalization logic survives in [tech/data-model.md#search](tech/data-model.md#search), where it is still needed.
+**Note:** the offline type-ahead that would have used it was built and verified (16/16 on Arabic typos, transliterations, and rejections) before the requirement disappeared. The normalization logic survives in [tech/schema-reference.md#6-canonical-queries](tech/schema-reference.md#6-canonical-queries), where it is still needed.
 **Status:** settled.
 
 ### Location buffer: 2 precise plus 8 coarsened, trusted unconditionally

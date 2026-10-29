@@ -1,6 +1,6 @@
 # Wagba — Discovery
 
-> How "nearby" is computed, how the two coordinates are obtained, and what is hidden from whom. The schema side is in [data-model.md](data-model.md); the rejected alternatives are in [../decisions.md](../decisions.md).
+> How "nearby" is computed, how the two coordinates are obtained, and what is hidden from whom. The schema side is in [data-model.md](data-model.md) and [schema-reference.md](schema-reference.md); the rejected alternatives are in [../decisions.md](../decisions.md).
 
 ## The shape of the problem
 

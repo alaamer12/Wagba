@@ -1,0 +1,167 @@
+# Wagba — Schema Reference
+
+> The storage of record: collections, field options, indexes, hooks, migrations, and every denormalized copy with its writer. The canonical entity contract lives in [data-model.md](data-model.md) — **if the two disagree, that file is correct and this table is the defect.**
+
+Verified against **PocketBase 0.28.4**, `pocketbase/pb_migrations/0001_schema.js`, and the generated `pb_data/types.d.ts`.
+
+## 0. Engine facts this schema depends on
+
+Five behaviours were discovered by running the engine, not by reading docs. Each one shaped the schema:
+
+| Fact | Consequence here |
+|---|---|
+| Migrations use the **`app` API** (`app.save`, `app.findCollectionByNameOrId`); `dao` is gone | Every migration in this repo is written against `app` |
+| Field lists accept **plain objects with a `type`**; class instances silently produce a fieldless collection | `fields: [{ name, type, … }]` everywhere; the instance form failed with "unknown field" |
+| Base collections do **not** get timestamps automatically | Explicit `{ name: 'created'|'updated', type: 'autodate', onCreate, onUpdate }` |
+| `hidden: true` fields are dropped on **write** and blocked from **filtering** | Coordinates cannot be hidden fields; they are ordinary fields zeroed during enrichment |
+| Each hook handler runs in an **isolated scope**; module-level helpers are invisible | Shared code is `require`d *inside* every handler |
+| goja has no `\p{…}` Unicode property escapes | `shared/normalize.ts` uses explicit ranges — the property-escape version silently produced empty keys |
+
+## 1. `users` — auth collection
+
+**Purpose.** Identity only. Never content: a cook's meal text lives on `meals`, not here. Cardinality: one row per device-provisioned account.
+
+PocketBase creates this collection; `0001_schema.js` extends it rather than defining it, so auth-owned fields (`email`, `password`, `tokenKey`, `verified`) stay engine-managed.
+
+| Field | Type | Options / Rules | Maps from (canonical) |
+|---|---|---|---|
+| `id` | text | PK, 15 chars | `User.id` |
+| `email` | email | Required by the engine. **Synthetic**: `<id>@wagba.local`, never shown | — (credential identifier, not user data) |
+| `password` | password | Engine-managed (device-generated) | — |
+| `display_name` | text | max 80, not unique | `User.displayName` |
+| `handle` | text | **Required, min 3, max 24, Unique (`idx_users_handle`)** | `User.handle` |
+| `whatsapp` | text | Required, max 20, stored E.164 digits | `User.whatsapp` |
+| `location_text` | text | max 120, display-only | `User.locationText` |
+| `avatar` | file | max 1, ≤2 MB, jpeg/png/webp; empty ⇒ generated avatar | `User.avatar` |
+| `facebook_url`, `instagram_url`, `tiktok_url` | url | optional | `User.socialLinks` |
+| `created`, `updated` | autodate | engine-managed on auth collections | `User.createdAt/updatedAt` |
+
+**API rules, all four explicit** (an auth collection that ships with anonymous create and no list rule is the classic PocketBase foot-gun):
+
+| Rule | Value | Why |
+|---|---|---|
+| list | `id = @request.auth.id` | A user sees only themselves |
+| view | `id = @request.auth.id` | Same |
+| create | `""` | Anonymous provisioning is the product model |
+| update | `id = @request.auth.id` | Owner only |
+| delete | `id = @request.auth.id` | Owner only |
+
+**Never returned:** `email`, `password`, `tokenKey`. The enrich hook exposes only the public subset through `meals.cook`.
+
+## 2. `meals`
+
+**Purpose.** A home-cooked meal offered by one cook. Cardinality: many per user, one owner.
+
+| Field | Type | Options / Rules | Maps from (canonical) |
+|---|---|---|---|
+| `id` | text | PK, 15 chars | `Meal.id` |
+| `user` | relation → users | Required, maxSelect 1, **cascadeDelete** | `Meal.cookId` |
+| `title` | text | Required, max 80 | `Meal.title` |
+| `description` | text | max 600 | `Meal.description` |
+| `price` | number | min 0, max 100 000 | `Meal.price` |
+| `quantity` | number | min 0, max 1000, integer | `Meal.quantity` |
+| `status` | select | Required, values `available \| unavailable` | `Meal.status` |
+| `photos` | file | maxSelect 5, ≤2 MB each, jpeg/png/webp; first = cover | `Meal.photos` |
+| `delivery_option` | select | values `pickup \| delivery` | `Meal.delivery` |
+| `available_time` | text | max 60, free text for MVP | `Meal.availableTime` |
+| `location_text` | text | Required, max 120, typed by the cook | `Meal.locationText` |
+| `latitude` | number | Required, −90…90. **Zeroed on every response** | `Meal.location` |
+| `longitude` | number | Required, −180…180. **Zeroed on every response** | `Meal.location` |
+| `search_key` | text | Required, max 400, **denormalized** | — (derived) |
+| `distance_km` | number | **Response-only**: written by enrich, cleared on write | — (derived) |
+| `cook` | json | **Response-only**: public subset, written by enrich | — (derived) |
+| `created`, `updated` | autodate | `onCreate`; `onUpdate` only for `updated` | `Meal.createdAt/updatedAt` |
+
+**Indexes, each justified by a read path:**
+
+| Index | Justifies |
+|---|---|
+| `idx_meals_geo (latitude, longitude)` | the bbox half of every feed query |
+| `idx_meals_feed (status, created DESC)` | the default feed sort after the bbox prune |
+| `idx_meals_owner (user)` | My Meals, and the rename hook's lookup |
+
+`search_key` deliberately has **no index**: the query uses a leading wildcard (`~ "%token%"`), which SQLite cannot serve from a B-tree. At MVP row counts that is a scan of a few hundred rows.
+
+**API rules:**
+
+| Rule | Value |
+|---|---|
+| list / view | `status = 'available' \|\| user = @request.auth.id` |
+| create / update / delete | `user = @request.auth.id` |
+
+The rule, not the client filter, is what keeps unavailable meals out of every public surface.
+
+## 3. `favorites`
+
+**Purpose.** A saved-meals junction. Cardinality: one row per (user, meal).
+
+| Field | Type | Options | Maps from |
+|---|---|---|---|
+| `id` | text | PK | `Favorite.id` |
+| `user` | relation → users | Required, cascadeDelete | `Favorite.userId` |
+| `meal` | relation → meals | Required, cascadeDelete | `Favorite.mealId` |
+| `created` | autodate | onCreate | `Favorite.createdAt` |
+
+`CREATE UNIQUE INDEX idx_favorites_pair ON favorites (user, meal)` — the pair **is** the key. Rules: list/view/create/delete owner-only; `updateRule` is `""` because a favorite is created or deleted, never edited.
+
+## 4. Normalization
+
+The dependency sentence per entity — the argument, not a formal FD proof:
+
+- **users** is its own collection because WhatsApp number, handle, and display name are facts about *the person*, repeated across all their meals. Storing them on `meals` would make them transitively dependent on the meal key through the cook — exactly what 3NF forbids.
+- **meals** keys on its own id; everything in it (title, price, status, coordinates) depends on the meal and nothing else.
+- **favorites** keys on the pair; nothing but `created` may sit beside it. A `favorites_count` on `meals` is a cached aggregate, refused (see below).
+
+## 5. Denormalization register
+
+Every copy needs a named writer, a rebuild rule, and a home here — not in the canonical model.
+
+| Copy | Writer | Rebuild | Why sanctioned |
+|---|---|---|---|
+| `meals.search_key` | `onRecordCreateRequest` + `onRecordUpdateRequest` (meals); `onRecordUpdateRequest` (users, on rename) | Drop and recompute from `title + description + location_text + cook.display_name` | PocketBase cannot filter across a relation, and SQLite `LIKE` folds ASCII only — the Arabic fold must be pre-applied |
+| `meals.cook` (json, response-only) | `onRecordEnrich` | Recomputed per request; never saved | `users` is owner-readable only, but buyers need name/handle/whatsapp/location/socials |
+| `meals.distance_km` (number, response-only) | `onRecordEnrich`, from the request's `lat`/`lng` | Recomputed per request; never saved | Ordering and labels are view data, not facts |
+
+**Refused:** a `favorites_count` cache, a duplicate of `description`, storing the viewer's position anywhere, and any column that can be derived from one query.
+
+Consequence of the `search_key` copy: a renamed cook must re-derive every one of their meals. The `users` update hook does exactly that, and it is the one place a denormalization is actively maintained rather than rebuilt on demand.
+
+## 6. Canonical queries
+
+The five reads that earn a written form. Each is executed exactly this way in `src/services/`.
+
+**Nearest feed** (bbox prune + exact radius, sorted on the client because PocketBase cannot sort by an expression):
+
+```
+filter = status='available'
+      && latitude >= {lat - 10/111.19} && latitude <= {lat + 10/111.19}
+      && longitude >= {lng - 10/(111.32·cos lat)} && longitude <= {lng + …}
+      && geoDistance(longitude, latitude, {lng}, {lat}) <= 10
+sort=-created, skipTotal=true, perPage=30
+```
+On the seeded data: **8 rows within 5 km of Cairo Tower**, 11 visible overall.
+
+**Search:** `status='available' && search_key ~ "{fold(query)}"` plus the same bbox. `search_key ~ 'mhshy'` returns «محشي بيتي».
+
+**My meals:** `filter = user = @request.auth.id`, both statuses, sorted `-created`.
+
+**Favorites:** join-free — `favorites` for the user, then `meals?filter=id ?= …`; at MVP scale the client fetches both lists and intersects.
+
+**Freshness probe:** `filter = status='available' && created > {newestSeen} && <bbox>`, `fields=id`, `perPage=1`, `skipTotal=true`.
+
+## 7. Migrations
+
+- One directory, numbered JS files, applied in filename order inside one transaction — a failure in a later file rolls back earlier ones (observed: a bad index in `0002` rolled back `0001`).
+- Never edit collections in the dashboard; the dashboard is for content and debugging.
+- Any migration change updates this file in the same commit (doc-in-diff).
+- Destructive steps require a backup first; local rebuilds use `bun tools/pb.mjs reset` (which wipes `pb_data`).
+
+## 8. Engine caveats encoded as tests
+
+| Caveat | Test |
+|---|---|
+| No foreign-key enforcement — a dangling relation is accepted | orphan check after deletes (M5 e2e) |
+| Coordinates must never serialize | e2e asserts `latitude`/`longitude` are `0` in every meal payload |
+| Unavailable meals are invisible publicly | e2e asserts the anonymous list total is 11 |
+| Users are not listable anonymously | e2e asserts `totalItems === 0` |
+| `search_key` is non-empty on every meal | seed verification (`untitled` is the sentinel for a broken fold) |

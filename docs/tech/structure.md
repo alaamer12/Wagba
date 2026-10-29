@@ -1,6 +1,6 @@
 # Wagba — Structure
 
-> Where everything lives, who owns each boundary, and what may not cross one. Read alongside [dev-loop.md](dev-loop.md) (how a change reaches a running app) and `docs/tech/schema-reference.md` (lands in M2) (what the backend stores).
+> Where everything lives, who owns each boundary, and what may not cross one. Read alongside [dev-loop.md](dev-loop.md) (how a change reaches a running app) and [schema-reference.md](schema-reference.md) (what the backend stores).
 
 ## 1. The governing rule
 
@@ -71,7 +71,7 @@
 
 1. New file in a new folder ⇒ its folder appears in §2 in the same change.
 2. New reusable unit ⇒ a row in `docs/tech/units.md` (lands in M3) in the same change.
-3. Schema change ⇒ migration **and** `docs/tech/schema-reference.md` (lands in M2) in the same change.
+3. Schema change ⇒ migration **and** [schema-reference.md](schema-reference.md) in the same change.
 4. New state kind ⇒ an entry in `docs/tech/states.md` (lands in M4) change-cost table plus a matrix row.
 5. New user-visible string ⇒ a key in both locale files in the same change.
 6. A document that states a rule must name the test that enforces it, or say "review rule".

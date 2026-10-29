@@ -31,7 +31,7 @@ Each screen below follows the same shape: **Purpose → Elements → Behavior �
 **Behavior.**
 - Opening the screen takes one GPS reading and queries meals within the default radius, nearest first. Position rules: [../tech/discovery.md](../tech/discovery.md).
 - Pull to refresh re-reads position and re-queries.
-- Search runs across the meal's text and the cook's name; the field list is owned by [../tech/data-model.md](../tech/data-model.md#search).
+- Search runs across the meal's text and the cook's name; the field list is owned by [../tech/data-model.md](../tech/schema-reference.md#6-canonical-queries).
 - Unavailable meals never appear here, for anyone, including their own author.
 - Tapping a card opens Meal Details.
 - Successful loads are cached so a later offline open can show them.

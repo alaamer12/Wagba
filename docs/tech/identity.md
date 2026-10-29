@@ -1,6 +1,6 @@
 # Wagba — Identity
 
-> How a person is identified publicly: the handle people can share, and the avatar they are seen by. Fields live in [data-model.md](data-model.md#users); the screens that collect them are in [../product/screens.md](../product/screens.md#5-profile-setup).
+> How a person is identified publicly: the handle people can share, and the avatar they are seen by. Fields live in [data-model.md](schema-reference.md#1-users--auth-collection); the screens that collect them are in [../product/screens.md](../product/screens.md#5-profile-setup).
 
 Two public identity pieces, both derived, both stable:
 

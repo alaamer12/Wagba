@@ -1,0 +1,107 @@
+// PocketBase hooks. Thin on purpose: derive search_key, expose a public cook
+// subset, compute distance for the current request, and strip coordinates from
+// every serialized meal.
+//
+// Two engine facts this file depends on:
+//   1. Each hook handler runs in its own isolated scope -- module-level helpers are
+//      not visible inside them, so shared code is required per handler.
+//   2. `hidden` fields are dropped on write AND blocked from filtering, so they
+//      cannot hold coordinates. Coordinates are ordinary fields, zeroed here.
+
+onRecordCreateRequest((e) => {
+  const fold = require(`${__hooks}/lib/normalize.cjs`);
+  console.log('DBG keys', Object.keys(fold).join(','));
+  console.log('DBG title', JSON.stringify(e.record.getString('title')));
+  try {
+    console.log('DBG norm', JSON.stringify(fold.normalizeArabic('محشي')));
+    console.log('DBG fold', JSON.stringify(fold.fold('محشي')));
+    console.log('DBG key', JSON.stringify(fold.searchKey(['محشي بيتي', 'السيدة زينب'])));
+  } catch (err) {
+    console.log('DBG throw', String(err));
+  }
+  if (e.auth && e.auth.collection().name === 'users') e.record.set('user', e.auth.id);
+
+  let cookName = '';
+  try {
+    cookName = e.app.findRecordById('users', e.record.getString('user')).getString('display_name');
+  } catch (err) {}
+
+  e.record.set('search_key', fold.searchKey([
+    e.record.getString('title'),
+    e.record.getString('description'),
+    e.record.getString('location_text'),
+    cookName,
+  ]) || 'untitled');
+  e.record.set('distance_km', 0);
+  e.record.set('cook', {});
+  e.next();
+}, 'meals');
+
+onRecordUpdateRequest((e) => {
+  const fold = require(`${__hooks}/lib/normalize.cjs`);
+  let cookName = '';
+  try {
+    cookName = e.app.findRecordById('users', e.record.getString('user')).getString('display_name');
+  } catch (err) {}
+
+  e.record.set('search_key', fold.searchKey([
+    e.record.getString('title'),
+    e.record.getString('description'),
+    e.record.getString('location_text'),
+    cookName,
+  ]) || 'untitled');
+  e.record.set('distance_km', 0);
+  e.record.set('cook', {});
+  e.next();
+}, 'meals');
+
+onRecordUpdateRequest((e) => {
+  const fold = require(`${__hooks}/lib/normalize.cjs`);
+  const name = e.record.getString('display_name');
+  e.next();
+  if (!name) return;
+  const meals = e.app.findRecordsByFilter('meals', 'user = {:u}', '', 0, 0, { u: e.record.id });
+  for (const meal of meals) {
+    meal.set('search_key', fold.searchKey([
+      meal.getString('title'),
+      meal.getString('description'),
+      meal.getString('location_text'),
+      name,
+    ]) || 'untitled');
+    e.app.save(meal);
+  }
+}, 'users');
+
+onRecordEnrich((e) => {
+  const fold = require(`${__hooks}/lib/normalize.cjs`);
+
+  const lat = e.record.getFloat('latitude');
+  const lng = e.record.getFloat('longitude');
+  const q = e.requestInfo ? e.requestInfo.query : null;
+  if (q && q.lat && q.lng) {
+    const km = fold.distanceKm({ lat: parseFloat(q.lat), lng: parseFloat(q.lng) }, { lat, lng });
+    e.record.set('distance_km', Math.round(km * 10) / 10);
+  }
+
+  try {
+    const cook = e.app.findRecordById('users', e.record.getString('user'));
+    e.record.set('cook', {
+      display_name: cook.getString('display_name'),
+      handle: cook.getString('handle'),
+      whatsapp: cook.getString('whatsapp'),
+      location_text: cook.getString('location_text'),
+      avatar: cook.getString('avatar'),
+      facebook_url: cook.getString('facebook_url'),
+      instagram_url: cook.getString('instagram_url'),
+      tiktok_url: cook.getString('tiktok_url'),
+    });
+  } catch (err) {
+    e.record.set('cook', {});
+  }
+
+  // Privacy: the real coordinate never leaves the server.
+  e.record.set('latitude', 0);
+  e.record.set('longitude', 0);
+
+  e.next();
+}, 'meals');

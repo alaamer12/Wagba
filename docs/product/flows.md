@@ -19,7 +19,7 @@ That is the whole product. Anything that lengthens step 1, 2, or 3 is a defect.
 
 1. **Open the app.** First run shows Welcome; one tap to continue. The anonymous account already exists by then.
 2. **Home loads.** The app takes one GPS reading and queries meals near it, nearest first. If permission was denied, this is where the flow stops with a reason and a retry — not an empty list.
-3. **Browse or search.** Search covers the meal's text and the cook's name ([fields](../tech/data-model.md#search)). Unavailable meals never surface here.
+3. **Browse or search.** Search covers the meal's text and the cook's name ([fields](../tech/schema-reference.md#6-canonical-queries)). Unavailable meals never surface here.
 4. **Open a meal.** Photos, full description, price, quantity, availability, pickup method, the cook's location text as they wrote it, distance from the viewer, and the cook's identity with optional social links.
 5. **Tap the WhatsApp button.** The device opens a chat with the cook. Behavior when WhatsApp is not installed: [../tech/integrations.md](../tech/integrations.md#whatsapp).
 6. **Conversation continues off-app.** The buyer can return and keep browsing.

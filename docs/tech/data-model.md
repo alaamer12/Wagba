@@ -1,119 +1,87 @@
 # Wagba — Data Model
 
-> PocketBase collections, fields, indexes, and access rules. The product meaning of these fields is in [../product/screens.md](../product/screens.md); how coordinates are queried is in [discovery.md](discovery.md).
+> The canonical entity contract: what exists, what is required, which values are allowed, and how entities relate. **Storage — collections, field options, indexes, hooks, migrations — lives in [schema-reference.md](schema-reference.md). If the two disagree, this file is correct and that table is the defect.**
 
-Three collections. Two entities carry meaning (a person and a meal); the third is a join. Everything else in the app is derived at read time.
+## Entities
 
-## users
+Three, and only three.
 
-Auth collection. Provisioned silently by the app, never by a human. See [architecture.md#identity](architecture.md#identity).
+- **User** — the person. Identity facts only (name, handle, contact, socials). Never content.
+- **Meal** — one home-cooked meal offered by one user.
+- **Favorite** — a saved (user, meal) pair.
 
-| Field                                         | Type         | Required      | Notes                                                                                                                     |
-| --------------------------------------------- | ------------ | ------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| `username`                                    | text         | yes           | Generated, e.g. `dev_k3m9xq`. Serves as the PocketBase identifier                                                         |
-| `password`                                    | hidden       | yes           | Random 32 chars, generated on device                                                                                      |
-| `display_name`                                | text         | at first post | Free text, not unique. May be Arabic, English, or a mix                                                                   |
-| `handle`                                      | text, unique | at first post | Public ASCII handle, generated from `display_name`, editable once then frozen. Rules in [identity.md](identity.md#handle) |
-| `whatsapp`                                    | text         | at first post | Stored as E.164 digits, normalized at write. See [integrations.md#whatsapp](integrations.md#whatsapp)                     |
-| `location_text`                               | text         | at first post | The cook's own wording, display-only                                                                                      |
-| `avatar`                                      | image        | no            | Uploaded photo. Absent means the deterministic avatar from [identity.md](identity.md#avatar)                              |
-| `facebook_url`, `instagram_url`, `tiktok_url` | url          | no            | Shown on Meal Details only when set                                                                                       |
-| `created`, `updated`                          | auto         | —             |                                                                                                                           |
+There is no Order, Review, Message, or Notification entity in the MVP. See [../product/scope.md](../product/scope.md#out-of-scope) for why.
 
-**Not stored:** email, address, date of birth, coordinates, or anything that identifies a physical location beyond `location_text`. The avatar is also not stored as data — it is recomputed from the handle.
+## User
 
-`username` is the private credential identifier and is never shown, searched, or shared. `handle` is the only public name; the two must not be conflated.
+| Field | Required | Rules |
+|---|---|---|
+| id | yes | 15-char alphanumeric |
+| displayName | at first post | free text, not unique, Arabic or Latin |
+| handle | at first post | `[a-z0-9]{3,24}`, unique, derived from displayName, frozen after first save — see [identity.md](identity.md#handle) |
+| whatsapp | at first post | E.164 digits, normalised at write |
+| locationText | at first post | free text, display-only |
+| avatar | no | uploaded image; absence means the deterministic avatar |
+| socialLinks | no | Facebook, Instagram, TikTok URLs |
 
-## meals
+**Invariant:** no field on User is content. A meal's title never lives here.
 
-| Field                | Type             | Required | Notes                                               |
-| -------------------- | ---------------- | -------- | --------------------------------------------------- |
-| `id`                 | auto             | yes      |                                                     |
-| `user`               | relation → users | yes      | Single owner, cascade delete                        |
-| `title`              | text             | yes      |                                                     |
-| `description`        | text             | no       |                                                     |
-| `price`              | number           | no       | EGP, integer                                        |
-| `quantity`           | number           | no       |                                                     |
-| `status`             | select           | yes      | `available` \| `unavailable`                        |
-| `photos`             | files, max 5     | yes      | First is the cover                                  |
-| `delivery_option`    | select           | no       | `pickup` \| `delivery`                              |
-| `available_time`     | text             | no       | Free text                                           |
-| `location_text`      | text             | yes      | Display-only label, copied from the form            |
-| `latitude`           | number           | yes      | **Hidden field**: never serialized to API responses |
-| `longitude`          | number           | yes      | **Hidden field**: same                              |
-| `search_key`         | text             | yes      | Normalized, computed by hook. See [search](#search) |
-| `created`, `updated` | auto             | —        |                                                     |
+## Meal
 
-**Indexes**, declared as raw SQL in migrations:
+| Field | Required | Rules |
+|---|---|---|
+| id | yes | 15-char alphanumeric |
+| cookId | yes | exactly one User; cascade delete |
+| title | yes | 80 chars max |
+| description | no | 600 chars max |
+| price | no | EGP, zero or more |
+| quantity | no | integer, zero or more |
+| status | yes | `available` or `unavailable` |
+| photos | yes* | up to 5, first is the cover |
+| delivery | no | `pickup` or `delivery` |
+| availableTime | no | free text |
+| locationText | yes | 120 chars max, typed by the cook |
+| location | yes | coordinate pair, captured from GPS; never published |
 
-```sql
-CREATE INDEX meals_available_idx ON meals (status, created DESC);
-CREATE INDEX meals_geo_idx       ON meals (latitude, longitude);
-CREATE INDEX meals_owner_idx     ON meals (user);
+\* A published meal is expected to carry at least one photo. The rule is a product expectation, not yet an engine constraint.
+
+**Status semantics:** `unavailable` hides the meal from every public read — feed, search, and detail — while keeping it visible to its owner. It is not a soft delete: the row and its photos survive.
+
+## Favorite
+
+| Field | Required | Rules |
+|---|---|---|
+| userId | yes | cascade delete with the user |
+| mealId | yes | cascade delete with the meal |
+| createdAt | yes | engine timestamp |
+
+**Invariant:** the pair (userId, mealId) is unique. A favorite is created or deleted, never edited.
+
+## Relationships
+
+```
+User 1 ---- * Meal
+User 1 ---- * Favorite * ---- 1 Meal
 ```
 
-The composite `(latitude, longitude)` index is mandatory, not a micro-optimization: a lat-only index measured 4 to 10 times slower than the pair on the same query.
+- Deleting a user removes their meals and favorites (cascade).
+- Deleting a meal removes favorites pointing at it (cascade).
 
-**Content is never translated.** `title`, `description`, and `location_text` hold the cook's words exactly as typed, in whatever language or mix of languages they used. There are no `title_ar` / `title_en` columns, no per-locale copies, and no machine translation. App interface strings are a separate concern living in a message catalog — see [../design/ui-copy.md](../design/ui-copy.md#the-model). If translation of user content ever becomes a feature, it arrives as a derived cache table keyed by meal and locale, never as columns on this one.
+## Why these are separate entities
 
-**Hidden fields still filter.** PocketBase excludes them from responses but evaluates them server-side, which is exactly the shape discovery needs: the coordinate participates in every query and appears in no payload.
+The 3NF argument, one sentence each:
 
-## favorites
+- **User** is separate because a handle, a WhatsApp number, and a display name are facts about *the person*, repeated across every meal they post. On `meals` they would depend on the meal key only through the cook — a transitive dependency, which is exactly what 3NF forbids.
+- **Meal** keys on its own id; every field in it describes that meal and nothing else.
+- **Favorite** keys on the pair; only `createdAt` may sit beside it. Any count of favorites belongs to a query, not a column.
 
-| Field     | Type             | Notes          |
-| --------- | ---------------- | -------------- |
-| `user`    | relation → users | cascade delete |
-| `meal`    | relation → meals | cascade delete |
-| `created` | auto             |                |
+## Derived values (not entities, not fields)
 
-```sql
-CREATE UNIQUE INDEX favorites_pair_idx ON favorites (user, meal);
-```
+Distance, the public cook summary, and the search key are **derived**, not stored facts. Their writers and rebuild rules are in the denormalization register at [schema-reference.md](schema-reference.md#5-denormalization-register). They appear in API responses and never in this contract.
 
-Server-side rather than device-local because a saved meal that silently vanishes on cache clear is worse than no save button. It stays a personal utility, not a social feature: no one else can read anyone's favorites.
+## What is not modeled
 
-## Access rules
-
-PocketBase API rules, enforced per collection.
-
-| Collection  | List and view                                           | Create and update         | Delete                    |
-| ----------- | ------------------------------------------------------- | ------------------------- | ------------------------- |
-| `meals`     | `status = 'available'` **or** `user = @request.auth.id` | `user = @request.auth.id` | `user = @request.auth.id` |
-| `users`     | `id = @request.auth.id`                                 | `id = @request.auth.id`   | `id = @request.auth.id`   |
-| `favorites` | `user = @request.auth.id`                               | `user = @request.auth.id` | `user = @request.auth.id` |
-
-Two consequences worth stating because they are easy to get wrong:
-- A buyer's list request can never return an unavailable meal, regardless of what the client asks for. The rule is the guarantee; the client's filter is only a performance hint.
-- Users records are readable only by their owner, so Meal Details must expand the cook relation and rely on the server to expose the public subset. In practice this means the fields shown to buyers (`name`, `avatar`, `whatsapp`, social links, `location_text`) are deliberately left readable to any authenticated request, while nothing else is. The anonymous `username` and the never-set email must not leak.
-
-## Search
-
-Search spans meal title, description, area text, and cook name. PocketBase cannot cross a relation in one filter and SQLite `LIKE` is ASCII-case-insensitive only, so a normalized copy is stored on the meal.
-
-**`search_key`** is a single text field, computed on create and update by a PocketBase JS hook, containing the meal's own text plus the cook's name, normalized and token-sorted.
-
-The normalization is roughly thirty lines:
-
-1. Strip tashkeel and tatweel.
-2. Fold alef variants (أ إ آ ٱ) to ا.
-3. Fold ة to ه and ى to ي.
-4. Fold Arabic-Indic digits to Latin.
-5. Drop punctuation, collapse whitespace, lowercase.
-6. Emit both the article-prefixed and article-stripped form of each token.
-7. Sort tokens and join.
-
-**One canonical implementation**, shared by the hook and the client, imported from a single file that is copied or bundled into both. The JS VM in PocketBase is goja, not Node: it loads CommonJS only, so the shared module has to be bundled with esbuild into `pb_hooks/`.
-
-Queries normalize the input the same way and filter `search_key ~ "%<q>%"`. A leading wildcard cannot use an index; at the row counts this app will run at for a year, that is irrelevant, and the alternative (FTS5) is not reachable from PocketBase at all.
-
-Verified against a 14-case Arabic fixture covering taa marbuta typos, dropped alef, missing spaces, Arabic-Indic digits, one-character deletions, Latin transliteration, and article stripping: all resolved correctly, and three invalid inputs were correctly rejected. Ambiguity is caught by requiring a margin between the top and second-best match, not by a score threshold alone.
-
-When a cook renames themselves, their meals' `search_key` is stale. The update hook on `users` re-derives it for that user's meals. This is the one place a denormalization has to be actively maintained.
-
-## Migrations
-
-Schema changes are JS migration files in `pb_migrations/`, committed to the repo and applied on boot. Never edit collections by hand in the dashboard: the dashboard is for content, migrations are for shape.
-
-## What is not stored
-
-No orders, payments, messages, reviews, notification history, raw GPS beyond the current meal pin, or movement trails. The viewer's location history lives on their device only — see [discovery.md#the-location-buffer](discovery.md#the-location-buffer).
+- **Coordinates of the viewer.** The feed takes a position as a query parameter; it is never stored.
+- **Meal history.** Editing a meal overwrites it. There is no revision table.
+- **Contract or order state.** Contact leaves the app; nothing records that it happened.
+- **Soft-delete flags.** Deleting is deleting; the cascade is the whole story.

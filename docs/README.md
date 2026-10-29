@@ -32,6 +32,7 @@ Design mockups live in `../mockups/` as binary assets.
 - `tech/structure.md` — folder authority, boundary prohibitions, the authority table
 - `tech/dev-loop.md` — how a change reaches a running app; the browser as the device
 - `tech/architecture.md` — stack, system shape, app layering, identity, environments, config
+- `tech/schema-reference.md` — storage of record: collections, indexes, hooks, denormalization register
 - `tech/data-model.md` — collections, fields, indexes, access rules, search, migrations
 - `tech/identity.md` — handle generation from the display name, and the deterministic avatar
 - `tech/discovery.md` — the nearby query, distance math, coordinate privacy, location buffer, offline

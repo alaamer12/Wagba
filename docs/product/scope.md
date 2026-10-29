@@ -8,7 +8,7 @@
 
 - Post a meal: one to five photos, name, optional description, price, quantity available, availability time, and pickup or delivery.
 - First photo is the cover.
-- Two states only: available and unavailable. Unavailable meals are hidden from every browse and search path but stay in the cook's own list. See [../tech/data-model.md](../tech/data-model.md#meals).
+- Two states only: available and unavailable. Unavailable meals are hidden from every browse and search path but stay in the cook's own list. See [../tech/data-model.md](../tech/schema-reference.md#2-meals).
 - Edit and delete your own meals.
 
 ### Discovery

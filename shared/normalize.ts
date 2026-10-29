@@ -54,7 +54,9 @@ export function normalizeArabic(input: string): string {
     .replace(/ة/g, "ه")
     .replace(/ى/g, "ي")
     .toLowerCase()
-    .replace(/[^\p{L}\p{N}\s]/gu, " ")
+    // Explicit ranges, not \p{L}: goja (PocketBase's JS VM) does not honour
+    // Unicode property escapes, and the mismatch silently empties every key.
+    .replace(/[^0-9a-z\u0600-\u06ff\u0750-\u077f\ufb50-\ufdff\ufe70-\ufeff\s]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 }

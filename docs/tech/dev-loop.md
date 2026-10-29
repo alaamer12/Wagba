@@ -1,6 +1,6 @@
 # Wagba — Dev Loop
 
-> How a change reaches a running app in this repository, on this machine, with no emulator. The boundaries it assumes are in [structure.md](structure.md); the schema it boots is in `docs/tech/schema-reference.md` (lands in M2).
+> How a change reaches a running app in this repository, on this machine, with no emulator. The boundaries it assumes are in [structure.md](structure.md); the schema it boots is in [schema-reference.md](schema-reference.md).
 
 ## 1. Three independent channels
 
