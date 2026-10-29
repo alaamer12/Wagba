@@ -20,6 +20,7 @@ Design mockups live in `../mockups/` as binary assets.
 **Product**
 - `product/overview.md` — idea, problem, audience, design principles, post-MVP vision
 - `product/scope.md` — the MVP boundary; the only owner of what is in and out
+- `product/ux.md` — screen inventory, cross-screen laws, responsive bands
 - `product/screens.md` — every screen: purpose, elements, behavior, states
 - `product/flows.md` — the explorer and cook journeys, plus the core loop
 
@@ -29,6 +30,10 @@ Design mockups live in `../mockups/` as binary assets.
 - `design/mockups.md` — what each mockup covers, what was adopted, what to ignore
 
 **Tech**
+- `tech/system-components.md` — the running parts and what each owns
+- `tech/units.md` — reusable UI units and their status
+- `tech/states.md` — region kinds and the precedence ladder
+- `tech/error-ux.md` — error codes and their surfaces
 - `tech/structure.md` — folder authority, boundary prohibitions, the authority table
 - `tech/dev-loop.md` — how a change reaches a running app; the browser as the device
 - `tech/architecture.md` — stack, system shape, app layering, identity, environments, config
