@@ -33,7 +33,9 @@ The target feeling is **home, warm, simple, friendly** — a cozy kitchen, not a
 
 ## Typography
 
-**Face.** A warm, clear Arabic typeface — Cairo, Tajawal, or a close equivalent. Avoid anything corporate.
+**Face.** **Baloo Bhaijaan 2**, weight 800. This is not a guess: the mockup's wordmark was identified by rendering fifteen Arabic display faces and scoring ink overlap against the reference at matched height — Baloo Bhaijaan 2 won at its natural width, every competitor only reached its score when squeezed, and the visually disqualifying differences (diamond dots in Rubik and Readex Pro, squarer counters in Changa) ruled the rest out. Bundled as `assets/fonts/BalooBhaijaan2-800.woff2` under the SIL OFL (`OFL.txt` beside it).
+
+**Wordmark ink.** `#3F2205`, sampled from the mockup rather than taken from the palette. Latin and UI text use the palette browns.
 
 **Weights.** Headings semi-bold or bold; body regular; small descriptions regular or light.
 
@@ -89,9 +91,13 @@ Do not introduce a second icon family, and do not hand-author a new outline path
 
 ### The logo mark
 
-The wordmark lockup is composed, not a single asset: the Lucide `chef-hat` outline at `hat-stroke`, a small filled heart in `butter-soft` between the hat and the wordmark, and the wordmark itself set in the app typeface. A 16 px heart also leads the tagline.
+Composed from three parts, not one asset:
 
-Both parts are plain SVG with `currentColor`-free explicit strokes, so they scale from 24 px favicon to a splash screen without a second asset. The wordmark glyphs come from the bundled typeface; if the brand later wants custom lettering, it replaces only that piece.
+- **Chef hat** — `assets/brand/chef-hat.svg`. A single continuous silhouette traced from the mockup: three lobes flowing into a straight-sided band with no seam line, stroke `hat-stroke` at 3.3 on a 64-unit box, fill a horizontal gradient `#FAF0DD → #F7E2BE`. Lucide's `chef-hat` was the reference construction language, but its proportions are taller than wide and its band is a separate rect — it scored well below the traced silhouette against the mockup, so the shape is traced and only the stroke language is borrowed.
+- **Heart** — filled `#FDD484`, sitting between hat and wordmark, and again at 14 px leading the tagline.
+- **Wordmark** — the bundled typeface at weight 800.
+
+Both parts are plain SVG and scale from a 24 px favicon to a splash screen without a second asset.
 
 ## Imagery and illustration
 

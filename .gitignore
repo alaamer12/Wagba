@@ -1,0 +1,44 @@
+# --- Node / bun ---
+node_modules/
+.bun/
+bun.lockb
+
+# --- Python ---
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# --- Build output ---
+dist/
+.output/
+.quasar/
+.cache/
+*.tsbuildinfo
+
+# --- Local env & secrets ---
+.env
+.env.*
+!.env.example
+
+# --- PocketBase local state ---
+pb_data/
+pb/pb_data/
+*.db
+*.db-shm
+*.db-wal
+
+# --- Visual parity / screenshot artifacts ---
+.parity/
+screenshots/
+*.diff.png
+*.heatmap.png
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+*.swp
