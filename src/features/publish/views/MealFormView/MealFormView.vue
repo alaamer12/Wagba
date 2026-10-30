@@ -11,7 +11,10 @@ import { useMealFeedState } from "../../../../shared/state/useMealFeedState";
 import { useSessionState } from "../../../../shared/state/useSessionState";
 import { AppError, toAppError } from "../../../../types/errors";
 import Button from "../../../../ui/adaptive/Button.vue";
+import ChoiceGroup from "../../../../ui/adaptive/ChoiceGroup.vue";
 import Field from "../../../../ui/adaptive/Field.vue";
+import FileInput from "../../../../ui/adaptive/FileInput.vue";
+import Photo from "../../../../ui/adaptive/Photo.vue";
 import FaultRendition from "../../../../ui/renditions/FaultRendition.vue";
 import LoadingRendition from "../../../../ui/renditions/LoadingRendition.vue";
 import {
@@ -47,9 +50,21 @@ const description = ref("");
 const price = ref("");
 const quantity = ref("");
 const availableTime = ref("");
-const delivery = ref<"pickup" | "delivery">("pickup");
+type Delivery = "pickup" | "delivery";
+const delivery = ref<Delivery>("pickup");
+// The labels are read through `t` inside a computed: a literal built once at setup would keep the
+// language it was mounted in while the rest of the form switched.
+const deliveryOptions = computed(
+  (): Array<{ value: Delivery; label: string }> => [
+    { value: "pickup", label: t("add.delivery.pickup") },
+    { value: "delivery", label: t("add.delivery.available") },
+  ],
+);
 const locationText = ref(session.profile?.location_text ?? "");
 const photos = ref<PhotoItem[]>([]);
+// The hidden file control: the control can only be opened from its own platform element, so the
+// View holds it and the visible "add" Button asks it to open.
+const photoPicker = ref<{ open: () => void } | null>(null);
 // C10: one message per field, rendered on the field it names. Every required check used to
 // collapse into a single line under the button, so a cook who missed the location was told
 // nothing about the location, and `Field`'s own `error` prop was never bound at all.
@@ -124,9 +139,7 @@ watch(locationText, () => clearIssue("locationText"));
 watch(price, () => clearIssue("price"));
 watch(quantity, () => clearIssue("quantity"));
 
-async function onFiles(event: Event) {
-  const input = event.target as HTMLInputElement;
-  const files = Array.from(input.files ?? []);
+async function onFiles(files: File[]) {
   try {
     const allowed = picker.validate(files, photos.value.length);
     photos.value = [...photos.value, ...addItems(await picker.prepare(allowed))];
@@ -140,7 +153,6 @@ async function onFiles(event: Event) {
           ? t("error.photo.wrongType")
           : t("error.photo.tooLarge");
   }
-  input.value = "";
 }
 
 function removePhoto(index: number) {
@@ -287,35 +299,53 @@ onUnmounted(() => {
       <span class="upload__label">{{ t("add.photos.title") }}</span>
       <div v-if="photos.length" class="grid">
         <figure v-for="(photo, index) in photos" :key="photo.id" class="photo">
-          <img :src="photo.url" alt="" />
+          <Photo :src="photo.url" alt="" :lazy="false" />
           <figcaption v-if="index === 0" class="photo__cover">{{ t("add.photos.cover") }}</figcaption>
           <div class="photo__actions">
-            <button
-              type="button"
+            <Button
+              variant="icon"
+              :block="false"
               :disabled="index === 0"
               :aria-label="t('add.photos.moveUp')"
               @click="move(index, -1)"
             >
               ↑
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              variant="icon"
+              :block="false"
               :disabled="index === photos.length - 1"
               :aria-label="t('add.photos.moveDown')"
               @click="move(index, 1)"
             >
               ↓
-            </button>
-            <button type="button" :aria-label="t('add.photos.remove')" @click="removePhoto(index)">
+            </Button>
+            <Button
+              variant="icon"
+              :block="false"
+              :aria-label="t('add.photos.remove')"
+              @click="removePhoto(index)"
+            >
               ✕
-            </button>
+            </Button>
           </div>
         </figure>
       </div>
-      <label v-if="photos.length < MAX_PHOTOS" class="upload__add">
-        <input id="photos" type="file" accept="image/*" multiple @change="onFiles" />
-        <span>{{ t("add.photos.add") }}</span>
-      </label>
+      <FileInput
+        v-if="photos.length < MAX_PHOTOS"
+        id="photos"
+        ref="photoPicker"
+        accept="image/*"
+        multiple
+        @files="onFiles"
+      />
+      <Button
+        v-if="photos.length < MAX_PHOTOS"
+        variant="secondary"
+        @click="photoPicker?.open()"
+      >
+        {{ t("add.photos.add") }}
+      </Button>
       <p class="upload__hint">{{ t("add.photos.hint") }}</p>
       <p v-if="photoError" class="error">{{ photoError }}</p>
     </div>
@@ -351,11 +381,12 @@ onUnmounted(() => {
     />
     <Field v-model="availableTime" :label="t('add.availability.label')" />
 
-    <fieldset class="radio">
-      <legend>{{ t("add.delivery.label") }}</legend>
-      <label><input v-model="delivery" type="radio" value="pickup" /> {{ t("add.delivery.pickup") }}</label>
-      <label><input v-model="delivery" type="radio" value="delivery" /> {{ t("add.delivery.available") }}</label>
-    </fieldset>
+    <ChoiceGroup
+      v-model="delivery"
+      :legend="t('add.delivery.label')"
+      :options="deliveryOptions"
+      name="delivery"
+    />
 
     <Field
       v-model="locationText"
@@ -390,21 +421,6 @@ onUnmounted(() => {
   font-weight: 600;
   color: var(--brown-mid);
 }
-.upload__add {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  border: 1px dashed var(--border);
-  border-radius: var(--radius-field);
-  padding: 14px;
-  color: var(--brown-mid);
-  font-size: 14px;
-  cursor: pointer;
-}
-.upload__add input {
-  display: none;
-}
 .upload__hint {
   margin: 0;
   font-size: 12px;
@@ -423,12 +439,6 @@ onUnmounted(() => {
   overflow: hidden;
   background: var(--butter-soft);
 }
-.photo img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
 .photo__cover {
   position: absolute;
   inset-inline-start: 6px;
@@ -440,6 +450,8 @@ onUnmounted(() => {
   padding: 2px 8px;
   border-radius: var(--radius-pill);
 }
+/* Only the strip's own colour and type live here: the controls on it inherit both, so the seam
+   keeps its own skin. */
 .photo__actions {
   position: absolute;
   inset-inline: 0;
@@ -449,33 +461,8 @@ onUnmounted(() => {
   gap: 4px;
   padding: 4px;
   background: rgb(63 34 5 / 55%);
-}
-.photo__actions button {
-  border: none;
-  background: transparent;
   color: #fff;
   font-size: 13px;
-  line-height: 1;
-  padding: 4px 6px;
-  cursor: pointer;
-}
-.photo__actions button:disabled {
-  opacity: 0.35;
-  cursor: default;
-}
-.radio {
-  border: 1px solid var(--border);
-  border-radius: var(--radius-field);
-  padding: 10px 14px;
-  display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
-  font-size: 14px;
-}
-.radio legend {
-  font-size: 13px;
-  color: var(--brown-mid);
-  padding: 0 4px;
 }
 .error {
   color: var(--danger);

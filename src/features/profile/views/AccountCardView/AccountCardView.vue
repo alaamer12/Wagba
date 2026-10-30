@@ -6,6 +6,7 @@ import { fileUrl } from "../../../../services/pb";
 import { openExternally } from "../../../../shared/behaviour/useExternalOpen";
 import { useSessionState } from "../../../../shared/state/useSessionState";
 import Avatar from "../../../../ui/adaptive/Avatar.vue";
+import Button from "../../../../ui/adaptive/Button.vue";
 import Card from "../../../../ui/adaptive/Card.vue";
 
 // The complete half of the account region: the summary of who is signed in, or nothing.
@@ -52,20 +53,20 @@ async function openExternal(url: string) {
       <span class="account__meta">{{ profile?.whatsapp }}</span>
       <span class="account__meta">{{ profile?.location_text }}</span>
       <div v-if="socials.length" class="account__socials">
-        <button
+        <Button
           v-for="social in socials"
           :key="social.key"
-          type="button"
-          class="social"
+          variant="link"
+          :block="false"
           @click="openExternal(social.url)"
         >
           {{ social.label }}
-        </button>
+        </Button>
       </div>
     </div>
-    <button type="button" class="link" @click="router.push({ name: 'profile-setup' })">
+    <Button variant="link" :block="false" @click="router.push({ name: 'profile-setup' })">
       {{ t('settings.edit') }}
-    </button>
+    </Button>
   </Card>
 </template>
 
@@ -94,26 +95,5 @@ async function openExternal(url: string) {
   display: flex;
   gap: 8px;
   margin-top: 4px;
-}
-.social {
-  font-family: inherit;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--brown-mid);
-  background: none;
-  border: none;
-  padding: 0;
-  text-decoration: underline;
-  cursor: pointer;
-}
-.link {
-  background: none;
-  border: none;
-  color: var(--brown-mid);
-  font-family: inherit;
-  font-size: 13px;
-  text-decoration: underline;
-  cursor: pointer;
-  padding: 0;
 }
 </style>

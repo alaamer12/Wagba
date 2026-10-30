@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import Button from "../../../../ui/adaptive/Button.vue";
+
 // One pressable line of the Settings list: a label, at most one trailing marker, and an event.
 // It does not know where the press goes — `SettingsRowsView` owns the routes (structure.md §3.2,
 // pages wire, components render), and a row that navigated would put the route table inside the
@@ -21,34 +23,17 @@ defineEmits<{ activate: [] }>();
 </script>
 
 <template>
-  <button type="button" class="row" @click="$emit('activate')">
+  <Button variant="row" @click="$emit('activate')">
     <span>{{ label }}</span>
     <span v-if="value" class="row__count">{{ value }}</span>
     <span v-if="hint" class="row__muted" :class="{ 'is-bad': tone === 'bad' }">{{ hint }}</span>
     <span v-if="chevron" class="row__chevron" aria-hidden="true">›</span>
-  </button>
+  </Button>
 </template>
 
 <style scoped>
-.row {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  padding: 14px 16px;
-  background: none;
-  border: none;
-  border-bottom: 1px solid var(--border);
-  font-family: inherit;
-  font-size: 14px;
-  color: var(--ink);
-  cursor: pointer;
-  text-align: start;
-}
-.row:last-child {
-  border-bottom: none;
-}
+/* The line itself — padding, divider, type — is the `row` variant's skin. What stays here is the
+   appearance of the markers this row owns, which are not seam tags. */
 .row__muted {
   color: var(--brown-mid);
   font-size: 13px;

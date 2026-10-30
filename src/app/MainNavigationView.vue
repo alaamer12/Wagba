@@ -2,6 +2,7 @@
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 import { useActiveRouteCondition } from "../shared/conditions/useActiveRouteCondition";
+import { useSessionState } from "../shared/state/useSessionState";
 import NavTab from "./_NavTab.vue";
 import AddMealAction from "./AddMealAction.vue";
 
@@ -16,6 +17,20 @@ import AddMealAction from "./AddMealAction.vue";
 const { t } = useI18n();
 const router = useRouter();
 const { name: activeRoute } = useActiveRouteCondition();
+const session = useSessionState();
+
+// The plus is the app's one action, so its target is decided in one place: straight to the form
+// when the account can publish, and to Profile Setup — *with the reason* — when it cannot.
+// Awaiting provisioning first is what keeps the first tap on a cold start from bouncing through
+// the form's own guard.
+async function openAdd() {
+  await session.ensureReady().catch(() => {});
+  await router.push(
+    session.isComplete
+      ? { name: "add-meal" }
+      : { name: "profile-setup", query: { from: "add-meal" } },
+  );
+}
 </script>
 
 <template>
@@ -27,7 +42,7 @@ const { name: activeRoute } = useActiveRouteCondition();
     >
       <svg class="bottom__icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10h16" /><path d="M5 10l1.5-5h11L19 10" /><path d="M6 10v9a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-9" /></svg>
     </NavTab>
-    <AddMealAction :aria-label="t('nav.add')" @select="router.push({ name: 'add-meal' })">
+    <AddMealAction :aria-label="t('nav.add')" @select="openAdd">
       <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
     </AddMealAction>
     <NavTab

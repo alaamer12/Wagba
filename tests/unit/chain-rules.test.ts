@@ -94,6 +94,11 @@ button {
 }
 </style>
 `,
+  // The vendor-name rule matches Q + a Capitalised word. An all-caps constant is not the vendor,
+  // and flagging it would train people to ignore the warning.
+  "features/publish/behaviour/quality.ts": `const QUALITY = 0.8;
+export { QUALITY };
+`,
   "components/present/CommentedFramework.vue": `<script setup lang="ts">
 // QBtn is allowed in prose; so is "QPullToRefresh".
 const label = "QPullToRefresh";

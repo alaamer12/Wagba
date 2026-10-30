@@ -9,7 +9,7 @@ test("capture home empty state", async ({ page }, info) => {
   await page.goto("/#/home?state=empty");
   await expect(page.locator('[data-kind="empty"]')).toBeVisible({ timeout: 30_000 });
   await page.waitForFunction(() => {
-    const img = document.querySelector(".empty__art") as HTMLImageElement | null;
+    const img = document.querySelector(".empty__art img") as HTMLImageElement | null;
     return !!img && img.complete && img.naturalWidth > 0;
   });
   await page.screenshot({ path: `artifacts/parity/${info.project.name}-home-empty.png` });
@@ -23,7 +23,7 @@ test("capture my meals empty state", async ({ page }, info) => {
   await expect(page.locator("[data-kind], .empty").first()).toBeVisible({ timeout: 30_000 });
   await expect(page.locator(".empty__title")).toBeVisible({ timeout: 30_000 });
   await page.waitForFunction(() => {
-    const img = document.querySelector(".empty__art") as HTMLImageElement | null;
+    const img = document.querySelector(".empty__art img") as HTMLImageElement | null;
     return !!img && img.complete && img.naturalWidth > 0;
   });
   await page.screenshot({ path: `artifacts/parity/${info.project.name}-my-meals-empty.png` });

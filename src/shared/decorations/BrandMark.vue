@@ -1,11 +1,13 @@
 <script setup lang="ts">
+import Photo from "../../ui/adaptive/Photo.vue";
+
 withDefaults(defineProps<{ size?: number }>(), { size: 36 });
 </script>
 
 <template>
   <span class="brand" :style="{ fontSize: `${size}px` }">
     <span class="brand__word">وجبة</span>
-    <img src="../../assets/brand/chef-hat.svg" alt="" class="brand__hat" />
+    <Photo src="../../assets/brand/chef-hat.svg" alt="" fit="auto" class="brand__hat" />
   </span>
 </template>
 
@@ -18,7 +20,8 @@ withDefaults(defineProps<{ size?: number }>(), { size: 36 });
   color: var(--ink);
   padding-inline-end: 0.3em;
 }
-/* The lockup is drawn once from the mockup and does not mirror with direction. */
+/* The lockup is drawn once from the mockup and does not mirror with direction. Position and
+   size only: the drawing's own colours come with the asset. */
 .brand__hat {
   position: absolute;
   top: -0.32em;

@@ -205,12 +205,13 @@ function removed(id: string) {
 .my-empty {
   padding-top: 90px;
 }
+/* Composition only: how the CTA sits in the empty case. Its height is the primary variant's
+   padding, which this file used to shorten from outside the seam. */
 .cta {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
   min-width: 230px;
-  padding-block: 9px;
 }
 </style>

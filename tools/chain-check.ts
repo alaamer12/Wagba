@@ -126,7 +126,7 @@ export const REGISTRY: Record<Code, { severity: Severity; summary: string; doc: 
   FW_NAME_IN_VOCABULARY: {
     severity: "warning",
     summary:
-      "A framework name (\\bQ[A-Z][A-Za-z]+\\b) in a script identifier outside src/ui/base/** leaks the vendor's vocabulary into our code. Comments and string literals are stripped before scanning, so prose about the framework is not a finding. Warning only: it names the smell, it does not fail the gate. See docs/tech/structure.md §3.8.",
+      "A framework name (\\bQ[A-Z][a-z][A-Za-z0-9]*\\b) in a script identifier outside src/ui/base/** leaks the vendor's vocabulary into our code. Comments and string literals are stripped before scanning, so prose about the framework is not a finding. Warning only: it names the smell, it does not fail the gate. See docs/tech/structure.md §3.8.",
     doc: "docs/tech/structure.md §3.8 (framework wall)",
   },
   TEXT_TAG_OUTSIDE_BASE: {
@@ -551,7 +551,9 @@ export function collectChainFindings(root: string, displayBase = dirname(root)):
       for (const block of scriptBlocks(descriptor, path, source)) {
         const stripped = stripCommentsAndStrings(block.content);
         const seen = new Set<string>();
-        for (const m of stripped.matchAll(/\bQ[A-Z][A-Za-z]+\b/g)) {
+        // Q + a Capitalised word is the vendor's shape (QBtn, QCard). An all-caps constant such as
+        // QUALITY starts the same way and is not the vendor, so the third character is lowercase.
+        for (const m of stripped.matchAll(/\bQ[A-Z][a-z][A-Za-z0-9]*\b/g)) {
           const name = m[0];
           if (seen.has(name)) continue;
           seen.add(name);

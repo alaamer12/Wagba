@@ -1,6 +1,7 @@
 {
   "nav.meals": "Meals",
   "nav.add": "Add a meal",
+  "profile.setup.reason.add": "Your name and number come first — then your meal goes live.",
   "nav.label": "Main navigation",
   "nav.settings": "Settings",
   "state.loading": "Loading…",
@@ -161,5 +162,8 @@
   "home.refresh.pull": "Pull to refresh",
   "home.refresh.release": "Release to refresh",
   "settings.count": "{n}",
-  "add.photos.add": "Add a photo"
+  "add.photos.add": "Add a photo",
+  "notFound.title": "Oops. Nothing here...",
+  "notFound.body": "The address you opened does not lead anywhere in Wagba.",
+  "notFound.action": "Go Home"
 }

@@ -1,6 +1,7 @@
 {
   "nav.meals": "الوجبات",
   "nav.add": "أضيف وجبة",
+  "profile.setup.reason.add": "اسمك ورقمك الأول — وبعدها وجبتك تتنشر.",
   "nav.label": "التنقل الرئيسي",
   "nav.settings": "الإعدادات",
   "state.loading": "بنحمّل…",
@@ -161,5 +162,8 @@
   "home.refresh.pull": "اسحب للتحديث",
   "home.refresh.release": "سيب علشان تحدّث",
   "settings.count": "{n}",
-  "add.photos.add": "أضف صورة"
+  "add.photos.add": "أضف صورة",
+  "notFound.title": "مفيش حاجة هنا...",
+  "notFound.body": "العنوان اللي فتحته مش بيوصل لحاجة في وجبة.",
+  "notFound.action": "روح للرئيسية"
 }

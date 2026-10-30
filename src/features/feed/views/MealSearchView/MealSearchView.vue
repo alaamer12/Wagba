@@ -1,43 +1,42 @@
 <script setup lang="ts">
-import { computed, onUnmounted, ref, watch } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useLocationState } from "../../../../shared/state/useLocationState";
 import { useMealFeedState } from "../../../../shared/state/useMealFeedState";
 import Chip from "../../../../ui/adaptive/Chip.vue";
 import Input from "../../../../ui/adaptive/Input.vue";
+import { useViralChipsState } from "../../behaviour/useViralChipsState";
 
 // The search section: the field, the suggestions under it, and the debounce between a
 // keystroke and a request. It owns the typed text — nobody else reads or writes it — because
 // the rows it produces belong to the feed and the highlight belongs here.
 //
 // `focus` is exposed rather than wired through a fact: the bar's icon asks for it, and a ref
-// call is the smallest honest contract. Which terms the chips show is scheduled to change in
-// M6 (dish names of the most-viewed meals); until then they are the areas in the current feed.
+// call is the smallest honest contract. The chips rank dishes by the server's seven-day view
+// count (M6): a dish people actually open, not the areas that happen to be loaded.
 const { t } = useI18n();
 const meals = useMealFeedState();
 const location = useLocationState();
+const viral = useViralChipsState();
 
 const query = ref(meals.active);
 const field = ref<InstanceType<typeof Input> | null>(null);
 let debounce: ReturnType<typeof setTimeout> | undefined;
 
 const chips = computed(() => {
-  const counts = new Map<string, number>();
-  for (const meal of meals.items) {
-    const area = meal.location_text.trim();
-    if (!area) continue;
-    counts.set(area, (counts.get(area) ?? 0) + 1);
-  }
-  const areas = [...counts.entries()]
-    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
-    .slice(0, 4)
-    .map(([area]) => area);
   const wanted = query.value.trim();
   return [
     { term: "", label: t("home.chips.nearby"), active: !wanted },
-    ...areas.map((area) => ({ term: area, label: area, active: wanted === area })),
+    ...viral.dishes.value.map((dish) => ({ term: dish, label: dish, active: wanted === dish })),
   ];
 });
+
+// A chip is a toggle: tapping the active one clears the search rather than re-running it.
+function select(term: string) {
+  query.value = query.value.trim() === term ? "" : term;
+}
+
+onMounted(() => void viral.load());
 
 watch(query, (value) => {
   clearTimeout(debounce);
@@ -67,7 +66,7 @@ defineExpose({ focus: () => field.value?.focus() });
         v-for="chip in chips"
         :key="chip.label"
         :active="chip.active"
-        @select="query = chip.term"
+        @select="select(chip.term)"
       >
         {{ chip.label }}
       </Chip>

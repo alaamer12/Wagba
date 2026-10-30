@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { type ComponentPublicInstance, ref } from "vue";
 import BaseImg from "../base/Img.vue";
 
 // An image with the app's defaults: lazy, and never broken-looking — a photo that fails to
@@ -12,11 +13,22 @@ withDefaults(defineProps<{ src: string; alt: string; lazy?: boolean; fit?: "cove
   fit: "cover",
 });
 defineEmits<{ failed: [] }>();
+
+// A template ref on this component hands a caller the instance, not the node that rendered —
+// and a gallery that scrolls a slide into view (or a probe that measures one) needs the node.
+// Exposing it here keeps that unwrapping in the seam instead of every caller reaching for
+// `$el`. Null while there is no photo, which is also when the fallback slot paints.
+const root = ref<ComponentPublicInstance | null>(null);
+function element(): HTMLImageElement | null {
+  return (root.value?.$el as HTMLImageElement | undefined) ?? null;
+}
+defineExpose({ element });
 </script>
 
 <template>
   <BaseImg
     v-if="src"
+    ref="root"
     :src="src"
     :alt="alt"
     :loading="lazy ? 'lazy' : 'eager'"

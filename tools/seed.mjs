@@ -145,4 +145,20 @@ for (let i = 0; i < MEALS.length; i++) {
   console.log("meal", id, title, status);
 }
 
+// The chips rank by `views_7d`, a counter only the server may write. On a fresh database the
+// hourly recount has nothing to count, so two dishes are given a history here — otherwise the
+// viral row would be untestable for the first hour and invisible on every demo.
+const admin = await authAdmin();
+for (const id of ["meal00000000001", "meal00000000011"]) {
+  const res = await fetch(`${mealsUrl}/${id}`, {
+    method: "PATCH",
+    headers: { "content-type": "application/json", authorization: admin },
+    body: JSON.stringify({ views: 40, views_7d: 12 }),
+  });
+  if (!res.ok) {
+    console.error("seed views failed", id, await res.text());
+    process.exit(1);
+  }
+}
+
 console.log(`seeded ${COOKS.length} cooks and ${MEALS.length} meals`);

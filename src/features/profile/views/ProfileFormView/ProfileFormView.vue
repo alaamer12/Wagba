@@ -32,6 +32,10 @@ import HandleField from "../../components/HandleField.vue";
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
+
+// The plus button routes here when the account cannot publish yet; the reason is only true for
+// that arrival, not for someone opening Settings on purpose.
+const arrivedFromAdd = computed(() => route.query.from === "add-meal" && !session.isComplete);
 const session = useSessionState();
 const availability = useHandleAvailabilityState();
 const { forced } = useForcedRegionCondition();
@@ -227,6 +231,9 @@ onUnmounted(() => availability.reset());
           {{ session.isComplete ? t("settings.account.section") : t("profile.subtitle") }}
         </p>
         <p class="intro__hint">{{ t("profile.avatar.hint") }}</p>
+        <!-- Why this screen appeared when the person tapped "add a meal": the plus decides its
+             target, and a redirect with no reason is indistinguishable from being lost. -->
+        <p v-if="arrivedFromAdd" class="intro__reason">{{ t("profile.setup.reason.add") }}</p>
       </div>
 
       <form class="form" @submit.prevent="save">
@@ -296,6 +303,12 @@ onUnmounted(() => availability.reset());
 .intro__sub {
   margin: 0;
   font-weight: 700;
+}
+.intro__reason {
+  margin: 0;
+  font-size: 13px;
+  color: var(--brown-mid);
+  max-width: 36ch;
 }
 .intro__hint {
   margin: 0;

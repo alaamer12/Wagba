@@ -3,8 +3,9 @@ import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 import AppBar from "../app/_AppBar.vue";
 import PageShell from "../app/_PageShell.vue";
+import InfoCard from "../app/InfoCard.vue";
+import TextLink from "../app/TextLink.vue";
 import BrandMark from "../shared/decorations/BrandMark.vue";
-import Card from "../ui/adaptive/Card.vue";
 
 const { t } = useI18n();
 const router = useRouter();
@@ -29,15 +30,15 @@ const points = [
       <p class="intro__body">{{ t('about.body') }}</p>
     </div>
 
-    <Card v-for="point in points" :key="point.title">
+    <InfoCard v-for="point in points" :key="point.title">
       <h3 class="point__title">{{ t(point.title) }}</h3>
       <p class="point__body">{{ t(point.body) }}</p>
-    </Card>
+    </InfoCard>
 
     <div class="links">
-      <button type="button" class="link" @click="router.push({ name: 'terms' })">{{ t('settings.terms') }}</button>
+      <TextLink @select="router.push({ name: 'terms' })">{{ t('settings.terms') }}</TextLink>
       <span aria-hidden="true">·</span>
-      <button type="button" class="link" @click="router.push({ name: 'contact' })">{{ t('settings.contact') }}</button>
+      <TextLink @select="router.push({ name: 'contact' })">{{ t('settings.contact') }}</TextLink>
     </div>
 
     <p class="version">{{ t('settings.version', { v: version }) }}</p>
@@ -79,16 +80,6 @@ const points = [
   justify-content: center;
   gap: var(--space-2);
   color: var(--brown-mid);
-}
-.link {
-  background: none;
-  border: none;
-  font-family: inherit;
-  font-size: 14px;
-  color: var(--brown-mid);
-  text-decoration: underline;
-  cursor: pointer;
-  padding: 4px;
 }
 .version {
   margin: 0;

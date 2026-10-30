@@ -12,9 +12,10 @@ defineProps<{ items: Meal[] }>();
 <template>
   <ul class="cards">
     <li v-for="meal in items" :key="meal.id">
-      <button type="button" class="cards__open" @click="$emit('open', meal.id)">
-        <MealCard :meal="meal" />
-      </button>
+      <!-- The card is the press target: MealCard already draws a pointer and takes a click, and
+           wrapping it in a button put a heading list inside a control and needed a skin of its
+           own. The cook's own list opens a card the same way. -->
+      <MealCard :meal="meal" @click="$emit('open', meal.id)" />
     </li>
   </ul>
 </template>
@@ -27,16 +28,5 @@ defineProps<{ items: Meal[] }>();
   gap: var(--space-3);
   margin: 0;
   padding: 0;
-}
-.cards__open {
-  display: block;
-  width: 100%;
-  padding: 0;
-  border: none;
-  background: none;
-  color: inherit;
-  font: inherit;
-  text-align: start;
-  cursor: pointer;
 }
 </style>

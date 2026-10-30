@@ -6,7 +6,13 @@ defineEmits<{ select: [] }>();
 </script>
 
 <template>
-  <BaseButton type="button" class="app-chip" :class="{ 'is-active': active }" @click="$emit('select')">
+  <BaseButton
+    type="button"
+    class="app-chip"
+    :class="{ 'is-active': active }"
+    :aria-pressed="active === true"
+    @click="$emit('select')"
+  >
     <slot />
   </BaseButton>
 </template>

@@ -40,26 +40,32 @@ test("first launch provisions an anonymous account", async ({ page }) => {
   await expect.poll(() => creates, { timeout: 15_000 }).toEqual([200]);
 });
 
-test("suggestion chips are derived from the feed and filter it", async ({ page }) => {
+test("suggestion chips are the dishes people open, and a chip filters the feed", async ({
+  page,
+}) => {
   await page.goto("/#/home");
   await expect(page.locator('[data-kind="ready"]')).toBeVisible({ timeout: 30_000 });
   const labels = (await page.locator(".search__chips button").allTextContents()).map((label) =>
     label.trim(),
   );
+  // The first chip is "nearby"; the rest are ranked dishes from the seeded view history, which is
+  // the point of M6 — not the areas that happen to be loaded.
   expect(labels.length).toBeGreaterThan(1);
-  const area = labels.at(1);
-  expect(area).toBeTruthy();
-  await page.getByRole("button", { name: area as string, exact: true }).click();
-  await expect(page.getByRole("searchbox")).toHaveValue(area as string);
+  const dish = labels.at(1) as string;
+  expect(dish.length).toBeGreaterThan(0);
+  await page.getByRole("button", { name: dish, exact: true }).click();
+  await expect(page.getByRole("searchbox")).toHaveValue(dish);
   await expect(page.locator('[data-kind="ready"] article').first()).toBeVisible({
     timeout: 15_000,
   });
-  // The chip's label was taken from the feed that is already on screen, so "the region
-  // contains this area" was true before the click did anything. What proves the filter is
-  // that no row survives which does not carry the term.
+  // A chip is a term: every surviving row carries it.
   await expect(
-    page.locator('[data-kind="ready"] article').filter({ hasNotText: area as string }),
+    page.locator('[data-kind="ready"] article').filter({ hasNotText: dish }),
   ).toHaveCount(0, { timeout: 15_000 });
+
+  // Re-tapping the active chip clears the search rather than re-running it.
+  await page.getByRole("button", { name: dish, exact: true }).click();
+  await expect(page.getByRole("searchbox")).toHaveValue("");
 });
 
 test("language switch flips direction, labels, and layout", async ({ page }, info) => {

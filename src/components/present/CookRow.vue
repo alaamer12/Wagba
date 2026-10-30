@@ -5,6 +5,7 @@ import { useExternal } from "../../composables/useExternal";
 import { fileUrl } from "../../services/pb";
 import type { Meal } from "../../types/schemas";
 import Avatar from "../../ui/adaptive/Avatar.vue";
+import Button from "../../ui/adaptive/Button.vue";
 
 const props = defineProps<{ meal: Meal }>();
 const { t } = useI18n();
@@ -38,9 +39,15 @@ const socials = computed(() =>
       <span class="cook-row__name">{{ meal.cook.display_name }}</span>
       <span v-if="meal.cook.handle" class="cook-row__handle">@{{ meal.cook.handle }}</span>
       <div v-if="socials.length" class="cook-row__socials">
-        <button v-for="social in socials" :key="social.label" type="button" class="social" @click="external.open(social.url)">
+        <Button
+          v-for="social in socials"
+          :key="social.label"
+          variant="link"
+          :block="false"
+          @click="external.open(social.url)"
+        >
           {{ social.label }}
-        </button>
+        </Button>
       </div>
     </div>
   </div>
@@ -72,16 +79,5 @@ const socials = computed(() =>
   display: flex;
   gap: 8px;
   margin-top: 2px;
-}
-.social {
-  font-family: inherit;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--brown-mid);
-  background: none;
-  border: none;
-  padding: 0;
-  text-decoration: underline;
-  cursor: pointer;
 }
 </style>

@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { useId } from "vue";
 import BaseInput from "../base/Input.vue";
+import BaseLabel from "../base/Label.vue";
 import BaseTextarea from "../base/Textarea.vue";
 
 const model = defineModel<string>({ default: "" });
@@ -24,18 +26,26 @@ withDefaults(
     multiline: false,
   },
 );
+
+// The label and the control meet by id, not by nesting. Quasar's field root is itself a <label>,
+// so the old wrapper was a label inside a label — the association was the browser's fallback,
+// not a stated one. ui/base/Input and Textarea take this same string as their `id` (QInput's
+// `for`), which names the native control, so getByLabel, label clicks and screen readers read
+// the pair exactly as before.
+const controlId = `field-${useId()}`;
 </script>
 
 <template>
-  <label class="field">
-    <span class="field__label">
+  <div class="field">
+    <BaseLabel class="field__label" :for="controlId">
       {{ label }}
       <span v-if="required" class="field__req" aria-hidden="true">*</span>
-    </span>
+    </BaseLabel>
     <BaseTextarea
       v-if="multiline"
       v-model="model"
       class="field__input"
+      :id="controlId"
       :placeholder="placeholder"
       :disabled="disabled"
       rows="3"
@@ -44,6 +54,7 @@ withDefaults(
       v-else
       v-model="model"
       class="field__input"
+      :id="controlId"
       :type="type"
       :placeholder="placeholder"
       :disabled="disabled"
@@ -51,7 +62,7 @@ withDefaults(
     />
     <span v-if="error" class="field__error">{{ error }}</span>
     <span v-else-if="hint" class="field__hint">{{ hint }}</span>
-  </label>
+  </div>
 </template>
 
 <style scoped>

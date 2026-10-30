@@ -15,16 +15,15 @@ withDefaults(defineProps<{ title: string; body?: string; art?: string; artSize?:
 
 <template>
   <div class="empty">
-    <Image
-      v-if="art"
-      class="empty__art"
-      :src="art"
-      alt=""
-      fit="auto"
-      :style="{ width: `${artSize}px` }"
-    />
-    <Text class="empty__title">{{ title }}</Text>
-    <Text v-if="body" class="empty__body">{{ body }}</Text>
+    <div v-if="art" class="empty__art" :style="{ width: `${artSize}px` }">
+      <Image :src="art" alt="" fit="auto" />
+    </div>
+    <div class="empty__title">
+      <Text>{{ title }}</Text>
+    </div>
+    <div v-if="body" class="empty__body">
+      <Text>{{ body }}</Text>
+    </div>
     <div v-if="$slots.default" class="empty__actions">
       <slot />
     </div>
@@ -42,22 +41,23 @@ withDefaults(defineProps<{ title: string; body?: string; art?: string; artSize?:
 }
 .empty__art {
   max-width: 100%;
-  height: auto;
   margin-bottom: 22px;
 }
 .empty__actions {
   margin-top: 20px;
 }
-.empty__title {
+/* The wrapper carries the class and the seam's paragraph carries the type, so the notice's
+   look never depends on a rule painted onto Image or Text itself. */
+.empty__title p {
+  margin: 0;
   font-size: 22px;
   font-weight: 800;
-  margin: 0;
 }
-.empty__body {
+.empty__body p {
+  margin: 0;
+  max-width: 30ch;
   font-size: 14px;
   line-height: 1.8;
   color: var(--brown-mid);
-  margin: 0;
-  max-width: 30ch;
 }
 </style>

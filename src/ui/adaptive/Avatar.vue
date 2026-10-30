@@ -14,7 +14,11 @@ const props = withDefaults(
   { src: "", handle: "", label: "", displayName: "", size: 40 },
 );
 
-const style = computed(() => ({ width: `${props.size}px`, height: `${props.size}px` }));
+// The size is a prop and its box is declared in the stylesheet. A seam may not carry `:style`
+// (chain-check STYLE_BINDING_ON_SEAM), so the number reaches the rule as a custom property that
+// `v-bind()` binds — the declaration stays in CSS where the theme and a selector can reach it.
+// The prop stays numeric because the call sites that choose a size (22/44/56/76) are other units.
+const sizePx = computed(() => `${props.size}px`);
 
 // A picture that fails to load used to leave a broken frame; the generated face is the
 // same identity either way, so a 404 degrades to it instead of to nothing. The chef hat
@@ -24,7 +28,7 @@ const photo = computed(() => Boolean(props.src) && !broken.value);
 </script>
 
 <template>
-  <span class="avatar" :style="style" role="img" :aria-label="label">
+  <span class="avatar" role="img" :aria-label="label">
     <BaseImg
       v-if="photo"
       :src="src"
@@ -37,6 +41,8 @@ const photo = computed(() => Boolean(props.src) && !broken.value);
 
 <style scoped>
 .avatar {
+  width: v-bind(sizePx);
+  height: v-bind(sizePx);
   display: inline-flex;
   align-items: center;
   justify-content: center;

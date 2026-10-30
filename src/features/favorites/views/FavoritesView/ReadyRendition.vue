@@ -16,7 +16,11 @@ const { t } = useI18n();
 
 <template>
   <div v-for="meal in items" :key="meal.id" class="item">
-    <MealCard :meal="meal" @click="$emit('open', meal.id)" />
+    <!-- The card is the press target: a wrapper carries the click so the card stays a presentational
+         unit and the row still opens. -->
+    <div class="item__open" @click="$emit('open', meal.id)">
+      <MealCard :meal="meal" />
+    </div>
     <Button
       variant="ghost"
       :loading="removing.includes(meal.id)"

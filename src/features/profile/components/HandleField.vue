@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import Input from "../../../ui/adaptive/Input.vue";
+
 // The handle line: the derived preview until it is typed over, then the permanent value.
 //
 // It is a Component because the freeze is its own behaviour — the server refuses a changed
@@ -38,11 +40,9 @@ const model = defineModel<string>({ default: "" });
     <span v-if="frozen" class="handle__value" :class="{ 'is-frozen': !invalid, 'is-unusable': invalid }">
       @{{ frozen }}
     </span>
-    <input
+    <Input
       v-else
       v-model="model"
-      class="handle__input"
-      :class="{ 'is-unusable': invalid }"
       :placeholder="preview"
       :aria-invalid="invalid ? 'true' : undefined"
       aria-label="handle"
@@ -80,23 +80,9 @@ const model = defineModel<string>({ default: "" });
   color: var(--danger);
   text-decoration: line-through;
 }
-.handle__input {
-  font-family: inherit;
-  font-size: 16px;
-  font-weight: 800;
-  color: var(--ink);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-field);
-  padding: 10px 14px;
-  width: 100%;
-}
-.handle__input:focus {
-  outline: 2px solid var(--butter);
-}
-.handle__input.is-unusable {
-  border-color: var(--danger);
-}
+/* The field's skin — size, border, radius, focus ring — is `ui/adaptive/Input`'s. This unit says
+   the verdict in words and on `aria-invalid`; painting the control's border from here was the
+   seam being overridden. */
 .handle__hint {
   font-size: 12px;
   color: var(--brown-mid);

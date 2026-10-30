@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
+import Button from "../../../ui/adaptive/Button.vue";
+import Photo from "../../../ui/adaptive/Photo.vue";
 
 // The photographs of one meal, and which one is being looked at. The index is owned here
 // because nothing outside this strip can know it: it is scrolled to by a dot and meaningless
@@ -11,40 +13,53 @@ import { ref } from "vue";
 // (`PRESENTATION_IMPORTS_SERVICE`).
 defineProps<{ slides: string[]; alt: string }>();
 const index = ref(0);
-const track = ref<HTMLImageElement[]>([]);
+// The slice of Photo's public face this strip uses: `element()` hands out the node it
+// rendered, so a dot can ask a slide to scroll itself into view. Declared structurally here
+// because a template ref on a component is a runtime value, not a typed one.
+type SlideHandle = { element?: () => HTMLImageElement | null };
+const track: (SlideHandle | null)[] = [];
+
+function remember(position: number, handle: unknown) {
+  track[position] = (handle as SlideHandle | null) ?? null;
+}
 
 function goTo(position: number) {
   index.value = position;
-  track.value[position]?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+  track[position]?.element?.()?.scrollIntoView({
+    behavior: "smooth",
+    inline: "center",
+    block: "nearest",
+  });
 }
 </script>
 
 <template>
   <div v-if="slides.length" class="hero">
     <div class="slider" :class="{ 'is-multi': slides.length > 1 }">
-      <img
+      <Photo
         v-for="(src, position) in slides"
         :key="src"
-        :ref="
-          (el) => {
-            if (el) track[position] = el as HTMLImageElement;
-          }
-        "
+        :ref="(handle) => remember(position, handle)"
         :src="src"
         :alt="alt"
         class="slide"
       />
     </div>
     <div v-if="slides.length > 1" class="dots">
-      <button
+      <!-- The hit area is the seam's (44px, a thumb can aim at it); the 7px pip is this
+           strip's own drawing, inside the control rather than painted onto its class. -->
+      <Button
         v-for="(src, position) in slides"
         :key="`dot-${src}`"
-        type="button"
+        variant="icon"
+        :block="false"
         class="dot"
-        :class="{ 'is-current': index === position }"
         :aria-label="`${position + 1} / ${slides.length}`"
+        :aria-current="index === position ? 'true' : undefined"
         @click="goTo(position)"
-      />
+      >
+        <span class="dot__pip" :class="{ 'is-current': index === position }" />
+      </Button>
     </div>
   </div>
 </template>
@@ -66,31 +81,23 @@ function goTo(position: number) {
 }
 .slide {
   width: 100%;
+  height: auto;
   aspect-ratio: 4 / 3;
-  object-fit: cover;
-  display: block;
   flex: 0 0 100%;
   scroll-snap-align: center;
 }
 .dots {
   display: flex;
   justify-content: center;
-  gap: 6px;
-  padding: 8px 0;
 }
-.dot {
+.dot__pip {
+  display: block;
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  border: none;
   background: var(--border);
-  cursor: pointer;
-  padding: 0;
 }
-.dot.is-current {
+.dot__pip.is-current {
   background: var(--ink);
-}
-.dot:focus-visible {
-  outline: 2px solid var(--butter);
 }
 </style>

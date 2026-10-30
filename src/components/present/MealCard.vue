@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { photoUrl } from "../../services/meals";
 import { fileUrl } from "../../services/pb";
 import type { Meal } from "../../types/schemas";
 import Avatar from "../../ui/adaptive/Avatar.vue";
+import Photo from "../../ui/adaptive/Photo.vue";
 
 const props = defineProps<{ meal: Meal }>();
 const { t } = useI18n();
@@ -12,6 +13,10 @@ const { t } = useI18n();
 const cover = computed(() =>
   props.meal.photos[0] ? photoUrl(props.meal, props.meal.photos[0]) : "",
 );
+// A cover that decodes to nothing shows the same chef hat the no-photo meal shows, instead
+// of the browser's broken-image frame.
+const broken = ref(false);
+const photo = computed(() => Boolean(cover.value) && !broken.value);
 // The avatar belongs to the cook's record, not the meal's — the file URL is built from the
 // ids the server handed with it, falling back to the owner id the meal already carries.
 const cookAvatar = computed(() => {
@@ -31,8 +36,14 @@ const distance = computed(() => Number(props.meal.distance_km ?? 0));
 <template>
   <article class="meal-card">
     <div class="meal-card__photo">
-      <img v-if="cover" :src="cover" :alt="meal.title" loading="lazy" />
-      <img v-else src="../../assets/brand/chef-hat.svg" alt="" class="meal-card__placeholder" />
+      <Photo v-if="photo" :src="cover" :alt="meal.title" @failed="broken = true" />
+      <Photo
+        v-else
+        src="../../assets/brand/chef-hat.svg"
+        alt=""
+        fit="auto"
+        class="meal-card__placeholder"
+      />
     </div>
     <div class="meal-card__body">
       <h3 class="meal-card__title">{{ meal.title }}</h3>
@@ -69,15 +80,12 @@ const distance = computed(() => Number(props.meal.distance_km ?? 0));
   display: grid;
   place-items: center;
 }
-.meal-card__photo img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
+/* Layout only: `fit="auto"` already keeps the drawing uncropped, so the placeholder only has
+   to be smaller than its box. Width/height are the properties the seam leaves to the composer;
+   paint (the hat's own colours) stays in the asset. */
 .meal-card__placeholder {
   width: 60%;
-  height: 60%;
-  object-fit: contain;
+  height: auto;
 }
 .meal-card__body {
   flex: 1;

@@ -50,9 +50,10 @@ const { t } = useI18n();
   display: flex;
   gap: var(--space-2);
 }
-.item__actions :deep(.app-button) {
+/* Layout only: the three actions share the line. Their padding and type are the Button unit's
+   skin; the `:deep(.app-button)` rule that reached in to set them was appearance imposed on the
+   seam from outside, so it is gone rather than moved. */
+.item__actions > * {
   flex: 1;
-  padding: 10px 14px;
-  font-size: 14px;
 }
 </style>

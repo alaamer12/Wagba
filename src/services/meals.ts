@@ -34,17 +34,61 @@ function withQuery(center?: LatLng | null): Record<string, string> {
   return center ? { lat: String(center.lat), lng: String(center.lng) } : {};
 }
 
+/**
+ * One read, fetched wide. PocketBase's `MaxPerPage` is 1000, so 500 is legal; the feed does
+ * not page *server-side* because a page cannot be nearest-first — `sort` takes column names
+ * only, and `distance_km` is a response override (`schema-reference.md`). The whole in-radius
+ * set is therefore read once and the screen decides how much of it to paint
+ * (`useFeedWindow`). The cap bounds a dense neighbourhood; beyond it, JSON size is the cost.
+ */
+export const FEED_FETCH_LIMIT = 500;
+
+/** Newest first is the second half of every tie, so an unmeasured row has a stable order. */
+function newestFirst(a: Meal, b: Meal): number {
+  if (a.created === b.created) return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+  return a.created > b.created ? -1 : 1;
+}
+
+/**
+ * A distance the request could not measure. `distance_km` is response-only: the hooks write 0
+ * on create/update and the enrich hook overwrites it *only* when the request carried `lat`/`lng`
+ * (`main.pb.js`). PocketBase 0.28.4 cannot express `NULLS LAST` — `sort` is column-only and the
+ * override is not a column — so the partition has to happen here. 0 is the only value that
+ * means "not measured": a real sub-50 m meal also rounds to 0.0 and is indistinguishable, and
+ * the card already renders no distance for it (`distance > 0`), which is the same reading.
+ */
+function measuredKm(meal: Meal): number | null {
+  const km = meal.distance_km;
+  return Number.isFinite(km) && km > 0 ? km : null;
+}
+
+/**
+ * Nearest first. Rows with no distance sort *last* (`F44`): they used to read 0 and rank ahead
+ * of every measured row, which put a coordinate-less meal on top of the feed. Ties — rounded
+ * 0.1 km, or the whole unmeasured tail — fall back to `-created`, then id, so the order is
+ * deterministic and does not depend on the engine's sort stability.
+ */
+export function nearestFirst(rows: readonly Meal[]): Meal[] {
+  return [...rows].sort((a, b) => {
+    const da = measuredKm(a);
+    const db = measuredKm(b);
+    if (da !== null && db !== null && da !== db) return da - db;
+    if (da === null && db !== null) return 1;
+    if (da !== null && db === null) return -1;
+    return newestFirst(a, b);
+  });
+}
+
 export async function listNearby(center: LatLng, radiusKm = 10): Promise<Meal[]> {
   try {
-    const res = await pb.collection("meals").getList(1, 50, {
+    const res = await pb.collection("meals").getList(1, FEED_FETCH_LIMIT, {
       filter: `status = 'available' && ${boxFilter(center, radiusKm)}`,
       sort: "-created",
       skipTotal: true,
       fields: LIST_FIELDS,
       ...withQuery(center),
     });
-    const items = MealsPageSchema.parse(res).items;
-    return items.sort((a, b) => a.distance_km - b.distance_km);
+    return nearestFirst(MealsPageSchema.parse(res).items);
   } catch (err) {
     throw toAppError(err);
   }
@@ -60,15 +104,16 @@ export async function searchMeals(
   const tokenFilter = tokens.map((t) => `search_key ~ "${quote(t)}"`).join(" && ");
   const geo = center ? ` && ${boxFilter(center, radiusKm)}` : "";
   try {
-    const res = await pb.collection("meals").getList(1, 50, {
+    const res = await pb.collection("meals").getList(1, FEED_FETCH_LIMIT, {
       filter: `status = 'available' && ${tokenFilter}${geo}`,
       sort: "-created",
       skipTotal: true,
       fields: LIST_FIELDS,
       ...withQuery(center),
     });
-    const items = MealsPageSchema.parse(res).items;
-    return items.sort((a, b) => a.distance_km - b.distance_km);
+    // Without a center the server measured nothing, so every row is in the unmeasured tail and
+    // this degrades to -created instead of inventing an order out of equal zeros.
+    return nearestFirst(MealsPageSchema.parse(res).items);
   } catch (err) {
     throw toAppError(err);
   }
