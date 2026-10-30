@@ -11,6 +11,7 @@ vi.mock("@/shared/conditions/useFeedSnapshotCondition", () => ({
   readSnapshot: vi.fn(() => Promise.resolve(null)),
 }));
 
+import { resolveRegion } from "@/lib/region";
 import { listNearby, searchMeals } from "@/services/meals";
 import { useMealFeedState } from "@/shared/state/useMealFeedState";
 
@@ -59,13 +60,13 @@ describe("the request window", () => {
     // The frame a cold start actually paints: nothing answered yet.
     await Promise.resolve();
     expect(feed.inFlight).toBe(true);
-    expect(feed.kind).toBe("loading");
+    expect(resolveRegion(feed.facts)).toBe("loading");
 
     vi.mocked(listNearby).mockResolvedValue([meal("m1")]);
     releasePosition(center);
     await pending;
 
-    expect(feed.kind).toBe("ready");
+    expect(resolveRegion(feed.facts)).toBe("ready");
     expect(feed.items).toHaveLength(1);
   });
 
@@ -91,7 +92,7 @@ describe("the request window", () => {
     const pending = feed.search("محشي", center);
     await Promise.resolve();
     // Rows the user is reading are never replaced by skeletons mid-query.
-    expect(feed.kind).toBe("ready");
+    expect(resolveRegion(feed.facts)).toBe("ready");
     release([meal("m2")]);
     await pending;
     expect(feed.items[0]?.id).toBe("m2");

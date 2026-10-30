@@ -71,19 +71,50 @@ than by tag. The checks read file paths, so the signal survives the alias.
 | MealCard | present | `present/MealCard.vue` | cover, title, 2-line description, cook avatar+name, distance | Implemented |
 | CookRow | present | `present/CookRow.vue` | avatar + name + `@handle` + social links (external open) on the details page | Implemented |
 
+## renditions — the ten kinds, displayed once (`ui/renditions`)
+
+A Rendition is props in, markup out: it never consults a fact and never picks a sibling
+(`states-check.ts` `RENDITION_CONSULTS_FACT`, `check_pvc.py` `RENDITION_SELECTS_SIBLING`). What
+lives here is the part that is *the same on every screen* — the wording of an absence, the strip
+over cached rows, the line a screen reader hears while work is in flight. Copy that belongs to a
+screen stays with the screen.
+
+| Unit | Kind it displays | Owns |
+|---|---|---|
+| LoadingRendition | `loading` | the card-shaped shimmer plus the announced `state.loading` (the shimmer itself is `aria-hidden`, so without this an assistive user gets nothing) |
+| EmptyRendition | `empty` | art (**required** — the drawing is per screen, never per kind), title, body, action slot |
+| EmptyFilteredRendition | `empty-filtered` | one line and no illustration: a drawing would claim an empty world when the search removed everything |
+| StaleRendition | `stale` | the generic warning strip over the rows it is given — no timestamp, per the owner ruling |
+| OfflineRendition | `stale` while the network is down | the calmer strip: nothing failed, the app cannot ask |
+| FaultRendition | `fault` (and any kind a View has no case for) | "we could not ask", plus the retry action |
+| BlockedRendition | `blocked` | the device owns this answer; retrying the request changes nothing |
+
+## views — `features/**/views`
+
+| Unit | Feature | Facts it consults | Cases it selects between |
+|---|---|---|---|
+| MealFeedView | feed | Feed State, Location State, Network Condition, Forced Region Condition | loading · blocked · offline · stale · empty-filtered · empty · ready · fault |
+| MainNavigationView | app shell | Active Route Condition | which tab reads as active, and what each control does |
+
+The feed View is the only place the ladder is called for the feed: the State reports facts and
+the device's permission is a second fact, so classification happens where both are visible.
+`?state=` overrides those facts rather than the answer — see [states.md](states.md#reachability).
+
 ## fact sources — `shared/state` and `shared/conditions`
 
 A fact source returns data and never renders (`/states`). `State` = the outcome of our own work; `Condition` = what the world imposes, read-only to every consumer.
 
 | Unit | Kind | Base path | Owns | Consumed by |
 |---|---|---|---|---|
-| Feed | State | `shared/state/useMealFeedState.ts` | rows, `read`, `inFlight`, request sequence, the only `kind` derivation | Home, the chip row, My/Favorites indirectly |
+| Feed | State | `shared/state/useMealFeedState.ts` | rows, `read`, `inFlight`, the request sequence, `facts`, and `refresh` — re-run of whatever was last asked | MealFeedView, the chip row, My/Favorites indirectly |
 | Session | State | `shared/state/useSessionState.ts` | profile, `phase` (idle · provisioning · ready · failed), completeness | every screen that needs an account |
 | Location read | State | `shared/state/useLocationState.ts` | the fix we obtained and the outcome of our attempt | Home, Add/Edit Meal |
 | Favorites | State | `shared/state/useFavoritesState.ts` | saved ids, per-id pending, `ensureLoaded` | Details, Favorites, Settings |
 | Network | Condition | `shared/conditions/useNetworkCondition.ts` | device reachability; `onReconnect` hands back its own release | App shell, Home (probe on reconnect) |
 | Feed snapshot | Condition | `shared/conditions/useFeedSnapshotCondition.ts` | whether an earlier run left a readable feed | Feed (the `stale` answer) |
-| Region ladder | pure derivation (not a source) | `lib/region.ts` | `resolveRegion(facts) → Kind` | Feed state, the e2e matrix |
+| Active route | Condition | `shared/conditions/useActiveRouteCondition.ts` | which route the app is on, and its key | MainNavigationView, pages that key their own teardown |
+| Forced region | Condition | `shared/conditions/useForcedRegionCondition.ts` | the `?state=` fact override, when dev or the harness has enabled it | MealFeedView (and every View the state matrix drives) |
+| Region ladder | pure derivation (not a source) | `lib/region.ts` | `resolveRegion(facts) → Kind` | every View that classifies a region, the e2e matrix |
 
 ## behaviour mechanisms — `shared/behaviour`
 

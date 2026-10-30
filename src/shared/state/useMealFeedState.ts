@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 import { computed, readonly, ref } from "vue";
 import type { LatLng } from "../../../shared/normalize";
 import { saveFeed } from "../../lib/feedCache";
-import { type Facts, type Kind, resolveRegion } from "../../lib/region";
+import type { Facts } from "../../lib/region";
 import { listNearby, searchMeals as searchService } from "../../services/meals";
 import { AppError, toAppError } from "../../types/errors";
 import type { Meal } from "../../types/schemas";
@@ -32,19 +32,23 @@ export const useMealFeedState = defineStore("feed", () => {
   const active = ref("");
 
   let sequence = 0;
+  let last: (() => Promise<void>) | null = null;
 
   const hasRows = computed(() => items.value.length > 0);
 
-  const kind = computed<Kind>(() => {
-    const facts: Facts = {
-      inFlight: inFlight.value,
-      hasRows: hasRows.value,
-      read: read.value,
-      narrowing: narrow.value,
-      rejected: error.value?.code === "VALIDATION" || error.value?.code === "PUBLISH_REJECTED",
-    };
-    return resolveRegion(facts);
-  });
+  /**
+   * What this feed reports, as facts. The ladder is *not* run here: the region a screen shows
+   * also depends on facts the feed does not own (the device's permission, the harness
+   * override), and a second `resolveRegion` call inside the store would put two authorities in
+   * one app. The store answers for its own facts; the View that knows all of them picks.
+   */
+  const facts = computed<Facts>(() => ({
+    inFlight: inFlight.value,
+    hasRows: hasRows.value,
+    read: read.value,
+    narrowing: narrow.value,
+    rejected: error.value?.code === "VALIDATION" || error.value?.code === "PUBLISH_REJECTED",
+  }));
 
   async function execute(narrowing: boolean, loader: () => Promise<Meal[]>): Promise<void> {
     const token = ++sequence;
@@ -70,6 +74,7 @@ export const useMealFeedState = defineStore("feed", () => {
 
   /** Nearest-first feed around the viewer. The center is read inside the request window. */
   async function load(getCenter: () => Promise<LatLng | null>, radiusKm?: number): Promise<void> {
+    last = () => load(getCenter, radiusKm);
     await execute(false, async () => {
       const center = await getCenter();
       // A position that never arrived is the device's answer, not a load failure; the
@@ -83,10 +88,20 @@ export const useMealFeedState = defineStore("feed", () => {
 
   async function search(query: string, center: LatLng | null, radiusKm?: number): Promise<void> {
     const q = query.trim();
+    last = () => search(q, center, radiusKm);
     active.value = q;
     await execute(q.length > 0, () =>
       q ? searchService(q, center, radiusKm) : Promise.resolve([]),
     );
+  }
+
+  /**
+   * Re-run whatever this feed last asked for. The retry button, the pull and the reconnect
+   * are the same request, and a screen must not have to remember which one it was — a Home
+   * that retried a search as a plain feed load silently dropped the query the user typed.
+   */
+  async function refresh(): Promise<void> {
+    await (last?.() ?? Promise.resolve());
   }
 
   /**
@@ -96,6 +111,7 @@ export const useMealFeedState = defineStore("feed", () => {
    */
   function reset(): void {
     sequence += 1;
+    last = null;
     inFlight.value = false;
     items.value = [];
     read.value = false;
@@ -112,9 +128,10 @@ export const useMealFeedState = defineStore("feed", () => {
     error: computed(() => error.value),
     active: readonly(active),
     hasRows,
-    kind,
+    facts,
     load,
     search,
+    refresh,
     reset,
   };
 });

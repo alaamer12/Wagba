@@ -1,27 +1,21 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
-import { useRoute, useRouter } from "vue-router";
+import { useRouter } from "vue-router";
 import AppBar from "../app/_AppBar.vue";
 import PageShell from "../app/_PageShell.vue";
 import MainNav from "../app/MainNavigationView.vue";
 import potUrl from "../assets/illustrations/pot-empty.png";
-import AppRegion from "../components/layout/AppRegion.vue";
-import MealCard from "../components/present/MealCard.vue";
-import { type Kind, normaliseKind } from "../lib/region";
+import MealFeedView from "../features/feed/views/MealFeedView/MealFeedView.vue";
 import { hasNewer } from "../services/meals";
-import EmptyNotice from "../shared/components/EmptyNotice.vue";
 import { onReconnect } from "../shared/conditions/useNetworkCondition";
 import BrandMark from "../shared/decorations/BrandMark.vue";
 import { useLocationState } from "../shared/state/useLocationState";
 import { useMealFeedState } from "../shared/state/useMealFeedState";
 import Banner from "../ui/adaptive/Banner.vue";
-import Button from "../ui/adaptive/Button.vue";
 import Chip from "../ui/adaptive/Chip.vue";
-import Skeleton from "../ui/adaptive/Skeleton.vue";
 
 const { t } = useI18n();
-const route = useRoute();
 const router = useRouter();
 const location = useLocationState();
 const meals = useMealFeedState();
@@ -55,20 +49,6 @@ function applyChip(chip: { term: string }) {
 function focusSearch() {
   field.value?.focus();
 }
-
-const forcedKind = computed<Kind | null>(() => {
-  const forced = route.query.state as string | undefined;
-  if (!forced) return null;
-  const allowed =
-    import.meta.env.DEV || (globalThis as { __WAGBA_FORCE_STATE?: boolean }).__WAGBA_FORCE_STATE;
-  return allowed ? normaliseKind(forced) : null;
-});
-
-const kind = computed<Kind>(() => {
-  if (forcedKind.value) return forcedKind.value;
-  if (location.blocked) return "blocked";
-  return meals.kind;
-});
 
 const newest = ref("");
 const hasNew = ref(false);
@@ -126,11 +106,6 @@ async function onPointerUp() {
 
 function onVisible() {
   if (document.visibilityState === "visible") void probe();
-}
-
-function retry() {
-  location.rearm();
-  void refresh();
 }
 
 let releaseReconnect: (() => void) | null = null;
@@ -208,47 +183,7 @@ onUnmounted(() => {
       </button>
     </Banner>
 
-    <AppRegion :kind="kind" class="home__region">
-      <template #ready>
-        <article v-for="meal in meals.items" :key="meal.id" class="card-link" @click="router.push({ name: 'meal', params: { id: meal.id } })">
-          <MealCard :meal="meal" />
-        </article>
-      </template>
-
-      <template #stale>
-        <Banner tone="warning">{{ t('home.banner.stale') }}</Banner>
-        <MealCard v-for="meal in meals.items" :key="meal.id" :meal="meal" />
-      </template>
-
-      <template #loading>
-        <Skeleton :rows="4" />
-      </template>
-
-      <template #empty>
-        <EmptyNotice :art="potUrl" :art-size="210" :title="t('home.empty.title')" :body="t('home.empty.body')">
-          <Button :block="false" class="empty-cta" @click="router.push({ name: 'add-meal' })">
-            {{ t('home.empty.cta') }}
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
-          </Button>
-        </EmptyNotice>
-      </template>
-
-      <template #empty-filtered>
-        <EmptyNotice :title="t('home.search.empty')" />
-      </template>
-
-      <template #blocked>
-        <EmptyNotice :title="t('error.location.title')" :body="t('error.location.body')">
-          <Button @click="retry">{{ t('error.location.retry') }}</Button>
-        </EmptyNotice>
-      </template>
-
-      <template #fault>
-        <EmptyNotice :title="t('error.fault.title')" :body="t('error.fault.body')">
-          <Button @click="retry">{{ t('common.retry') }}</Button>
-        </EmptyNotice>
-      </template>
-    </AppRegion>
+    <MealFeedView :art="potUrl" />
     </div>
 
     <template #bottom>
@@ -346,20 +281,5 @@ onUnmounted(() => {
 }
 .suggestions::-webkit-scrollbar {
   display: none;
-}
-.home__region {
-  padding-top: 40px;
-}
-.empty-cta {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  min-width: 190px;
-  padding-block: 9px;
-}
-.card-link {
-  display: block;
-  cursor: pointer;
 }
 </style>

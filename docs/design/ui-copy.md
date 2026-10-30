@@ -6,7 +6,7 @@
 
 **UI text is catalogued. User content is not translated.**
 
-- **App strings** — ours. One key, one value per locale, stored in `src/i18n/messages/{locale}.json`. Never a database column, never `label_ar` / `label_en`.
+- **App strings** — ours. One key, one value per locale, stored in `src/i18n/{locale}.json` as a flat dotted catalog. Never a database column, never `label_ar` / `label_en`.
 - **Meal titles, descriptions, location text** — the cook's words. One field, stored exactly as typed, shown exactly as typed. No translation, no per-locale variants, no machine translation. A field named `title_ar` would be a bug on sight.
 
 ### Locales
@@ -67,13 +67,28 @@ Message catalogs are flat key-value objects with no nesting and no logic. `en` m
 | `home.empty.title`        | لسه مفيش وجبات قريبة منك             | No meals near you yet                               | لا توجد وجبات حاليًا                   |
 | `home.empty.body`         | كن أول واحد ينشر                     | Be the first to post                                | كن أول من يشارك وجبة لذيذة مع الجميع |
 | `home.empty.cta`          | أضف وجبة                             | Add a meal                                          | أضف وجبة                             |
-| `home.search.empty`       | مفيش نتائج للبحث ده                  | Nothing matches that search                         | —                                    |
 | `home.card.distance`      | على بُعد {n} كم                       | {n} km away                                         | —                                    |
-| `home.banner.stale`       | دي نتائج من {n} دقيقة — اسحب للتحديث | These results are {n} minutes old — pull to refresh | —                                    |
 | `home.banner.new`         | في أكل جديد قريب منك — اسحب للتحديث  | New meals near you — pull to refresh                | —                                    |
 | `home.card.saved`         | محفوظة                               | Saved                                               | المحفوظة                             |
 
 The suggestion chips are «قريب» plus three dish words — محشي، فراخ، كشري — that are search terms for Arabic meal names, not interface copy, so they stay Arabic in both locales. Governorate names from the mockup are not matching keys (discovery is numeric) and are not shipped.
+
+## Region kinds
+
+The wording of an absence is not per screen: `fault` says the same thing on Home and on My Meals,
+so it lives with the rendition that draws it ([../tech/units.md](../tech/units.md)).
+The illustration in `empty` stays per screen and is passed in.
+
+| Key                   | ar                                       | en (draft)                                     |
+| --------------------- | ---------------------------------------- | ---------------------------------------------- |
+| `state.loading`       | بنحمّل…                                  | Loading…                                       |
+| `state.stale.body`    | دي آخر حاجة وصلتنا — التحديث فشل        | These are the last results we got — refreshing failed |
+| `state.empty.filtered`| مفيش حاجة تطابق البحث ده                | Nothing matches that search                     |
+
+`error.fault.*`, `error.location.*` and `error.offline.body` are the other three kinds' copy and
+stay where they were catalogued under Errors. `home.search.empty` and `home.banner.stale` are
+gone: a screen that used to word the same kind its own way was the reason two Homes could
+disagree. The stale strip names no age — an owner ruling kept it generic (decisions.md).
 
 ## Navigation
 

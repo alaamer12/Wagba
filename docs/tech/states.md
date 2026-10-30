@@ -1,6 +1,6 @@
 # Wagba — States
 
-> What a data region may show, the facts that decide it, and the single function that picks. Renderers are dumb: `Region` draws one slot, `resolveRegion` decides which. Implementation: `src/stores/region.ts`.
+> What a data region may show, the facts that decide it, and the single function that picks. Renderers are dumb: a View picks the case, a Rendition draws it. Implementation: `src/lib/region.ts` (the ladder) and `src/features/**/views/` (the picking).
 
 ## Why a ladder, not ad-hoc flags
 
@@ -31,7 +31,7 @@ The only inputs the ladder accepts:
 { blocked, submitting, rejected, inFlight, hasRows, read, narrowing }
 ```
 
-Pages compute facts; they never pass a kind to `Region` (except the dev-only `?state=` override).
+A View assembles the facts and calls `resolveRegion` once; a Page never passes a kind down, and a Rendition never picks one. Because the device's permission is a fact the feed does not own, the classification can only happen where both are visible — in the View that composes them.
 
 ## The ladder
 
@@ -51,7 +51,9 @@ Order is the contract: a blocking gate outranks a spinner; cached rows outrank a
 
 ## Region model
 
-`Region.vue` renders exactly one slot, chosen by `kind`, and stamps `data-kind` on its root. Tests and screenshots address state through that attribute instead of guessing from copy.
+A View stamps `data-kind` on the region root and renders exactly one Rendition inside it. Tests and screenshots address state through that attribute instead of guessing from copy.
+
+`components/layout/AppRegion.vue` — one slot per kind, chosen by a `kind` prop the page computed — is the shape the pages that have not been converted still use. It stays until Milestone M2c has a View for each of them, and it is deleted in that change rather than kept as a fallback: a second way to render a region is a second authority over which case a screen is in.
 
 ## Placement rule
 
@@ -66,7 +68,7 @@ Where a state belongs, when it is unclear:
 
 ## Reachability
 
-`?state=<kind>` forces a kind in development and under the Playwright harness (`window.__WAGBA_FORCE_STATE`). It injects **facts**, never a bypassed function — the ladder still runs.
+`?state=<kind>` works in development and under the Playwright harness (`window.__WAGBA_FORCE_STATE`). In a View it is read through `useForcedRegionCondition`, which supplies the **facts** that produce that kind, so `resolveRegion` still decides — the matrix tests the ladder, not the override. `unknown` is the one kind with no fact set, because an unclassified region is by definition one the ladder was handed nothing about; it renders the fault display under `data-kind="unknown"`. Pages still on `AppRegion` pass the kind straight through, which is one more reason that file is scheduled to go.
 
 All ten kinds are exercised in both locales by `tests/e2e/states.spec.ts`, which asserts `data-kind`, captures `artifacts/states/<locale>/<kind>.png`, and fails on any page error. Layering and the other proof layers: [verification.md](verification.md).
 

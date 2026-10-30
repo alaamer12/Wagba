@@ -158,7 +158,7 @@ Nine cells cover roughly three cell-widths, so the moment the radius exceeds the
 
 ### Two locales, resolved through a catalog
 
-**Chosen:** `ar` and `en` ship. One key per string in `src/i18n/messages/{locale}.json`, resolved at runtime, direction switched from the active locale.
+**Chosen:** `ar` and `en` ship. One key per string in `src/i18n/{locale}.json`, resolved at runtime, direction switched from the active locale.
 **Rejected:** per-locale content columns (`title_ar`, `title_en`), and language switching as a build-time flavour.
 **Why:** the suffix-column approach is the classic anti-pattern — it doubles every schema change, forces a migration for each new language, and leaks translation into storage where it cannot be swapped. A catalog keyed by message identity means a third language is a file, not a migration. It also cleanly separates the two things that get conflated: **UI text is ours and catalogued; meal text is the cook's and never translated.**
 **Status:** settled.

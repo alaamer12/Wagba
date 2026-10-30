@@ -39,7 +39,9 @@ The definition of done. Each test is a journey, locale-aware (runs in `ar` and `
 
 All ten kinds — `ready`, `empty`, `empty-filtered`, `stale`, `fault`, `loading`, `blocked`, `submitting`, `rejected`, `unknown` — forced through `?state=` plus `window.__WAGBA_FORCE_STATE`, in both locales, each asserting `data-kind`, capturing `artifacts/states/<locale>/<kind>.png`, and failing on any page error.
 
-**What this does not prove.** The harness injects the *kind*, not the facts, so it shows that a case renders and nothing about how it is reached — the claim that "the ladder still runs" was false as written (defect F39). Measured against real fact combinations: five kinds are reached by driving facts (`ready`, `empty-filtered`, `stale`, `fault`, `blocked`), four are forced-only (`empty`, `loading`, `submitting`, `rejected`), and `submitting`/`rejected` on a read screen have no fact producer at all, so they render the fallback fault panel behind a `data-kind` that the code never chose. M3 replaces the injection with facts, adds a reachability test per case, and marks unreachable kinds `N/A` instead of photographing them.
+In a View the override is read through `useForcedRegionCondition`, which supplies the **facts** for that kind and lets `resolveRegion` answer — so the matrix exercises the ladder rather than a bypass. That closes the half of defect F39 that was about the injection itself.
+
+**What this does not prove.** It shows that a case renders, nothing about how it is *reached* by real events: measured against genuine fact combinations, five kinds come from driving facts (`ready`, `empty-filtered`, `stale`, `fault`, `blocked`), four still need the override (`empty`, `loading`, `submitting`, `rejected`), and `submitting`/`rejected` on a read-only screen have no fact producer at all — the View renders its fault fallback behind a `data-kind` the code never chose. Pages still on `AppRegion` take the kind directly, so for them the matrix is only a render check. M3 adds a reachability test per case, marks unreachable kinds `N/A` instead of photographing them, and removes `AppRegion`.
 
 ### 3. Unit matrix (`tests/unit`)
 
