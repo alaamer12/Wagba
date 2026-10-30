@@ -1,6 +1,7 @@
+import { checkDisplayName } from "../../shared/displayName";
 import { AppError, isUniqueViolation, toAppError } from "../types/errors";
 import { type Profile, ProfileSchema } from "../types/schemas";
-import { candidate, validateDisplayName } from "./handles";
+import { candidate, handleBase, isUsableBase, validateDisplayName } from "./handles";
 import { pb, requireSession } from "./pb";
 import { read, write } from "./storage";
 
@@ -109,14 +110,19 @@ export type ProfileInput = {
  * numeric suffix (3 → 4 → 5 digits) — the suffix is mandatory, never optional.
  */
 export async function saveProfile(input: ProfileInput): Promise<Profile> {
+  // The charset rule (shared/displayName.ts) answers before anything else so a name of
+  // emoji, other scripts or a bidi control never reaches the engine. The rejection code
+  // rides in `params.reason` — the View owns the wording (error.displayName.*), the rule
+  // owns only the code. `validateDisplayName` stays: it is the handle-derivation gate
+  // (docs/tech/identity.md#handle), a separate decision from what a name may contain.
+  const name = checkDisplayName(input.displayName);
+  if (!name.ok) throw new AppError("DISPLAY_NAME_INVALID", { reason: name.code });
   const slug = validateDisplayName(input.displayName);
   // The user may edit the base; the numeric suffix stays mandatory, so the base
-  // is the only part the form can change.
-  const edited = (input.handle ?? "")
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]/g, "");
-  const baseSlug = edited.length >= 3 ? edited.slice(0, 20) : slug;
+  // is the only part the form can change. `handleBase`/`isUsableBase` are the same
+  // rules the form warns with, so a base the screen calls unusable is never the one stored.
+  const edited = handleBase(input.handle ?? "");
+  const baseSlug = isUsableBase(edited) ? edited : slug;
   const model = requireSession();
 
   const build = (handle: string) => {
