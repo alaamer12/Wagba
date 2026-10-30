@@ -64,7 +64,7 @@ A feature that only works through a plugin is not verified by this loop, and mus
 
 ## 6. Android build — the three toolchain facts it costs
 
-`bunx cap sync android` then `cd android && ./gradlew assembleDebug`. Verified output: `com.wagba.app`, 9.1 MB, SPA present under `assets/public/`.
+`bunx cap sync android` then `cd android && ./gradlew assembleDebug`. Verified output: `com.wagba.app`, 10.0 MB, 78 SPA files under `assets/public/`.
 
 | Fact | Why |
 |---|---|
