@@ -85,6 +85,7 @@ scratch/ artifacts/   ignored: probes and gate evidence. Never durable.
 - Quasar's stylesheet hard-codes `direction: ltr` on `html`/`body`/`#q-app`; `app.scss` overrides all three with `:root[dir]` plus `html body`/`html #q-app` rules. Without them the app renders LTR while the Arabic reads RTL.
 - Quasar's typography leaves `h1`–`h6` on **6rem/3.5rem line boxes**; `app.scss` sets `line-height: 1.3` for headings, and every component still sets its own size.
 - A profile form can be submitted before anonymous provisioning finishes; `useSessionStore().ensureReady()` is awaited before anything that needs an account.
+- Vue's template tokenizer only opens a tag whose name starts with an ASCII letter: `<_NavTab>` parses as **text**, renders nothing, and warns about nothing. `_`-prefixed units stay `_` on disk (placement reads the path) and are imported under an aliased binding (`import NavTab from "./_NavTab.vue"`) — `TAG_UNPARSABLE` in `states-check` refuses the tag form.
 
 ## Documentation obligations
 

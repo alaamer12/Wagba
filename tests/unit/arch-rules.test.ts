@@ -64,6 +64,11 @@ const isClientError = (e: unknown) => e instanceof ClientResponseError;
 </script>
 <template><button type="button">{{ isClientError }}</button></template>
 `,
+  "components/present/BadShell.vue": `<script setup lang="ts">
+import NavTab from "./_NavTab.vue";
+</script>
+<template><nav><_NavTab label="x" /></nav></template>
+`,
   // Controls: correct shapes that no rule may touch.
   "features/feed/views/FeedPanelView/FeedPanelView.vue": `<script setup lang="ts">
 import { computed } from "vue";
@@ -89,11 +94,20 @@ onUnmounted(() => globalThis.removeEventListener("scroll", onScroll));
 </script>
 <template><p>{{ atTop }}</p></template>
 `,
+  // The file keeps its `_`; the binding is aliased and the comment naming the bad shape sits
+  // outside the template, so neither may be reported.
+  "components/present/GoodShell.vue": `<script setup lang="ts">
+import NavTab from "./_NavTab.vue";
+// never write <_NavTab> in the template
+</script>
+<template><nav><NavTab label="x" /></nav></template>
+`,
 };
 
 const CONTROLS = [
   "features/feed/views/FeedPanelView/FeedPanelView.vue",
   "features/feed/views/FeedPanelView/EmptyRendition.vue",
+  "components/present/GoodShell.vue",
 ];
 
 let dir = "";
@@ -127,6 +141,7 @@ describe("states-check rules", () => {
     ["shared/conditions/useNetCondition.ts", ["CONDITION_EXPOSES_SETTER"]],
     ["features/feed/views/FeedLoadingState.vue", ["FACT_SUFFIX_RENDERS"]],
     ["components/base/AppThing.vue", ["PB_IMPORT_OUTSIDE_SERVICES"]],
+    ["components/present/BadShell.vue", ["TAG_UNPARSABLE"]],
   ])("%s is flagged by %j", (file, expected) => {
     expect(rulesFor(file)).toEqual(expected);
   });
@@ -145,7 +160,7 @@ describe("states-check rules", () => {
 
   it("reports nothing outside the fixture that has no rule name", () => {
     expect(findings.every((f) => /^[A-Z_]+$/.test(f.rule))).toBe(true);
-    expect(findings.length).toBe(10);
+    expect(findings.length).toBe(11);
   });
 });
 

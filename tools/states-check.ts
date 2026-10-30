@@ -126,6 +126,20 @@ export function collectFindings(root: string, displayBase = dirname(root)): Find
     if (intervals > stops) {
       push("INTERVAL_WITHOUT_CLEAR", path, `${intervals} setInterval, ${stops} clearInterval`);
     }
+
+    // 8. A `_`-prefixed unit used as a template tag renders nothing: Vue's tokenizer only opens
+    //    a tag whose name starts with an ASCII letter, so `<_NavTab>` is parsed as text — no
+    //    warning, no error, a blank region inside a green build. The underscore belongs on the
+    //    file (that is what placement reads); the binding has to be aliased.
+    if (path.endsWith(".vue")) {
+      for (const tpl of source.matchAll(/<template[\s\S]*?<\/template>/g)) {
+        const body = tpl[0] ?? "";
+        for (const tag of body.matchAll(/<\/?_[A-Za-z]/g)) {
+          const line = source.slice(0, (tpl.index ?? 0) + (tag.index ?? 0)).split("\n").length;
+          push("TAG_UNPARSABLE", path, `${tag[0].replace(/\/$/, "")}… at line ${line}`);
+        }
+      }
+    }
   }
 
   return findings;
