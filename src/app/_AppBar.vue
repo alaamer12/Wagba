@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import { useRouter } from "vue-router";
+import Heading from "../ui/adaptive/Heading.vue";
+import BackAction from "./BackAction.vue";
 
 withDefaults(defineProps<{ title?: string; back?: boolean; centered?: boolean }>(), {
   title: "",
   back: false,
   centered: false,
 });
-const router = useRouter();
 </script>
 
 <template>
   <header class="bar" :class="{ 'is-centered': centered }">
     <slot name="lead" />
-    <button v-if="back" type="button" class="bar__back" aria-label="back" @click="router.back()">‹</button>
+    <BackAction v-if="back" />
     <slot name="title">
-      <h1 class="bar__title">{{ title }}</h1>
+      <Heading level="1" class="bar__title">{{ title }}</Heading>
     </slot>
     <slot name="actions" />
   </header>
@@ -30,15 +30,6 @@ const router = useRouter();
   position: sticky;
   top: 0;
   z-index: 5;
-}
-.bar__back {
-  font-size: 26px;
-  line-height: 1;
-  background: transparent;
-  border: none;
-  color: var(--ink);
-  cursor: pointer;
-  padding: 0 6px;
 }
 .bar.is-centered {
   justify-content: center;

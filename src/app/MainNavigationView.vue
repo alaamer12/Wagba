@@ -1,27 +1,42 @@
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
-import { useRoute, useRouter } from "vue-router";
+import { useRouter } from "vue-router";
+import { useActiveRouteCondition } from "../shared/conditions/useActiveRouteCondition";
+import NavTab from "./_NavTab.vue";
+import AddMealAction from "./AddMealAction.vue";
 
+// The bottom bar: which section you are in, and the one action the app exists to offer.
+// A View because it reads the route and decides what to show as active. The buttons are
+// Components that emit a selection; navigating is decided here and nowhere else, which is
+// what makes the plus button's target a single place to change (see M7).
+// The import is bound as NavTab although the file is _NavTab.vue: Vue's template tokenizer
+// only opens a tag when the name starts with an ASCII letter, so <_NavTab> is parsed as text
+// and renders nothing. The underscore stays on the file — that is what the placement check
+// reads — and only the in-template binding is aliased.
 const { t } = useI18n();
 const router = useRouter();
-const route = useRoute();
-
-const isActive = (name: string) => route.name === name;
+const { name: activeRoute } = useActiveRouteCondition();
 </script>
 
 <template>
-  <nav class="bottom">
-    <button type="button" class="bottom__item" :class="{ 'is-active': isActive('home') }" @click="router.push({ name: 'home' })">
+  <nav class="bottom" :aria-label="t('nav.label')">
+    <NavTab
+      :label="t('nav.meals')"
+      :active="activeRoute === 'home'"
+      @select="router.push({ name: 'home' })"
+    >
       <svg class="bottom__icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10h16" /><path d="M5 10l1.5-5h11L19 10" /><path d="M6 10v9a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-9" /></svg>
-      <span>{{ t('nav.meals') }}</span>
-    </button>
-    <button type="button" class="bottom__add" :aria-label="t('nav.add')" @click="router.push({ name: 'add-meal' })">
+    </NavTab>
+    <AddMealAction :aria-label="t('nav.add')" @select="router.push({ name: 'add-meal' })">
       <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
-    </button>
-    <button type="button" class="bottom__item" :class="{ 'is-active': isActive('settings') }" @click="router.push({ name: 'settings' })">
+    </AddMealAction>
+    <NavTab
+      :label="t('nav.settings')"
+      :active="activeRoute === 'settings'"
+      @select="router.push({ name: 'settings' })"
+    >
       <svg class="bottom__icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 8.9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 8.9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34H9a1.7 1.7 0 0 0 1-1.56V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87V9a1.7 1.7 0 0 0 1.56 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1z" /></svg>
-      <span>{{ t('nav.settings') }}</span>
-    </button>
+    </NavTab>
   </nav>
 </template>
 
@@ -39,39 +54,8 @@ const isActive = (name: string) => route.name === name;
   padding: 10px 12px;
   z-index: 10;
 }
-.bottom__item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  font-size: 12px;
-  background: none;
-  border: none;
-  color: var(--brown-mid);
-  font-family: inherit;
-  cursor: pointer;
-  padding: 4px 12px;
-}
-.bottom__item.is-active {
-  color: var(--ink);
-  font-weight: 700;
-}
 .bottom__icon {
   font-size: 18px;
   line-height: 1;
-}
-.bottom__add {
-  width: 58px;
-  height: 58px;
-  border-radius: 50%;
-  border: none;
-  background: var(--butter);
-  color: var(--ink);
-  font-size: 28px;
-  font-weight: 700;
-  line-height: 1;
-  box-shadow: var(--shadow-soft);
-  transform: translateY(-10px);
-  cursor: pointer;
 }
 </style>

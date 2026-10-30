@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
-import AppBar from "../components/layout/AppBar.vue";
-import PageShell from "../components/layout/PageShell.vue";
+import AppBar from "../app/_AppBar.vue";
+import PageShell from "../app/_PageShell.vue";
 
 const { t } = useI18n();
 

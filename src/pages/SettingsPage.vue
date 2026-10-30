@@ -2,9 +2,9 @@
 import { computed, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
-import AppBar from "../components/layout/AppBar.vue";
-import BottomBar from "../components/layout/BottomBar.vue";
-import PageShell from "../components/layout/PageShell.vue";
+import AppBar from "../app/_AppBar.vue";
+import PageShell from "../app/_PageShell.vue";
+import MainNav from "../app/MainNavigationView.vue";
 import { STORE_URL } from "../config";
 import { currentLocale, setLocale } from "../i18n";
 import { listMine } from "../services/meals";
@@ -165,7 +165,7 @@ onMounted(async () => {
     </Card>
 
     <template #bottom>
-      <BottomBar />
+      <MainNav />
     </template>
   </PageShell>
 </template>

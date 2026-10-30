@@ -4,7 +4,8 @@
 
 **Status:** `Scaffold` = interface exists, not wired. `Implemented` = built, used by a page, covered by the gate. **Absorbed** = removed, with the surviving home.
 
-Location is `src/components/`.
+Paths are relative to `src/`. The shell and nav units live in `src/app/`, the domain-facing ones
+in `src/components/`, the platform re-exports in `src/ui/`.
 
 ## base — primitives
 
@@ -44,14 +45,24 @@ profile form came to type into a field that never updated its model.
 `ui/adaptive` is built from these, and a Component imports the adaptive tier, never this one
 (`structure.md` import direction).
 
-## layout — shells
+## app — the shell and the nav View
 
 | Unit | Tier | Base path | Mechanism | Status |
 |---|---|---|---|---|
-| PageShell | layout | `layout/PageShell.vue` | safe-area padding, content column, bottom slot | Implemented |
-| Bar | layout | `layout/AppBar.vue` | sticky bar; `lead` / `title` / `actions` slots, optional back | Implemented |
-| BottomBar | layout | `layout/BottomBar.vue` | floating rounded bar, three slots, raised center add button | Implemented |
-| Region | layout | `layout/AppRegion.vue` | renders exactly one slot from `kind`, stamps `data-kind` | Implemented |
+| PageShell | Aligner | `app/_PageShell.vue` | safe-area padding, content column, `bar` / default / `bottom` slots | Implemented |
+| AppBar | Aligner | `app/_AppBar.vue` | sticky bar; `lead` / `title` / `actions` slots, optional back | Implemented |
+| BackAction | component | `app/BackAction.vue` | the one header control that acts: `router.back()`, labelled from i18n | Implemented |
+| MainNavigationView | View | `app/MainNavigationView.vue` | reads the route Condition, decides which tab is active and where each tab goes | Implemented |
+| NavTab | component | `app/_NavTab.vue` | icon + word + active state; emits `select`, never navigates | Implemented |
+| AddMealAction | component | `app/AddMealAction.vue` | the raised center button; emits `select` | Implemented |
+| Region | layout | `components/layout/AppRegion.vue` | renders exactly one slot from `kind`, stamps `data-kind` | Implemented — replaced by the Views in M2c |
+
+A leading `_` marks a unit that is local to its family (`placement.md` §3). In Vue it has to stay
+on the **file** and leave the **template**: the tokenizer only opens a tag when the name begins
+with an ASCII letter, so `<_NavTab>` parses as text and renders nothing — no warning, no error,
+a blank region in an otherwise green build. Import bindings are therefore aliased
+(`import NavTab from "./_NavTab.vue"`), which is why these names are given here by role rather
+than by tag. The checks read file paths, so the signal survives the alias.
 
 ## present — domain-facing
 

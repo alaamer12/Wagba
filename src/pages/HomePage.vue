@@ -2,11 +2,11 @@
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
+import AppBar from "../app/_AppBar.vue";
+import PageShell from "../app/_PageShell.vue";
+import MainNav from "../app/MainNavigationView.vue";
 import potUrl from "../assets/illustrations/pot-empty.png";
-import AppBar from "../components/layout/AppBar.vue";
 import AppRegion from "../components/layout/AppRegion.vue";
-import BottomBar from "../components/layout/BottomBar.vue";
-import PageShell from "../components/layout/PageShell.vue";
 import MealCard from "../components/present/MealCard.vue";
 import { type Kind, normaliseKind } from "../lib/region";
 import { hasNewer } from "../services/meals";
@@ -252,7 +252,7 @@ onUnmounted(() => {
     </div>
 
     <template #bottom>
-      <BottomBar />
+      <MainNav />
     </template>
   </PageShell>
 </template>

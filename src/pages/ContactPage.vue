@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useI18n } from "vue-i18n";
-import AppBar from "../components/layout/AppBar.vue";
-import PageShell from "../components/layout/PageShell.vue";
+import AppBar from "../app/_AppBar.vue";
+import PageShell from "../app/_PageShell.vue";
 import { useWhatsApp } from "../composables/useWhatsApp";
 import { SUPPORT_WHATSAPP } from "../config";
 import Button from "../ui/adaptive/Button.vue";

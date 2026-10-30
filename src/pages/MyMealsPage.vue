@@ -2,10 +2,10 @@
 import { computed, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
+import AppBar from "../app/_AppBar.vue";
+import PageShell from "../app/_PageShell.vue";
+import MainNav from "../app/MainNavigationView.vue";
 import chefUrl from "../assets/illustrations/chef-wandering.png";
-import AppBar from "../components/layout/AppBar.vue";
-import BottomBar from "../components/layout/BottomBar.vue";
-import PageShell from "../components/layout/PageShell.vue";
 import MealCard from "../components/present/MealCard.vue";
 import { deleteMeal, listMine, setMealStatus } from "../services/meals";
 import EmptyNotice from "../shared/components/EmptyNotice.vue";
@@ -126,7 +126,7 @@ onMounted(load);
     </div>
 
     <template #bottom>
-      <BottomBar />
+      <MainNav />
     </template>
   </PageShell>
 </template>

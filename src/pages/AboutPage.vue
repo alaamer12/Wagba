@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
-import AppBar from "../components/layout/AppBar.vue";
-import PageShell from "../components/layout/PageShell.vue";
+import AppBar from "../app/_AppBar.vue";
+import PageShell from "../app/_PageShell.vue";
 import BrandMark from "../shared/decorations/BrandMark.vue";
 import Card from "../ui/adaptive/Card.vue";
 

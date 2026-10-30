@@ -2,8 +2,8 @@
 import { computed, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
-import AppBar from "../components/layout/AppBar.vue";
-import PageShell from "../components/layout/PageShell.vue";
+import AppBar from "../app/_AppBar.vue";
+import PageShell from "../app/_PageShell.vue";
 import { slugify } from "../services/handles";
 import { fileUrl } from "../services/pb";
 import { useSessionState } from "../shared/state/useSessionState";

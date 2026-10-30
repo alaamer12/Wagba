@@ -2,8 +2,8 @@
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
-import AppBar from "../components/layout/AppBar.vue";
-import PageShell from "../components/layout/PageShell.vue";
+import AppBar from "../app/_AppBar.vue";
+import PageShell from "../app/_PageShell.vue";
 import { usePhotoPicker } from "../composables/usePhotoPicker";
 import { getMeal, publishMeal, updateMeal } from "../services/meals";
 import { fileUrl } from "../services/pb";

@@ -2,9 +2,9 @@
 import { onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
+import AppBar from "../app/_AppBar.vue";
+import PageShell from "../app/_PageShell.vue";
 import chefUrl from "../assets/illustrations/chef-wandering.png";
-import AppBar from "../components/layout/AppBar.vue";
-import PageShell from "../components/layout/PageShell.vue";
 import MealCard from "../components/present/MealCard.vue";
 import { getMeal } from "../services/meals";
 import EmptyNotice from "../shared/components/EmptyNotice.vue";
