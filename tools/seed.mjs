@@ -117,12 +117,10 @@ for (const cook of COOKS) {
   console.log("cook", id, cook.display_name);
 }
 
-const photos = Array.from({ length: 5 }, (_, i) =>
-  readFileSync(
-    `mockups/${["1.png", "2.png", "3.png", "decoration.png", "empty-meals state.png"][i]}`,
-  ),
-);
-const photoNames = ["1.png", "2.png", "3.png", "decoration.png", "empty-meals state.png"];
+// Brand-toned placeholder dishes, not photographs: the fixtures are simple shapes
+// so a screenshot reads as a food card rather than as a phone screenshot.
+const photoNames = ["p1.png", "p2.png", "p3.png", "p4.png", "p5.png"];
+const photos = photoNames.map((name) => readFileSync(`tests/fixtures/photos/${name}`));
 
 const mealsUrl = `${BASE}/api/collections/meals/records`;
 
