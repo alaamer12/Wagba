@@ -43,10 +43,35 @@
   box-sizing: border-box;
 }
 
+// Quasar's typography leaves headings on 6rem/3.5rem line boxes; every heading in
+// this app sets its own font-size and expects a normal leading.
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  line-height: 1.3;
+}
+
 html,
 body,
 #q-app {
   height: 100%;
+}
+
+// Quasar's CSS hard-codes `direction: ltr` on html/body/#q-app; the locale owns
+// direction, so these selectors outrank it without !important. The root needs an
+// explicit value — `inherit` on html would fall back to the initial `ltr`.
+:root[dir="rtl"] {
+  direction: rtl;
+}
+:root[dir="ltr"] {
+  direction: ltr;
+}
+html body,
+html #q-app {
+  direction: inherit;
 }
 
 body {

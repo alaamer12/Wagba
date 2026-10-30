@@ -60,6 +60,9 @@ Message catalogs are flat key-value objects with no nesting and no logic. `en` m
 | Key                       | ar                                   | en (draft)                                          | msa (candidate)                      |
 | ------------------------- | ------------------------------------ | --------------------------------------------------- | ------------------------------------ |
 | `home.search.placeholder` | ادور على وجبة...                     | Looking for a meal...                               | ابحث عن وجبة أو منطقة...             |
+| `home.search.open`        | بحث                                  | Search                                              | بحث                                  |
+| `home.chips.label`        | اقتراحات بحث                         | Search suggestions                                  | اقتراحات البحث                       |
+| `home.chips.nearby`       | قريب                                 | Nearby                                              | قريب                                 |
 | `home.section.title`      | وجبات حواليك                         | Meals around you                                    | وجبات حواليك                         |
 | `home.empty.title`        | لسه مفيش وجبات قريبة منك             | No meals near you yet                               | لا توجد وجبات حاليًا                   |
 | `home.empty.body`         | كن أول واحد ينشر                     | Be the first to post                                | كن أول من يشارك وجبة لذيذة مع الجميع |
@@ -69,6 +72,8 @@ Message catalogs are flat key-value objects with no nesting and no logic. `en` m
 | `home.banner.stale`       | دي نتائج من {n} دقيقة — اسحب للتحديث | These results are {n} minutes old — pull to refresh | —                                    |
 | `home.banner.new`         | في أكل جديد قريب منك — اسحب للتحديث  | New meals near you — pull to refresh                | —                                    |
 | `home.card.saved`         | محفوظة                               | Saved                                               | المحفوظة                             |
+
+The suggestion chips are «قريب» plus three dish words — محشي، فراخ، كشري — that are search terms for Arabic meal names, not interface copy, so they stay Arabic in both locales. Governorate names from the mockup are not matching keys (discovery is numeric) and are not shipped.
 
 ## Navigation
 

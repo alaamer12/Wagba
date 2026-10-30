@@ -23,13 +23,9 @@ defineProps<{ options: Array<{ value: T; label: string }> }>();
 <style scoped>
 .segmented {
   display: flex;
-  gap: 6px;
-  background: var(--surface);
-  border: none;
-  border-radius: 0;
-  padding: 0;
-  margin-inline: calc(-1 * var(--space-4));
-  gap: 0;
+  background: transparent;
+  border-radius: var(--radius-pill);
+  overflow: hidden;
 }
 .segmented__item {
   flex: 1;

@@ -56,9 +56,11 @@ All verification runs in Chrome, driven by Playwright — the plan's constraint,
 | Geolocation | `navigator.geolocation`, Playwright grants a fixed Cairo position | `useGeolocation` |
 | Camera | `<input type="file">` via `setInputFiles` | `usePhotoPicker` |
 | AppLauncher (`whatsapp://`) | fails, then `window.open(wa.me)` which the test intercepts | `useWhatsapp` |
-| Preferences | `localStorage` | `usePreferences` |
+| Preferences | `localStorage` (the credential and the locale) | `services/storage.ts` |
 
 A feature that only works through a plugin is not verified by this loop, and must be marked as such rather than claimed green.
+
+**Mockup parity.** `tests/e2e/parity.spec.ts` captures the two screens that carry a supplied illustration; `tools/parity.py <app.png> <mockup.png> <out> --phone=0 --trim-top=48` compares them. It reports a tone delta, a coarse palette overlap, raw SSIM, and an edge correlation through a 5 px blur — plus a 4×4 grid. The grid is the diagnostic; the illustration itself is byte-for-byte the supplied drawing, so a low global score means block placement or copy length, not the art. iOS chrome that never appears in the app (status bar, home indicator) is trimmed or padded out of the frame.
 
 ## 6. Android build — the three toolchain facts it costs
 

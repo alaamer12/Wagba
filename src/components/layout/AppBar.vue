@@ -11,8 +11,11 @@ const router = useRouter();
 
 <template>
   <header class="bar" :class="{ 'is-centered': centered }">
+    <slot name="lead" />
     <button v-if="back" type="button" class="bar__back" aria-label="back" @click="router.back()">‹</button>
-    <h1 class="bar__title">{{ title }}</h1>
+    <slot name="title">
+      <h1 class="bar__title">{{ title }}</h1>
+    </slot>
     <slot name="actions" />
   </header>
 </template>

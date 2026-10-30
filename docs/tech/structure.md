@@ -19,22 +19,22 @@
 │  │  └─ present/            Domain-facing: MealCard, CookRow, DistanceLabel, PricePill, PhotoGrid, StatusBadge.
 │  ├─ stores/                Pinia state + invariants. The only place `kind` changes.
 │  ├─ services/              The ONLY importer of the PocketBase SDK. zod-parsed responses.
-│  ├─ composables/           Device boundaries: geolocation, whatsapp, photos, network, avatar, handle.
+│  ├─ composables/           Device boundaries: geolocation, whatsapp, photos, network.
 │  ├─ types/                 zod schemas per collection; types inferred, never hand-written twice.
 │  ├─ i18n/                  ar.json + en.json + locale resolution and direction.
 │  ├─ css/                   Tokens and globals. Values come from docs/design/design-system.md.
-│  └─ assets/{brand,fonts}/  Logo SVG and the Baloo family (OFL beside it).
+│  └─ assets/{brand,fonts,illustrations}/  Logo SVG, the Baloo family (OFL beside it), the two supplied empty-state drawings.
 ├─ shared/normalize.ts       Canonical Arabic fold + distance. Imported by the app AND bundled for the hook.
 ├─ pocketbase/
 │  ├─ pb_migrations/         Numbered JS migrations; the only way schema changes.
 │  ├─ pb_hooks/main.pb.js    Thin hooks: search_key, cook enrichment, distance_km.
 │  ├─ pb_hooks/lib/          Generated CJS bundle (ignored in git, rebuilt by tools/build-hooks.mjs).
 │  └─ pb_data/               Local state (ignored).
-├─ tools/                    gate.ts · pb.mjs · seed.mjs · build-hooks.mjs · linkcheck.mjs
+├─ tools/                    gate.ts · pb.mjs · seed.mjs · verify-api.ts · build-hooks.mjs · linkcheck.ts · parity.py
 ├─ tests/
 │  ├─ unit/                  Vitest: fold, handle, states ladder, schemas, stores.
 │  └─ e2e/                   Playwright: state matrix + behaviour matrix.
-├─ reference/                avatar.html, logo-parity.html — design sources, never bundled.
+├─ reference/                avatar.html, logo-parity.html, illustrations/ — design sources, never bundled.
 ├─ docs/                     The specification; see docs/README.md.
 ├─ mockups/                  Reference screenshots. Binary, not documentation.
 ├─ android/                  Generated Capacitor project (tracked; built products ignored).

@@ -13,6 +13,7 @@ Location is `src/components/`.
 | AppButton | base | `base/AppButton.vue` | primary/secondary/ghost; full-width default; loading disables | Implemented |
 | AppCard | base | `base/AppCard.vue` | surface + border + soft shadow; optional padding/flat | Implemented |
 | AppChip | base | `base/AppChip.vue` | pill; active = butter fill | Implemented |
+| BrandMark | base | `base/BrandMark.vue` | chef hat over «وجبة», sized by `size`; never mirrors | Implemented |
 | AppField | base | `base/AppField.vue` | label + input/textarea + hint/error; `defineModel` | Implemented |
 | AppAvatar | base | `base/AppAvatar.vue` | uploaded photo, else `AvatarArt` from the handle, else the brand hat | Implemented |
 | AvatarArt | base | `base/AvatarArt.vue` | the verified rig: 12 slots, 22 parts, palette axes for skin/shirt/backdrop | Implemented |
@@ -26,8 +27,8 @@ Location is `src/components/`.
 | Unit | Tier | Base path | Mechanism | Status |
 |---|---|---|---|---|
 | PageShell | layout | `layout/PageShell.vue` | safe-area padding, content column, bottom slot | Implemented |
-| AppBar | layout | `layout/AppBar.vue` | sticky title + optional back | Implemented |
-| BottomBar | layout | `layout/BottomBar.vue` | three slots, raised center add button | Implemented |
+| AppBar | layout | `layout/AppBar.vue` | sticky bar; `lead` / `title` / `actions` slots, optional back | Implemented |
+| BottomBar | layout | `layout/BottomBar.vue` | floating rounded bar, three slots, raised center add button | Implemented |
 | Region | layout | `layout/AppRegion.vue` | renders exactly one slot from `kind`, stamps `data-kind` | Implemented |
 
 ## present — domain-facing

@@ -8,17 +8,20 @@ The target feeling is **home, warm, simple, friendly** — a cozy kitchen, not a
 
 ### Core palette
 
+Values below are the CSS custom properties in `src/css/app.scss` — the code is the record; this table mirrors it.
+
 | Token          | Use                                      | Value                   |
 | -------------- | ---------------------------------------- | ----------------------- |
-| `cream`        | Screen backgrounds, large empty areas    | `#F8F1E3`               |
-| `butter`       | Primary CTAs and key accents             | `#F5C518` / `#F0C040`   |
-| `butter-soft`  | Secondary button and tag backgrounds     | `#FCE9A8`               |
-| `brown-dark`   | Primary text                             | `#3D2B1F`               |
-| `brown-mid`    | Secondary text, descriptions             | `#6B4E31`               |
-| `border-light` | Card and field borders                   | `#E8D9C0`               |
-| `surface`      | Card backgrounds                         | `#FFFCFA`               |
-| `hat-stroke`   | Logo line art: the chef hat and its band | `#B2691D`               |
-| `olive`        | Rare supporting accent                   | optional, use sparingly |
+| `--cream`      | Screen backgrounds, large empty areas    | `#FAF1DF`               |
+| `--butter`     | Primary CTAs and key accents             | `#F5C518`               |
+| `--butter-soft`| Secondary button and tag backgrounds     | `#FCE9A8`               |
+| `--ink`        | Primary text, wordmark                   | `#3F2205`               |
+| `--brown-mid`  | Secondary text, descriptions             | `#6B4E31`               |
+| `--border`     | Card and field borders                   | `#E8D9C0`               |
+| `--surface`    | Card and bar backgrounds                 | `#FFFCFA`               |
+| `--hat`        | Logo line art: the chef hat and its band | `#B2691D`               |
+| `--heart`      | The heart beside the wordmark            | `#FDD484`               |
+| `--danger`     | Errors and required markers              | `#B4553F`               |
 
 ### State colors
 
@@ -71,7 +74,7 @@ Appearance only. Content and behavior live in [../product/screens.md](../product
 
 **Chips.** Pill shaped. Active: butter fill, dark label. Inactive: light fill, light border.
 
-**Bottom navigation.** Three slots, cream background. The center add-meal action is a raised circular butter button. Active item darkens or takes the butter accent.
+**Bottom navigation.** A floating rounded bar (26 px radius, inset 10 px, soft shadow) over the cream page, three slots. The center add-meal action is a raised circular butter button that breaks the bar's top edge. Active item darkens.
 
 **Input field.** Light fill, light border, label above, optional marker in the label, a soft red asterisk for required.
 
@@ -107,6 +110,7 @@ Both parts are plain SVG and scale from a 24 px favicon to a splash screen witho
 
 - **Food photos** should look natural and homemade. Over-produced restaurant photography works against the product.
 - **Empty states** use simple, friendly illustration. Not cartoonish.
+- **The two shipped drawings are the supplied ones**, not reconstructions: the wandering chef (`chef-wandering`, My Meals) and the steaming pot (`pot-empty`, Home). Sources live in `reference/illustrations/`; app assets in `src/assets/illustrations/` are 512 px-wide, background-keyed PNGs. The pot's baked-in caption was cropped away — all text on screen is live copy, never part of an image.
 - **Decorative botanical motifs** exist in the mockups, used behind About and empty states only. Never behind content that has to be read.
 
 ## Elevation and motion
@@ -117,7 +121,7 @@ Shadows are soft and barely present. Transitions are short and plain. No entranc
 
 The app ships in Arabic (right-to-left) and English (left-to-right). Direction is a runtime value driven by the active locale, so every screen has two correct states and both are reviewed.
 
-- Set `dir` on the document root from the locale; Quasar mirrors the bulk of its components from it.
+- Set `dir` on the document root from the locale. Quasar's own stylesheet hard-codes `direction: ltr` on `html`/`body`/`#q-app`, so `app.scss` overrides those three selectors at higher specificity — without it every screen renders mirrored while the Arabic text reads right-to-left ([decisions](../decisions.md#direction-belongs-to-the-locale-not-to-quasar)).
 - Use logical CSS properties — `margin-inline-start`, `padding-inline-end`, `inset-inline-start`. Physical properties like `left` and `right` will not mirror.
 - **Mirror directional icons:** chevrons, back arrows, and any "next" affordance.
 - **Do not mirror:** the WhatsApp glyph, camera, search, star, social brand marks, and any photographic content.

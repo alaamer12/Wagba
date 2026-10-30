@@ -13,7 +13,9 @@ withDefaults(defineProps<{ title: string; body?: string; art?: string; artSize?:
     <img :src="art" alt="" class="empty__art" :style="{ width: `${artSize}px` }" />
     <p class="empty__title">{{ title }}</p>
     <p v-if="body" class="empty__body">{{ body }}</p>
-    <slot />
+    <div v-if="$slots.default" class="empty__actions">
+      <slot />
+    </div>
   </div>
 </template>
 
@@ -23,13 +25,16 @@ withDefaults(defineProps<{ title: string; body?: string; art?: string; artSize?:
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 6px;
+  gap: 10px;
   padding: 0 0 var(--space-4);
 }
 .empty__art {
   max-width: 100%;
   height: auto;
-  margin-bottom: var(--space-2);
+  margin-bottom: 22px;
+}
+.empty__actions {
+  margin-top: 20px;
 }
 .empty__title {
   font-size: 22px;

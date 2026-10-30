@@ -43,6 +43,7 @@ Elements the mockups show that the written spec did not, accepted into the MVP.
 | «مشاركة التطبيق» share row                                                       | 2.png                                                              | Native share sheet, trivial                                                                                    |
 | «تقييم التطبيق» rate row                                                         | 3.png, About screen, last row of the bottom group with a star icon | Store link, trivial                                                                                            |
 | Extra details card on Meal Details (quantity, availability window)               | 1.png                                                              | Matches the spec fields, just grouped                                                                          |
+| Floating rounded bottom bar with a soft shadow                                     | all                                                                | Every drawing insets the bar from the page edge; the full-width bar was the placeholder                        |
 
 ## Superseded elements
 
@@ -57,6 +58,15 @@ Do not implement these. Each was drawn, then reversed by a decision.
 | Active notifications toggle                                                  | 2.png     | Disabled placeholder row                                                                          | Notifications are deferred; a switch that does nothing is worse than no switch                                           |
 | MSA copy throughout                                                          | all       | Egyptian column of [ui-copy.md](ui-copy.md)                                                       | The mockups are MSA; the Arabic voice is Egyptian, with MSA recorded as a candidate dialect variant rather than shipping |
 | «وجبات حواليك» section title and chips «قريب / القاهرة / الجيزة / القليوبية» | 1.png     | Chips remain as search suggestions; the governorate names are not matching keys                   | Discovery is numeric, not textual                                                                                        |
+
+## Deliberate divergences
+
+| Drawing                                                                 | The app                                                                  | Why                                                                                                                                      |
+| ----------------------------------------------------------------------- | ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Header chrome is LTR: back arrow at the left, gear/search at the right | Mirrored in Arabic — back and utility swap sides with `dir`               | The drawings set Arabic text inside left-to-right chrome. The direction rule in [design-system.md](design-system.md#direction) wins.      |
+| Search chips «القاهرة / الجيزة / الشرقية / الإسكندرية»                    | «قريب» + محشي / فراخ / كشري                                                | Discovery is numeric; governorate names are not matching keys. The shipped chips are terms that exist in the data.                       |
+| Sparkles and floating hearts around the pot                              | Not drawn                                                                 | They belong to the mockup's rendition; the supplied illustration does not contain them, and nothing was invented to match.               |
+| Segment labels on My Meals order «الكل» rightmost                        | «الكل» first in the DOM, which renders rightmost in Arabic                | Same rule as the header: order is logical, direction does the mirroring.                                                                 |
 
 ## What the mockups get right
 

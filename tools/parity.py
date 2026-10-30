@@ -9,10 +9,10 @@ to score lower; the grid is what makes that obvious instead of hiding it.
 import sys
 import numpy as np
 from PIL import Image
+from scipy import ndimage
 
 
 def screen_crop(mockup_path: str, phone: int) -> Image.Image:
-    from scipy import ndimage
 
     im = Image.open(mockup_path).convert("RGB")
     a = np.asarray(im).astype(int)
@@ -46,6 +46,43 @@ def ssim(a: np.ndarray, b: np.ndarray) -> float:
     return ((2 * mu_a * mu_b + c1) * (2 * cov + c2)) / ((mu_a**2 + mu_b**2 + c1) * (va + vb + c2))
 
 
+def edges(gray: np.ndarray) -> np.ndarray:
+    """Gradient magnitude. Flat cream areas carry no signal, so a whole-screen
+    SSIM is dominated by ±1-tone noise there; edges score what the eye reads as
+    layout."""
+    a = gray.astype(np.float64)
+    gy, gx = np.gradient(a)
+    mag = np.hypot(gx, gy)
+    return (mag / (mag.max() or 1) * 255.0)
+
+
+def soften(edge: np.ndarray, radius: int = 5) -> np.ndarray:
+    """Sharp edge maps drop to 0.5 on a 4 px shift, which makes them a ruler for
+    pixel alignment rather than for layout. A small blur tolerates a few pixels
+    and glyph-shape noise while still failing a misplaced block."""
+    return ndimage.uniform_filter(edge, size=radius)
+
+
+def corr(a: np.ndarray, b: np.ndarray) -> float:
+    """Pearson correlation. Unlike SSIM it is stable on the large flat cream
+    areas that dominate a mobile screen, where SSIM's variance term is noise."""
+    x, y = a.ravel().astype(np.float64), b.ravel().astype(np.float64)
+    x, y = x - x.mean(), y - y.mean()
+    denom = np.sqrt((x * x).sum()) * np.sqrt((y * y).sum())
+    return float((x * y).sum() / denom) if denom else 0.0
+
+
+def palette_delta(app: Image.Image, mock: Image.Image) -> tuple[float, float]:
+    a = np.asarray(app.convert("RGB")).reshape(-1, 3).astype(np.float64)
+    m = np.asarray(mock.convert("RGB")).reshape(-1, 3).astype(np.float64)
+    mean_delta = float(np.abs(a - m).mean())
+    ha, _ = np.histogramdd(a, bins=(8, 8, 8), range=((0, 256),) * 3)
+    hm, _ = np.histogramdd(m, bins=(8, 8, 8), range=((0, 256),) * 3)
+    ha, hm = ha.ravel() / ha.sum(), hm.ravel() / hm.sum()
+    overlap = float(np.minimum(ha, hm).sum())
+    return mean_delta, overlap
+
+
 def main() -> int:
     app_path, mock_path, out = sys.argv[1], sys.argv[2], sys.argv[3]
     phone = int(next((a.split("=")[1] for a in sys.argv if a.startswith("--phone=")), 1))
@@ -70,17 +107,26 @@ def main() -> int:
     a = np.asarray(app).astype(int)
     m = np.asarray(mock).astype(int)
 
-    print(f"size {app.size[0]}x{app.size[1]}  global SSIM {ssim(np.asarray(app.convert('L')), np.asarray(mock.convert('L'))):.3f}")
+    mean_delta, palette = palette_delta(app, mock)
+    raw = ssim(np.asarray(app.convert("L")), np.asarray(mock.convert("L")))
+    structure = corr(
+        soften(edges(np.asarray(app.convert("L")))),
+        soften(edges(np.asarray(mock.convert("L")))),
+    )
+    print(
+        f"size {app.size[0]}x{app.size[1]}  tone delta {mean_delta:.1f}  palette {palette:.2f}  "
+        f"raw SSIM {raw:.3f}  edge correlation {structure:.3f}"
+    )
     rows, cols = 4, 4
     gh, gw = app.size[1] // rows, app.size[0] // cols
-    print("grid (SSIM per cell, top-left first):")
+    print("grid (edge correlation per cell, top-left first):")
     for r in range(rows):
         cells = []
         for c in range(cols):
             box = (c * gw, r * gh, (c + 1) * gw, (r + 1) * gh)
-            ga = np.asarray(app.crop(box).convert("L"))
-            gm = np.asarray(mock.crop(box).convert("L"))
-            cells.append(f"{ssim(ga, gm):.2f}")
+            ga = soften(edges(np.asarray(app.crop(box).convert("L"))))
+            gm = soften(edges(np.asarray(mock.crop(box).convert("L"))))
+            cells.append(f"{corr(ga, gm):.2f}")
         print("  " + " ".join(cells))
 
     side = Image.new("RGB", (app.size[0] * 2 + 12, app.size[1]), (255, 255, 255))

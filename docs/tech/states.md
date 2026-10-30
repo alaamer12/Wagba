@@ -72,6 +72,8 @@ Where a state belongs, when it is unclear:
 
 Every kind maps to a key in `src/i18n/{ar,en}.json`; a missing key falls back to Arabic and fails the parity test. Blocked and fault carry a title, a body, and a retry action.
 
+`empty` carries art, and the art is per screen, not per kind: Home uses the supplied steaming pot, My Meals uses the wandering chef ([design-system.md](../design/design-system.md#imagery-and-illustration)). The other kinds deliberately carry no illustration — `empty-filtered` is a short line, `fault` and `blocked` are words plus an action.
+
 ## Change cost
 
 | Change | Files touched |

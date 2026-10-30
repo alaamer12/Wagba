@@ -89,8 +89,11 @@ onMounted(load);
       </div>
     </template>
 
-    <AppEmpty v-else :title="t('myMeals.empty.title')" :body="t('myMeals.empty.body')" :art-size="215">
-      <AppButton class="cta" @click="router.push({ name: 'add-meal' })">+ {{ t('myMeals.empty.cta') }}</AppButton>
+    <AppEmpty v-else class="my-empty" :title="t('myMeals.empty.title')" :body="t('myMeals.empty.body')" :art-size="180">
+      <AppButton :block="false" class="cta" @click="router.push({ name: 'add-meal' })">
+        {{ t('myMeals.empty.cta') }}
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+      </AppButton>
     </AppEmpty>
     <template #bottom>
       <BottomBar />
@@ -126,8 +129,15 @@ onMounted(load);
   padding: 10px 14px;
   font-size: 14px;
 }
+.my-empty {
+  padding-top: 90px;
+}
 .cta {
-  margin-top: var(--space-3);
-  max-width: 280px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-width: 230px;
+  padding-block: 9px;
 }
 </style>

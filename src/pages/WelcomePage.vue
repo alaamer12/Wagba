@@ -2,6 +2,7 @@
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 import AppButton from "../components/base/AppButton.vue";
+import BrandMark from "../components/base/BrandMark.vue";
 
 const { t } = useI18n();
 const router = useRouter();
@@ -13,10 +14,7 @@ function start() {
 
 <template>
   <div class="welcome">
-    <div class="welcome__mark">
-      <img src="../assets/brand/chef-hat.svg" alt="" class="welcome__hat" />
-      <span class="welcome__word">وجبة</span>
-    </div>
+    <BrandMark :size="44" />
     <p class="welcome__tagline">{{ t('welcome.tagline') }}</p>
     <img src="../assets/brand/chef-hat.svg" alt="" class="welcome__illustration" />
     <AppButton class="welcome__cta" @click="start">{{ t('welcome.cta') }}</AppButton>
@@ -34,20 +32,6 @@ function start() {
   padding: var(--space-6);
   background: var(--cream);
   text-align: center;
-}
-.welcome__mark {
-  display: flex;
-  align-items: flex-start;
-  gap: 6px;
-}
-.welcome__hat {
-  width: 46px;
-  height: 46px;
-}
-.welcome__word {
-  font-size: 44px;
-  font-weight: 800;
-  line-height: 1;
 }
 .welcome__tagline {
   font-size: 16px;
