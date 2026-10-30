@@ -5,6 +5,12 @@ How Wagba is built. Everything a user cannot see.
 | File                                         | Read it for                                                                                      |
 | -------------------------------------------- | ------------------------------------------------------------------------------------------------ |
 | [architecture.md](architecture.md)           | Stack, system shape, app layering, anonymous identity, environments, configuration               |
+| [verification.md](verification.md)           | Stories, state matrix, API contract, GPS matrix, SQLite audit, stress, accessibility, budgets    |
+| [system-components.md](system-components.md)  | The running parts and what each owns                                                              |
+| [units.md](units.md)                         | Reusable UI units and their status                                                                |
+| [states.md](states.md)                       | Region kinds and the precedence ladder                                                            |
+| [error-ux.md](error-ux.md)                   | Error codes and their surfaces                                                                    |
+| [lifecycle.md](lifecycle.md)                 | Launch gate, cold/warm start, budgets                                                             |
 | [structure.md](structure.md)                 | Folder authority, boundary prohibitions, the authority table, named absences                    |
 | [dev-loop.md](dev-loop.md)                   | The three channels, rebuild boundaries, browser-as-device, troubleshooting                      |
 | [data-model.md](data-model.md)               | Collections, fields, indexes, access rules, search normalization, migrations                     |

@@ -12,6 +12,7 @@ Statuses: **settled** (evidence-backed, do not revisit without new information),
 - [Public identity](#public-identity) — handle derivation, numbering, freezing, deterministic avatars
 - [Product reversals](#product-reversals) — where this build contradicts the original spec
 - [Device and tooling](#device-and-tooling) — WhatsApp, photos, Biome, i18n
+- [Completion pass](#completion-pass-2026-10-30) — the fourteen calls made while finishing the app
 - [Open](#open)
 
 ---
@@ -363,3 +364,79 @@ Nothing validates that a cook nine kilometres away will accept an order. It is o
 
 The English strings in [design/ui-copy.md](design/ui-copy.md) are a first draft written by a non-native review gap: they are consistent, but nobody has signed off on tone. They ship only after a review pass.
 **Owner:** product.
+
+## Completion pass (2026-10-30)
+
+The fourteen decisions taken while closing the audit that produced plan v4.
+
+### D1 — the notifications row is gone
+**Chosen:** no notifications row and no placeholder anywhere in Settings.
+**Rejected:** the mockup's disabled placeholder.
+**Why:** a disabled control still promises the feature; notifications are out of scope (`scope.md`).
+**Status:** settled; `S11` asserts every Settings row acts.
+
+### D2 — the account card only exists when a profile does
+**Chosen:** a single CTA to complete the account and post the first meal; no card with an empty name, `@`, or avatar.
+**Rejected:** rendering the card with placeholders.
+**Why:** the first screen a new user opens must offer an action, not a hole.
+**Status:** settled; `S8`.
+
+### D3 — avatars are always generated
+**Chosen:** the face is a function of the handle; the chef hat is never a person.
+**Why:** the hat is the brand mark; using it as an avatar makes every anonymous user look like the logo.
+**Status:** settled; `avatar.test.ts`, `S8`.
+
+### D4 — suggestion chips are derived from the feed
+**Chosen:** «قريب» plus the most frequent `location_text` values in the loaded feed, capped at four.
+**Rejected:** hard-coded dish words (the first attempt), governorate names (not matching keys).
+**Why:** filters must reflect what is on screen; it also matches the mockup's area-chip idea.
+**Status:** settled; the chips smoke test.
+
+### D5 — search covers the handle, and drops stopwords
+**Chosen:** `search_key` includes the cook's handle; query tokens drop connectors (في، من، على، عن، عند، مع، و) and single letters, keeping single digits.
+**Evidence:** before the change `krymfwad907` returned 0; «محشي في السيدة» returned 0.
+**Status:** settled; `S4`, `verify-api.ts`, `search.test.ts`.
+
+### D6 — the bbox clamps, guards, and splits
+**Chosen:** radius clamped to 0.1–50 km, latitude clamped, cos(lat) floored at 0.01, a box crossing ±180 emitted as two ranges.
+**Why:** without the split, a query near the antimeridian silently misses half its circle; without the guard, a polar centre divides by zero.
+**Status:** settled; `geo.test.ts` property test + the contract's antimeridian pair.
+
+### D7 — WhatsApp reports success only when it happened
+**Chosen:** `window.open(url, "_blank")` then null the opener; the warning shows only when the window was not created.
+**Evidence:** with the `noopener` feature, `window.open` returns `null`, so the old code warned “not installed” on every successful handoff.
+**Status:** settled; `S1`.
+
+### D8 — legal pages are routes, and channels are config
+**Chosen:** `/about`, `/terms`, `/contact`; support WhatsApp and store URL live in `src/config.ts` and their rows hide when empty.
+**Why:** the pages must exist without inventing a phone number or a listing.
+**Status:** settled; `S9`, `S11`. Owner supplies the two values.
+
+### D9 — Edit Meal is first-class
+**Chosen:** `/meal/:id/edit` reuses the Add form; photos are positional (a string keeps an existing file in that slot, a File appends); delete and status live on My Meals.
+**Status:** settled; `S2` (create → edit → hide → show → delete).
+
+### D10 — pull-to-refresh is pointer-based
+**Chosen:** pointer drag at scroll top, 70 px threshold, one indicator; the freshness probe also runs on visibility change and reconnect.
+**Rejected:** touch-only events (unreliable to synthesise in tests).
+**Status:** settled; the gesture is covered indirectly by `S2` (refresh after publish) and the probe by `S6`.
+
+### D11 — tests are story-first
+**Chosen:** journeys define done; unit/API/SQLite/stress deepen the same contracts.
+**Why:** the previous suite was ten assertions that a green gate could not distinguish from a working app.
+**Status:** settled; [verification.md](tech/verification.md).
+
+### D12 — fast gate and full gate
+**Chosen:** `bun run gate` for every change; `bun run gate:full` adds the 2 000-meal stress.
+**Why:** a gate that takes ten minutes gets skipped.
+**Status:** settled.
+
+### D13 — fixtures are real, licensed photographs
+**Chosen:** six Commons photos, resized, with `tests/fixtures/photos/SOURCES.md` recording author, licence and page.
+**Why:** the screens are judged visually; synthetic circles proved nothing.
+**Status:** settled; the sources file is the attribution.
+
+### D14 — accessibility is dependency-free
+**Chosen:** a Playwright audit for names, labels, alt text, document language/direction, focus visibility, and WCAG contrast.
+**Rejected (for now):** axe-core — `bun add` could not link `@quasar/app-vite` while the local scanner holds it, and shipping an undeclared package is worse than the narrower audit.
+**Status:** settled for this environment; add axe when installs are unblocked.

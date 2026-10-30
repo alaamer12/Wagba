@@ -5,9 +5,7 @@ Wagba (وجبة) is an Egyptian app for finding homemade meals cooked near you a
 ## Where to look
 
 | Path                          | Covers                                                                                 |
-| -----------------------------  — folder authority, boundary prohibitions, the authority table
--  — how a change reaches a running app; browser as the device
-- | -------------------------------------------------------------------------------------- |
+| ----------------------------- | -------------------------------------------------------------------------------------- |
 | [product/](product/README.md) | What the app is, its scope, every screen, and the two user journeys                    |
 | [design/](design/README.md)   | Visual language, on-screen text, and how to read the mockups                           |
 | [tech/](tech/README.md)       | Stack, architecture, data model, discovery, device integrations, conventions, releases |
@@ -38,6 +36,13 @@ Design mockups live in `../mockups/` as binary assets.
 - `tech/lifecycle.md` — launch gate, cold/warm start, budgets
 - `tech/dev-loop.md` — how a change reaches a running app; the browser as the device
 - `tech/architecture.md` — stack, system shape, app layering, identity, environments, config
+- `tech/schema-reference.md` — collections, fields, rules, indexes, hooks, the denormalization register
+- `tech/system-components.md` — the running parts and what each owns
+- `tech/states.md` — region kinds and the precedence ladder
+- `tech/error-ux.md` — error codes and their surfaces
+- `tech/lifecycle.md` — launch gate, cold/warm start, budgets
+- `tech/units.md` — reusable UI units and their status
+- `tech/verification.md` — stories, matrices, SQLite audit, stress, accessibility, budgets
 - `tech/schema-reference.md` — storage of record: collections, indexes, hooks, denormalization register
 - `tech/data-model.md` — collections, fields, indexes, access rules, search, migrations
 - `tech/identity.md` — handle generation from the display name, and the deterministic avatar

@@ -19,6 +19,7 @@
 │  │  └─ present/            Domain-facing: MealCard, CookRow, DistanceLabel, PricePill, PhotoGrid, StatusBadge.
 │  ├─ stores/                Pinia state + invariants. The only place `kind` changes.
 │  ├─ services/              The ONLY importer of the PocketBase SDK. zod-parsed responses.
+│  ├─ config.ts              Support and store channels; empty hides the row that needs them.
 │  ├─ composables/           Device boundaries: geolocation, whatsapp, photos, network.
 │  ├─ types/                 zod schemas per collection; types inferred, never hand-written twice.
 │  ├─ i18n/                  ar.json + en.json + locale resolution and direction.
@@ -30,10 +31,10 @@
 │  ├─ pb_hooks/main.pb.js    Thin hooks: search_key, cook enrichment, distance_km.
 │  ├─ pb_hooks/lib/          Generated CJS bundle (ignored in git, rebuilt by tools/build-hooks.mjs).
 │  └─ pb_data/               Local state (ignored).
-├─ tools/                    gate.ts · pb.mjs · seed.mjs · verify-api.ts · build-hooks.mjs · linkcheck.ts · parity.py
+├─ tools/                    gate.ts · pb.mjs · seed.mjs · verify-api.ts · stress.ts · db-audit.py · build-hooks.mjs · linkcheck.ts · parity.py
 ├─ tests/
-│  ├─ unit/                  Vitest: fold, handle, states ladder, schemas, stores.
-│  └─ e2e/                   Playwright: state matrix + behaviour matrix.
+│  ├─ unit/                  Vitest: fold, search, geo/bbox, states ladder, avatar.
+│  └─ e2e/                   Playwright: stories, states, smoke, a11y, perf, parity captures.
 ├─ reference/                avatar.html, logo-parity.html, illustrations/ — design sources, never bundled.
 ├─ docs/                     The specification; see docs/README.md.
 ├─ mockups/                  Reference screenshots. Binary, not documentation.

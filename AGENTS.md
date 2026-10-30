@@ -28,7 +28,10 @@ Wagba is an Egyptian app for finding homemade meals cooked near you, then messag
 ```bash
 bun dev                 # Quasar dev server on :9000 (HMR)
 bun build               # SPA build into dist/spa
-bun run gate            # the only definition of done: lint → types → unit → hooks → db → api → build → e2e → docs
+bun run gate            # lint → types → unit → hooks → db → api → audit → build → e2e ar+en → docs
+bun run gate:full       # the above + 2 000-meal stress before docs
+bun run stress          # volume/concurrency/race report in artifacts/stress
+bun run audit           # SQLite integrity, indexes, orphans, query plans
 bun run docs:check      # link checker over docs/
 bun tools/pb.mjs reset|serve|restart|stop|superuser
 bun tools/seed.mjs      # deterministic: 3 cooks, 12 meals
@@ -70,6 +73,8 @@ scratch/ artifacts/   ignored: probes and gate evidence. Never durable.
 - Each **hook handler runs in its own scope**: `require` shared code inside every handler.
 - The JS VM (goja) has **no `\p{…}`** property escapes; use explicit Unicode ranges.
 - Auth collections need an email identifier; the account uses a synthetic `<id>@wagba.local` that is never exposed.
+- A **required number field rejects `0`** as blank, so coordinates are row-optional with range checks; the client always sends them.
+- `e.requestInfo.body` was not reliable for presence checks in request hooks here; do not build required-field logic on it.
 - **Create rules are evaluated against the submitted record before request hooks run** — an ownership field has to be in the payload; a hook cannot stamp it. A forged owner is refused by the rule.
 - **`@request.auth.id` is superuser-only inside a client *filter*** (403). Filter with the literal id; rules remain the authority.
 
