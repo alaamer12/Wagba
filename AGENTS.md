@@ -18,7 +18,7 @@ Wagba is an Egyptian app for finding homemade meals cooked near you, then messag
 | Package manager | **bun only** (`bun install`, `bunx`). Never npm, pnpm, or yarn; never delete `bun.lock` |
 | Runtime | Node 24, bun 1.4.4 |
 | Backend | PocketBase **0.28.4**, untracked binary at `pocketbase/pocketbase.exe` (download the pinned release if missing) |
-| Android | `JAVA_HOME` = JDK 22, `ANDROID_HOME` = `D:\Android` (platform 36, build-tools 36), Gradle wrapper in `android/` |
+| Android | `JAVA_HOME` = JDK 22, `ANDROID_HOME` = `D:\Android` (platform 36, build-tools 36). Gradle provisions its own **JDK 21 toolchain** via the Foojay resolver; compileSdk 36, minSdk 24 |
 | Browser | system Chrome; Playwright uses `channel: 'chrome'` |
 
 ## Commands

@@ -59,7 +59,19 @@ All verification runs in Chrome, driven by Playwright — the plan's constraint,
 
 A feature that only works through a plugin is not verified by this loop, and must be marked as such rather than claimed green.
 
-## 6. Device path — documented, not exercised tonight
+## 6. Android build — the three toolchain facts it costs
+
+`bunx cap sync android` then `cd android && ./gradlew assembleDebug`. Verified output: `com.wagba.app`, 9.1 MB, SPA present under `assets/public/`.
+
+| Fact | Why |
+|---|---|
+| **compileSdk 36 + AGP 8.9.3** | Capacitor 8's androidx dependencies refuse to compile below API 36; the generated template ships 35 and AGP 8.7.2, which fails AAR-metadata checks |
+| **minSdk 24** | the camera plugin (`ioncamera-android`) declares 24; 23 fails manifest merge |
+| **JDK 21 toolchain** | the Android build asks for a Java 21 toolchain even when `JAVA_HOME` is 22; `org.gradle.java.installations.auto-download=true` plus the Foojay resolver in `settings.gradle` provisions it, so no system-wide JDK install is needed |
+
+The APK is built and inspected, never launched from the agent — the browser is the verification device.
+
+## 7. Device path — documented, not exercised tonight
 
 When an Android build is attached:
 
@@ -72,7 +84,7 @@ adb shell am force-stop com.wagba.app && adb shell monkey -p com.wagba.app 1
 
 Two traps: both `adb reverse` mappings must be re-created after **every** reconnect, and the device build must not point at `localhost` for the API — `localhost` inside the phone is the phone. For a device session, `VITE_POCKETBASE_URL` is set to the reverse-mapped host address at build time.
 
-## 7. Troubleshooting
+## 8. Troubleshooting
 
 | Symptom | Cause | Fix |
 |---|---|---|
