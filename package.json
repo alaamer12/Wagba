@@ -15,6 +15,8 @@
     "format": "biome check --write",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "pvc": ".venv/Scripts/python.exe tools/check_pvc.py src",
+    "states:check": "bun tools/states-check.ts",
     "gate": "bun tools/gate.ts",
     "gate:full": "bun tools/gate.ts --full",
     "stress": "bun tools/stress.ts",

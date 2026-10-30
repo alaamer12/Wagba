@@ -6,7 +6,7 @@ Verified against **PocketBase 0.28.4**, `pocketbase/pb_migrations/0001_schema.js
 
 ## 0. Engine facts this schema depends on
 
-Five behaviours were discovered by running the engine, not by reading docs. Each one shaped the schema:
+Behaviours discovered by running the engine against `pocketbase/pocketbase.exe` on this machine, not by reading docs. Each one shaped the schema or the query shape; the last eight were measured on 2026-10-30 while planning the nearest-first feed and the view counters.
 
 | Fact | Consequence here |
 |---|---|
@@ -16,6 +16,15 @@ Five behaviours were discovered by running the engine, not by reading docs. Each
 | `hidden: true` fields are dropped on **write** and blocked from **filtering** | Coordinates cannot be hidden fields; they are ordinary fields zeroed during enrichment |
 | Each hook handler runs in an **isolated scope**; module-level helpers are invisible | Shared code is `require`d *inside* every handler |
 | goja has no `\p{…}` Unicode property escapes | `shared/normalize.ts` uses explicit ranges — the property-escape version silently produced empty keys |
+| `sort` resolves each token to a **column name only**; `sort=geoDistance(longitude, latitude, …)` → HTTP 400 `invalid sort field "geoDistance(longitude"` | Nearest-first is not expressible as a server query. The feed fetches the whole in-radius set and orders by the enriched `distance_km` client-side |
+| `fields` is a projection list: an aliased expression (`geoDistance(…) AS dist`) returns 200 and is **silently dropped** | There is no computed distance in the response to sort or read; enrichment owns that value |
+| No `$near`, no spatial/R-Tree index; the `geoPoint` field type is plain JSON | `latitude`/`longitude` stay ordinary floats: bbox rows come from `idx_meals_geo`, `geoDistance` is the exact filter |
+| `MaxPerPage = 1000` (`tools/search/provider.go`) | A wide fetch (`perPage: 500`) is legal, which is what makes the fetch-wide feed possible at all |
+| With `status + bbox + geo` and `sort:-created LIMIT 50`, the plan is `SEARCH USING INDEX idx_meals_feed (status=?)` only, and **the LIMIT stops the scan early** | This is the mechanism that dropped nearer-but-older meals; recorded here so the fix is not re-derived |
+| `cronAdd(id, "* * * * *", fn)` registers **and fires**; `@every 5s` is rejected — and the rejection **aborts the whole hooks file**, silently disabling every other hook in it | Cron work is minute-granularity at best, and a bad expression is a silent outage. Probe evidence: `failed to execute _probe.pb.js: - [cronAdd] failed to register cron job …` |
+| `onRecordEnrich` runs **inside** `e.next()` of `onRecordsListRequest`, once per record (3 records → 3 separate `SELECT users`), so a value written after `next()` never reaches the response | The per-row cook lookup cannot be pre-batched from the list hook. Any denormalized `cook` copy must be written at record-write time |
+| The 0.28.4 JSVM exposes **no `Dao()`** | There is no raw-SQL path from a hook; recomputing a counter column means `findRecordsByFilter` + `save`, which bounds how often it can run |
+| The JS SDK's `SendOptions extends RequestInit`, and the SDK has **no upload-progress callback** | Per-request `signal` abort works even with `autoCancellation(false)`; determinate publish progress would mean leaving the SDK, so the UI reports what is uploading rather than a fabricated percentage |
 
 ## 1. `users` — auth collection
 

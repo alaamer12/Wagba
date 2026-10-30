@@ -23,6 +23,11 @@ function sh(cmd: string, args: string[], log: string, env?: Record<string, strin
 
 const steps = [
   { name: "biome", run: () => sh("bunx", ["biome", "check"], "biome") },
+  {
+    name: "pvc",
+    run: () => sh(".venv/Scripts/python.exe", ["tools/check_pvc.py", "src"], "pvc"),
+  },
+  { name: "states", run: () => sh("bun", ["tools/states-check.ts"], "states") },
   { name: "types", run: () => sh("bunx", ["vue-tsc", "--noEmit"], "types") },
   { name: "unit", run: () => sh("bunx", ["vitest", "run"], "unit") },
   {

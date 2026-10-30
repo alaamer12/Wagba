@@ -28,10 +28,12 @@ Wagba is an Egyptian app for finding homemade meals cooked near you, then messag
 ```bash
 bun dev                 # Quasar dev server on :9000 (HMR)
 bun build               # SPA build into dist/spa
-bun run gate            # lint → types → unit → hooks → db → api → audit → build → e2e ar+en → docs
+bun run gate            # lint → pvc → states → types → unit → hooks → db → api → audit → build → e2e ar+en → docs
 bun run gate:full       # the above + 2 000-meal stress before docs
 bun run stress          # volume/concurrency/race report in artifacts/stress
 bun run audit           # SQLite integrity, indexes, orphans, query plans
+bun run pvc             # /pvc role-tree audit (tools/check_pvc.py, stdlib python)
+bun run states:check    # /states + role ratchet — fails only when a count GROWS (tools/arch-baseline.json)
 bun run docs:check      # link checker over docs/
 bun tools/pb.mjs reset|serve|restart|stop|superuser
 bun tools/seed.mjs      # deterministic: 3 cooks, 12 meals
