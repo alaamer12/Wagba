@@ -1,0 +1,317 @@
+{
+  "lint": [],
+  "isolation": [],
+  "variants": [
+    {
+      "slot": "backdrop",
+      "variant": "flat",
+      "issues": [],
+      "ok": true
+    },
+    {
+      "slot": "hair",
+      "variant": "bun",
+      "issues": [],
+      "changed_bbox": [
+        279.6,
+        41.7,
+        359.4,
+        103.7
+      ],
+      "ok": true
+    },
+    {
+      "slot": "hair",
+      "variant": "buzz",
+      "issues": [],
+      "changed_bbox": [
+        166.2,
+        54.4,
+        439.2,
+        269.9
+      ],
+      "ok": true
+    },
+    {
+      "slot": "hair",
+      "variant": "crop",
+      "issues": [],
+      "ok": true
+    },
+    {
+      "slot": "hair",
+      "variant": "curly",
+      "issues": [],
+      "changed_bbox": [
+        165.7,
+        54.4,
+        474.3,
+        286.2
+      ],
+      "ok": true
+    },
+    {
+      "slot": "hair",
+      "variant": "hijab",
+      "issues": [],
+      "changed_bbox": [
+        166.2,
+        54.4,
+        462.1,
+        504.3
+      ],
+      "ok": true
+    },
+    {
+      "slot": "hair",
+      "variant": "long",
+      "issues": [],
+      "changed_bbox": [
+        165.7,
+        54.4,
+        474.3,
+        460.0
+      ],
+      "ok": true
+    },
+    {
+      "slot": "hair",
+      "variant": "wavy",
+      "issues": [],
+      "changed_bbox": [
+        166.2,
+        54.4,
+        469.7,
+        269.9
+      ],
+      "ok": true
+    },
+    {
+      "slot": "torso",
+      "variant": "tee",
+      "issues": [],
+      "ok": true
+    },
+    {
+      "slot": "neck",
+      "variant": "regular",
+      "issues": [],
+      "ok": true
+    },
+    {
+      "slot": "ears",
+      "variant": "round",
+      "issues": [],
+      "ok": true
+    },
+    {
+      "slot": "head",
+      "variant": "oval",
+      "issues": [],
+      "ok": true
+    },
+    {
+      "slot": "nose",
+      "variant": "button",
+      "issues": [],
+      "ok": true
+    },
+    {
+      "slot": "mouth",
+      "variant": "smile",
+      "issues": [],
+      "ok": true
+    },
+    {
+      "slot": "eyes",
+      "variant": "round",
+      "issues": [],
+      "ok": true
+    },
+    {
+      "slot": "brows",
+      "variant": "arched",
+      "issues": [],
+      "ok": true
+    },
+    {
+      "slot": "beard",
+      "variant": "full",
+      "issues": [],
+      "changed_bbox": [
+        231.8,
+        394.5,
+        408.2,
+        490.0
+      ],
+      "ok": true
+    },
+    {
+      "slot": "beard",
+      "variant": "none",
+      "issues": [],
+      "ok": true
+    },
+    {
+      "slot": "beard",
+      "variant": "stubble",
+      "issues": [],
+      "changed_bbox": [
+        238.4,
+        402.1,
+        401.6,
+        476.3
+      ],
+      "ok": true
+    },
+    {
+      "slot": "glasses",
+      "variant": "none",
+      "issues": [],
+      "ok": true
+    },
+    {
+      "slot": "glasses",
+      "variant": "round",
+      "issues": [],
+      "changed_bbox": [
+        230.8,
+        234.8,
+        437.2,
+        302.5
+      ],
+      "ok": true
+    },
+    {
+      "slot": "glasses",
+      "variant": "square",
+      "issues": [],
+      "changed_bbox": [
+        232.8,
+        231.3,
+        412.8,
+        294.8
+      ],
+      "ok": true
+    }
+  ],
+  "combos": [
+    {
+      "index": 1,
+      "picks": {
+        "backdrop": "flat",
+        "hair": "bun",
+        "torso": "tee",
+        "neck": "regular",
+        "ears": "round",
+        "head": "oval",
+        "nose": "button",
+        "mouth": "smile",
+        "eyes": "round",
+        "brows": "arched",
+        "beard": "full",
+        "glasses": "none"
+      },
+      "issues": [],
+      "ok": true
+    },
+    {
+      "index": 2,
+      "picks": {
+        "backdrop": "flat",
+        "hair": "long",
+        "torso": "tee",
+        "neck": "regular",
+        "ears": "round",
+        "head": "oval",
+        "nose": "button",
+        "mouth": "smile",
+        "eyes": "round",
+        "brows": "arched",
+        "beard": "none",
+        "glasses": "round"
+      },
+      "issues": [],
+      "ok": true
+    },
+    {
+      "index": 3,
+      "picks": {
+        "backdrop": "flat",
+        "hair": "crop",
+        "torso": "tee",
+        "neck": "regular",
+        "ears": "round",
+        "head": "oval",
+        "nose": "button",
+        "mouth": "smile",
+        "eyes": "round",
+        "brows": "arched",
+        "beard": "stubble",
+        "glasses": "square"
+      },
+      "issues": [],
+      "ok": true
+    },
+    {
+      "index": 4,
+      "picks": {
+        "backdrop": "flat",
+        "hair": "hijab",
+        "torso": "tee",
+        "neck": "regular",
+        "ears": "round",
+        "head": "oval",
+        "nose": "button",
+        "mouth": "smile",
+        "eyes": "round",
+        "brows": "arched",
+        "beard": "stubble",
+        "glasses": "none"
+      },
+      "issues": [],
+      "ok": true
+    },
+    {
+      "index": 5,
+      "picks": {
+        "backdrop": "flat",
+        "hair": "buzz",
+        "torso": "tee",
+        "neck": "regular",
+        "ears": "round",
+        "head": "oval",
+        "nose": "button",
+        "mouth": "smile",
+        "eyes": "round",
+        "brows": "arched",
+        "beard": "full",
+        "glasses": "none"
+      },
+      "issues": [],
+      "ok": true
+    },
+    {
+      "index": 6,
+      "picks": {
+        "backdrop": "flat",
+        "hair": "curly",
+        "torso": "tee",
+        "neck": "regular",
+        "ears": "round",
+        "head": "oval",
+        "nose": "button",
+        "mouth": "smile",
+        "eyes": "round",
+        "brows": "arched",
+        "beard": "none",
+        "glasses": "round"
+      },
+      "issues": [],
+      "ok": true
+    }
+  ],
+  "coverage_pct": 90.7,
+  "errors": [],
+  "warnings": []
+}

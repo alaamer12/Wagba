@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="40 40 610 610">
+  <g data-layer="beard">
+  <path d="M276 430 C286 490 324 516 360 516 C396 516 434 490 444 430 C436 480 402 498 360 498 C318 498 284 480 276 430 Z" fill="var(--hair)" opacity=".22"/>
+  </g>
+</svg>

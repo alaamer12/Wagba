@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="40 40 610 610">
+  <g data-layer="hair_back">
+  <path d="M232 250 C232 160 292 120 360 120 C428 120 488 160 488 250 L488 500 C488 560 440 600 360 600 C280 600 232 560 232 500 Z" fill="var(--shirt)"/>
+  </g>
+  <g data-layer="hair_front">
+  <path d="M240 230 C250 170 300 138 360 138 C420 138 470 170 480 230 C462 198 420 182 360 182 C300 182 258 198 240 230 Z" fill="var(--shirt)"/>
+  <path d="M240 230 L258 250 L258 470 L240 500 Z" fill="var(--shirt)"/>
+  <path d="M480 230 L462 250 L462 470 L480 500 Z" fill="var(--shirt)"/>
+  <path d="M300 520 C320 548 400 548 420 520" fill="none" stroke="var(--shirt-shade)" stroke-width="6" stroke-linecap="round"/>
+  </g>
+</svg>

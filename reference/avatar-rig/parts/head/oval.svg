@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="40 40 610 610">
+  <g data-layer="head">
+  <path d="M268 196 C258 260 254 340 262 392 C270 436 316 474 360 474 C408 474 450 436 458 392 C466 340 462 260 452 196 Z" fill="var(--skin)"/>
+  <circle cx="306" cy="382" r="26" fill="var(--blush)" opacity=".28"/>
+  <circle cx="428" cy="378" r="24" fill="var(--blush)" opacity=".24"/>
+  </g>
+</svg>

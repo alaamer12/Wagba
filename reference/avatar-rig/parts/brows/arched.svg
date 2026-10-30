@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="40 40 610 610">
+  <g data-layer="brows">
+  <path d="M303 281 Q326 262 352 272" fill="none" stroke="var(--ink)" stroke-width="13" stroke-linecap="round"/>
+  <path d="M392 272 Q418 262 442 281" fill="none" stroke="var(--ink)" stroke-width="13" stroke-linecap="round"/>
+  </g>
+</svg>

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="40 40 610 610">
+  <g data-layer="hair_back">
+  <ellipse cx="356" cy="248" rx="146" ry="146" fill="var(--hair)"/>
+  </g>
+  <g data-layer="hair_front">
+  <g fill="var(--hair)">
+    <circle cx="244" cy="248" r="34"/><circle cx="290" cy="200" r="40"/><circle cx="352" cy="176" r="44"/>
+    <circle cx="414" cy="188" r="40"/><circle cx="462" cy="232" r="36"/><circle cx="486" cy="282" r="28"/>
+    <circle cx="232" cy="300" r="26"/>
+  </g>
+  </g>
+</svg>

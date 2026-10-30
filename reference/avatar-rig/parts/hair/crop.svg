@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="40 40 610 610">
+  <g data-layer="hair_back">
+  <ellipse cx="356" cy="248" rx="146" ry="146" fill="var(--hair)"/>
+  </g>
+  <g data-layer="hair_front">
+  <path d="M216 292 C208 270 205 250 207 226 C204 182 232 160 258 150 C264 120 300 106 332 108 C352 90 396 90 412 108 C442 104 472 134 479 170 C491 192 489 236 479 272 C477 284 474 296 466 304 C458 306 452 302 450 292 C450 270 450 250 448 234 C428 236 408 222 386 208 C356 224 326 232 290 214 C284 244 276 278 268 306 C250 314 230 308 216 292 Z" fill="var(--hair)"/>
+  <path d="M300 150 C330 128 370 126 400 142" fill="none" stroke="var(--hair-light)" stroke-width="6" stroke-linecap="round" opacity=".7"/>
+  </g>
+</svg>

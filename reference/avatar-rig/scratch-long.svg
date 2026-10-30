@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="avatar-rig" viewBox="40 40 610 610" role="img" aria-label="Avatar"><style>.avatar-rig{--backdrop:#fcd76e;--backdrop-shade:#f6bf45;--skin:#f38e6c;--skin-shade:#d9795a;--blush:#e8553f;--hair:#251e19;--hair-light:#3d332c;--shirt:#4f7179;--shirt-shade:#3f5f66;--ink:#241b17;--lip:#a24a32;--white:#fffaf2}</style><defs><clipPath id="avatar-frame"><circle cx="345" cy="345" r="300"/></clipPath></defs><g clip-path="url(#avatar-frame)"><g data-layer="backdrop" data-slot="backdrop" data-part="flat">
+  <rect x="40" y="40" width="610" height="610" fill="var(--backdrop)" />
+  </g>
+<g data-layer="hair_back" data-slot="hair" data-part="long">
+  <path d="M232 250 C220 190 268 148 360 148 C452 148 500 190 488 250 L500 500 C470 470 452 420 448 340 L272 340 C268 420 250 470 220 500 Z" fill="var(--hair)" />
+  </g>
+  <g data-layer="torso" data-slot="torso" data-part="tee">
+  <path d="M40 600 C105 560 190 520 262 497 L426 504 C505 520 585 548 660 606 L660 660 L40 660 Z" fill="var(--shirt)" />
+  <path d="M266 503 C284 552 326 566 350 566 C384 566 412 548 424 506" fill="none" stroke="var(--shirt-shade)" stroke-width="5" stroke-linecap="round" />
+  </g>
+<g data-layer="neck" data-slot="neck" data-part="regular">
+  <path d="M290 420 C288 465 286 488 284 504 C292 546 328 562 350 562 C382 562 410 545 414 508 C408 488 398 468 396 420 Z" fill="var(--skin)" />
+  <path d="M290 446 C318 482 372 484 396 450 L396 468 C372 498 318 496 290 466 Z" fill="var(--skin-shade)" opacity=".5" />
+  </g>
+<g data-layer="ears" data-slot="ears" data-part="round">
+  <ellipse cx="236" cy="336" rx="28" ry="38" fill="var(--skin-shade)" />
+  <ellipse cx="470" cy="324" rx="22" ry="36" fill="var(--skin-shade)" />
+  </g>
+<g data-layer="head" data-slot="head" data-part="oval">
+  <path d="M268 196 C258 260 254 340 262 392 C270 436 316 474 360 474 C408 474 450 436 458 392 C466 340 462 260 452 196 Z" fill="var(--skin)" />
+  <circle cx="306" cy="382" r="26" fill="var(--blush)" opacity=".28" />
+  <circle cx="428" cy="378" r="24" fill="var(--blush)" opacity=".24" />
+  </g>
+<g data-layer="beard" data-slot="beard" data-part="none">
+  
+  </g>
+<g data-layer="nose" data-slot="nose" data-part="button">
+  <path d="M377 322 L371 346 Q381 356 394 347" fill="none" stroke="var(--skin-shade)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity=".85" />
+  </g>
+<g data-layer="mouth" data-slot="mouth" data-part="smile">
+  <path d="M336 376 Q370 414 405 374 Q370 386 336 376 Z" fill="var(--white)" stroke="var(--lip)" stroke-width="2.5" stroke-linejoin="round" />
+  </g>
+<g data-layer="eyes" data-slot="eyes" data-part="round">
+  <ellipse cx="326" cy="306" rx="10" ry="11" fill="var(--ink)" />
+  <ellipse cx="416" cy="304" rx="10" ry="11" fill="var(--ink)" />
+  </g>
+<g data-layer="brows" data-slot="brows" data-part="arched">
+  <path d="M303 281 Q326 262 352 272" fill="none" stroke="var(--ink)" stroke-width="13" stroke-linecap="round" />
+  <path d="M392 272 Q418 262 442 281" fill="none" stroke="var(--ink)" stroke-width="13" stroke-linecap="round" />
+  </g>
+<g data-layer="glasses" data-slot="glasses" data-part="none">
+  
+  </g>
+<g data-layer="hair_front" data-slot="hair" data-part="long">
+  <path d="M214 200 C240 164 300 148 360 148 C420 148 480 164 506 200 L494 272 C470 230 420 214 360 214 C300 214 250 230 226 272 Z" fill="var(--hair)" />
+  </g>
+</g></svg>

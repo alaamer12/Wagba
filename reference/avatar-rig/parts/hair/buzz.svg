@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="40 40 610 610">
+  <g data-layer="hair_back">
+  <ellipse cx="356" cy="248" rx="146" ry="146" fill="var(--hair)"/>
+  </g>
+  <g data-layer="hair_front">
+  <path d="M222 280 C214 240 230 190 268 170 C300 150 420 150 452 170 C490 190 506 240 498 280 C470 246 430 228 360 228 C290 228 250 246 222 280 Z" fill="var(--hair)"/>
+  </g>
+</svg>

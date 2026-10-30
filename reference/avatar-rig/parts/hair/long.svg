@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="40 40 610 610">
+  <g data-layer="hair_back">
+  <rect x="206" y="146" width="308" height="330" rx="74" fill="var(--hair)"/>
+  <path d="M232 250 C220 190 268 148 360 148 C452 148 500 190 488 250 L500 500 C470 470 452 420 448 340 L272 340 C268 420 250 470 220 500 Z" fill="var(--hair)"/>
+  </g>
+  <g data-layer="hair_front">
+  <path d="M214 200 C240 164 300 148 360 148 C420 148 480 164 506 200 L494 272 C470 230 420 214 360 214 C300 214 250 230 226 272 Z" fill="var(--hair)"/>
+  </g>
+</svg>

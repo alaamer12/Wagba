@@ -25,7 +25,14 @@ const steps = [
   { name: "biome", run: () => sh("bunx", ["biome", "check"], "biome") },
   { name: "types", run: () => sh("bunx", ["vue-tsc", "--noEmit"], "types") },
   { name: "unit", run: () => sh("bunx", ["vitest", "run"], "unit") },
-  { name: "hooks", run: () => sh("bun", ["tools/build-hooks.mjs"], "hooks") },
+  {
+    name: "generated",
+    run: () => {
+      const hooks = sh("bun", ["tools/build-hooks.mjs"], "hooks");
+      if (hooks !== 0) return hooks;
+      return sh("bun", ["tools/build-avatar.ts"], "avatar");
+    },
+  },
   {
     name: "db",
     run: () => {

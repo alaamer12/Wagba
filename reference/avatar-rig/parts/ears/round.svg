@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="40 40 610 610">
+  <g data-layer="ears">
+  <ellipse cx="236" cy="336" rx="28" ry="38" fill="var(--skin-shade)"/>
+  <ellipse cx="470" cy="324" rx="22" ry="36" fill="var(--skin-shade)"/>
+  </g>
+</svg>

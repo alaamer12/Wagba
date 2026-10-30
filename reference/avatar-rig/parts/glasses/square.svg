@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="40 40 610 610">
+  <g data-layer="glasses">
+  <g fill="none" stroke="var(--ink)" stroke-width="5">
+    <rect x="292" y="276" width="68" height="56" rx="10"/><rect x="382" y="274" width="68" height="56" rx="10"/>
+    <path d="M360 304 h22"/><path d="M292 292 l-28 -10"/><path d="M450 290 l26 -10"/>
+  </g>
+  </g>
+</svg>

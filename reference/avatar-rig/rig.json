@@ -1,0 +1,235 @@
+{
+  "name": "wagba",
+  "viewBox": "40 40 610 610",
+  "frame": {
+    "shape": "circle",
+    "cx": 345,
+    "cy": 345,
+    "r": 300
+  },
+  "palette": {
+    "backdrop": "#fcd76e",
+    "backdrop-shade": "#f6bf45",
+    "skin": "#f38e6c",
+    "skin-shade": "#d9795a",
+    "blush": "#e8553f",
+    "hair": "#251e19",
+    "hair-light": "#3d332c",
+    "shirt": "#4f7179",
+    "shirt-shade": "#3f5f66",
+    "ink": "#241b17",
+    "lip": "#a24a32",
+    "white": "#fffaf2"
+  },
+  "layers": [
+    "backdrop",
+    "hair_back",
+    "torso",
+    "neck",
+    "ears",
+    "head",
+    "beard",
+    "nose",
+    "mouth",
+    "eyes",
+    "brows",
+    "glasses",
+    "hair_front"
+  ],
+  "slots": {
+    "backdrop": {
+      "layers": [
+        "backdrop"
+      ],
+      "backdrop": true,
+      "envelope": [
+        40,
+        40,
+        650,
+        650
+      ]
+    },
+    "hair": {
+      "layers": [
+        "hair_back",
+        "hair_front"
+      ],
+      "envelope": [
+        160,
+        40,
+        530,
+        620
+      ]
+    },
+    "torso": {
+      "layers": [
+        "torso"
+      ],
+      "envelope": [
+        40,
+        490,
+        650,
+        650
+      ]
+    },
+    "neck": {
+      "layers": [
+        "neck"
+      ],
+      "envelope": [
+        250,
+        400,
+        450,
+        580
+      ]
+    },
+    "ears": {
+      "layers": [
+        "ears"
+      ],
+      "envelope": [
+        190,
+        280,
+        500,
+        380
+      ]
+    },
+    "head": {
+      "layers": [
+        "head"
+      ],
+      "envelope": [
+        240,
+        180,
+        480,
+        490
+      ]
+    },
+    "nose": {
+      "layers": [
+        "nose"
+      ],
+      "envelope": [
+        340,
+        300,
+        420,
+        370
+      ]
+    },
+    "mouth": {
+      "layers": [
+        "mouth"
+      ],
+      "envelope": [
+        320,
+        360,
+        420,
+        420
+      ]
+    },
+    "eyes": {
+      "layers": [
+        "eyes"
+      ],
+      "envelope": [
+        290,
+        280,
+        450,
+        330
+      ]
+    },
+    "brows": {
+      "layers": [
+        "brows"
+      ],
+      "envelope": [
+        290,
+        250,
+        450,
+        300
+      ]
+    },
+    "beard": {
+      "layers": [
+        "beard"
+      ],
+      "envelope": [
+        210,
+        330,
+        480,
+        560
+      ]
+    },
+    "glasses": {
+      "layers": [
+        "glasses"
+      ],
+      "envelope": [
+        220,
+        220,
+        480,
+        330
+      ]
+    }
+  },
+  "default": {
+    "backdrop": "flat",
+    "hair": "crop",
+    "torso": "tee",
+    "neck": "regular",
+    "ears": "round",
+    "head": "oval",
+    "nose": "button",
+    "mouth": "smile",
+    "eyes": "round",
+    "brows": "arched",
+    "beard": "none",
+    "glasses": "none"
+  },
+  "interacts": [
+    [
+      "hair",
+      "head"
+    ],
+    [
+      "hair",
+      "ears"
+    ],
+    [
+      "hair",
+      "brows"
+    ],
+    [
+      "hair",
+      "neck"
+    ],
+    [
+      "beard",
+      "mouth"
+    ],
+    [
+      "beard",
+      "neck"
+    ],
+    [
+      "glasses",
+      "eyes"
+    ],
+    [
+      "glasses",
+      "brows"
+    ],
+    [
+      "neck",
+      "torso"
+    ],
+    [
+      "head",
+      "neck"
+    ],
+    [
+      "head",
+      "ears"
+    ]
+  ]
+}

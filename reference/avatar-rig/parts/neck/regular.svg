@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="40 40 610 610">
+  <g data-layer="neck">
+  <path d="M290 420 C288 465 286 488 284 504 C292 546 328 562 350 562 C382 562 410 545 414 508 C408 488 398 468 396 420 Z" fill="var(--skin)"/>
+  <path d="M290 446 C318 482 372 484 396 450 L396 468 C372 498 318 496 290 466 Z" fill="var(--skin-shade)" opacity=".5"/>
+  </g>
+</svg>

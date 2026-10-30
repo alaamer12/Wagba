@@ -15,7 +15,7 @@ Location is `src/components/`.
 | AppChip | base | `base/AppChip.vue` | pill; active = butter fill | Implemented |
 | AppField | base | `base/AppField.vue` | label + input/textarea + hint/error; `defineModel` | Implemented |
 | AppAvatar | base | `base/AppAvatar.vue` | uploaded photo, else `AvatarArt` from the handle, else the brand hat | Implemented |
-| AvatarArt | base | `base/AvatarArt.vue` | the v1 generated face: skin, hair incl. hijab, beard, glasses, shirt, backdrop | Implemented |
+| AvatarArt | base | `base/AvatarArt.vue` | the verified rig: 12 slots, 22 parts, palette axes for skin/shirt/backdrop | Implemented |
 | AppEmpty | base | `base/AppEmpty.vue` | illustration + title + body + action slot | Implemented |
 | AppSkeleton | base | `base/AppSkeleton.vue` | card-shaped shimmer blocks | Implemented |
 | AppBanner | base | `base/AppBanner.vue` | inline strip for `stale`; info/warning | Implemented |

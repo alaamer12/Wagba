@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { PARTS, pickAvatar } from "@/lib/avatar";
+import { BEARD_IDS, GLASSES_IDS, HAIR_IDS, layerMarkup, pickAvatar } from "@/lib/avatar";
+import { partLayers, RIG } from "@/lib/avatar-parts";
 
 describe("pickAvatar", () => {
   it("is deterministic for the same handle", () => {
@@ -7,17 +8,18 @@ describe("pickAvatar", () => {
   });
 
   it("gives different handles different faces", () => {
-    const a = pickAvatar("mhmadhmd421");
-    const b = pickAvatar("saraaebrahym183");
-    const c = pickAvatar("krymfwad907");
-    const key = (p: typeof a) => Object.values(p).join("|");
-    expect(new Set([key(a), key(b), key(c)]).size).toBe(3);
+    const keys = ["mhmadhmd421", "saraaebrahym183", "krymfwad907"].map((h) => {
+      const p = pickAvatar(h);
+      return [p.hair, p.beard, p.glasses, p.skin.skin, p.shirt.shirt, p.backdrop.backdrop].join(
+        "|",
+      );
+    });
+    expect(new Set(keys).size).toBe(3);
   });
 
-  it("clears facial hair whenever the hijab is drawn", () => {
-    // Find a handle that draws the hijab, then assert the invariant on it.
+  it("never draws facial hair under the hijab", () => {
     let checked = 0;
-    for (let i = 0; i < 400 && checked < 5; i++) {
+    for (let i = 0; i < 600 && checked < 5; i++) {
       const pick = pickAvatar(`probe-${i}`);
       if (pick.hair === "hijab") {
         expect(pick.beard).toBe("none");
@@ -27,10 +29,32 @@ describe("pickAvatar", () => {
     expect(checked).toBeGreaterThan(0);
   });
 
-  it("only picks values that exist in the manifest", () => {
+  it("only picks ids that exist in the rig", () => {
     const pick = pickAvatar("anyone");
-    for (const [axis, value] of Object.entries(pick)) {
-      expect(PARTS[axis as keyof typeof PARTS] as readonly string[]).toContain(value);
+    expect(HAIR_IDS).toContain(pick.hair);
+    expect(BEARD_IDS).toContain(pick.beard);
+    expect(GLASSES_IDS).toContain(pick.glasses);
+    for (const slot of [
+      "hair",
+      "beard",
+      "glasses",
+      "backdrop",
+      "torso",
+      "neck",
+      "ears",
+      "head",
+      "nose",
+      "mouth",
+      "eyes",
+      "brows",
+    ]) {
+      expect(Object.keys(RIG.parts[slot] ?? {}).length).toBeGreaterThan(0);
     }
+  });
+
+  it("assembles one ordered markup per rig layer", () => {
+    const layers = layerMarkup(pickAvatar("ordered"));
+    expect(layers.length).toBe(RIG.layers.length);
+    expect(partLayers("hair", "crop").map((p) => p.layer)).toEqual(["hair_back", "hair_front"]);
   });
 });
