@@ -71,6 +71,9 @@ than by tag. The checks read file paths, so the signal survives the alias.
 |---|---|---|---|---|
 | MealCard | present | `present/MealCard.vue` | cover, title, 2-line description, cook avatar+name, distance | Implemented |
 | CookRow | present | `present/CookRow.vue` | avatar + name + `@handle` + social links (external open) on the details page | Implemented |
+| PhotoSlider | component | `features/meal/components/PhotoSlider.vue` | one meal's photographs, scroll-snapped, with the dot that moves them; the slide index is owned here because nothing else can know it | Implemented |
+| HandleField | component | `features/profile/components/HandleField.vue` | the handle line: the derived preview until it is typed over, then the frozen value the server will not change | Implemented — no live availability check yet (see Known gaps) |
+| SettingsRow | component | `features/profile/views/SettingsRowsView/SettingsRow.vue` | one Settings row: label, at most one trailing marker (tally, word, chevron), and an `activate` event; it holds no fact and never navigates — the View that mounts it owns the route | Implemented |
 
 ## renditions — the ten kinds, displayed once (`ui/renditions`)
 
@@ -97,6 +100,16 @@ screen stays with the screen.
 | MealFeedView | feed | Feed State, Location State, Network Condition, Forced Region Condition, Freshness (via the pull) | loading · blocked · offline · stale · empty-filtered · empty · ready · fault |
 | MealSearchView | feed | Feed State (`active`, `search`), Location State | none — one field and the suggestions under it |
 | NewMealsBannerView | feed | Freshness State, Feed State, Location State | the strip or nothing |
+| MealDetailView | meal | Detail State, Favorites State, Session State, Location (via WhatsApp ladder), Forced Region Condition | loading · ready · empty (the gone case) · fault |
+| MealFormView | publish | Session State, Location State (`blocked`, `ensure`), Feed State (retired on a successful write) | loading · ready · fault (the edit that could not be read) |
+| FavoritesView | favorites | Favorites State, Session State, Forced Region Condition | loading · empty · ready · fault |
+| MyMealsListView | mine | Network Condition, Forced Region Condition; the list is requested by the View itself | loading · empty · ready · stale · offline · fault |
+| DeleteConfirmationView | mine | none — it is given the row and answers yes or no; `deleteMeal` is its own work | one case: the dialog |
+| AccountCardView | profile | Session State (the profile, and whether it is complete) | the summary, or nothing — the other half is `AccountCtaView` |
+| AccountCtaView | profile | Session State (`isComplete`) | the call to action, or nothing |
+| SettingsRowsView | profile | Session State (`ensureReady`), Favorites State, `listMine` | the three cards of rows, their tallies, and where each row goes |
+| ProfileFormView | profile | Session State, the handle service | one case; the server's refusal is shown inside it, and the bar it renders says completing or editing |
+| WelcomeView | onboarding | none yet — the first-visit skip is decision D10′ and needs `useWelcomeSeenCondition`, which is **not implemented** | one case |
 | MainNavigationView | app shell | Active Route Condition | which tab reads as active, and what each control does |
 
 The feed View is the only place the ladder is called for the feed: the State reports facts and
@@ -117,6 +130,7 @@ A fact source returns data and never renders (`/states`). `State` = the outcome 
 | Feed snapshot | Condition | `shared/conditions/useFeedSnapshotCondition.ts` | whether an earlier run left a readable feed | Feed (the `stale` answer) |
 | Active route | Condition | `shared/conditions/useActiveRouteCondition.ts` | which route the app is on, and its key | MainNavigationView, pages that key their own teardown |
 | Freshness | State | `features/feed/behaviour/useFreshnessState.ts` | whether newer meals exist than the rows shown; the probe is ours to run and ours to write | NewMealsBannerView |
+| Meal detail | State | `features/meal/behaviour/useMealDetailState.ts` | the opened meal, its `facts`/`kind`, and `gone` kept apart from a transport failure | MealDetailView |
 | Forced region | Condition | `shared/conditions/useForcedRegionCondition.ts` | the `?state=` fact override, when dev or the harness has enabled it | MealFeedView (and every View the state matrix drives) |
 | Region ladder | pure derivation (not a source) | `lib/region.ts` | `resolveRegion(facts) → Kind` | every View that classifies a region, the e2e matrix |
 
@@ -132,5 +146,6 @@ A mechanism owns an effect but produces neither State nor Condition; a component
 ## Known gaps
 
 - **The avatar art is programmatic.** The part *axes* are implemented; the hand-drawn part set from `reference/avatar.html` is deferred. Swapping art does not change selection logic.
-- **Photo grid is absent.** Details shows the cover only. A `PhotoGrid` unit is needed when multiple photos are surfaced.
+- **The photo strip is scroll-snapped, not a grid.** `PhotoSlider` pages through a meal's photos one at a time; the mockup's multi-up grid for choosing a cover on the publish form is `PhotoManager`, still inside `MealFormView` and not yet its own unit.
 - **No toast unit.** Errors currently render inline or as a banner; the toast surface in `error-ux.md` maps to Quasar's `Notify` when the first transient failure needs it.
+- **No availability pre-check on the handle.** `HandleField` shows the derived preview and the frozen value; whether a typed handle is taken is answered only when the server refuses it. A taken handle at entry therefore leaves the form holding a value it cannot save, with the refusal arriving after the press.

@@ -2,8 +2,7 @@
   "generatedBy": "tools/states-check.ts",
   "counts": {
     "PRESENTATION_IMPORTS_SERVICE": 2,
-    "PAGE_COMPOSES_ELEMENT": 9,
-    "PAGE_READS_FACT": 7,
-    "TIMER_WITHOUT_CLEAR": 1
+    "PAGE_COMPOSES_ELEMENT": 2,
+    "PAGE_READS_FACT": 1
   }
 }
