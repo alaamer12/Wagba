@@ -1,135 +1,20 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { ref } from "vue";
 import { useI18n } from "vue-i18n";
-import { useRouter } from "vue-router";
 import AppBar from "../app/_AppBar.vue";
 import PageShell from "../app/_PageShell.vue";
 import MainNav from "../app/MainNavigationView.vue";
 import potUrl from "../assets/illustrations/pot-empty.png";
 import MealFeedView from "../features/feed/views/MealFeedView/MealFeedView.vue";
-import { hasNewer } from "../services/meals";
-import { onReconnect } from "../shared/conditions/useNetworkCondition";
+import MealSearchView from "../features/feed/views/MealSearchView/MealSearchView.vue";
+import NewMealsBannerView from "../features/feed/views/NewMealsBannerView/NewMealsBannerView.vue";
 import BrandMark from "../shared/decorations/BrandMark.vue";
-import { useLocationState } from "../shared/state/useLocationState";
-import { useMealFeedState } from "../shared/state/useMealFeedState";
-import Banner from "../ui/adaptive/Banner.vue";
-import Chip from "../ui/adaptive/Chip.vue";
 
+// The Home route surface, and nothing else: it puts the four sections in order, hands the
+// feed its illustration, and wires the bar's icon to the search field. It reads no fact and
+// decides no case — the Views it composes each own one of those.
 const { t } = useI18n();
-const router = useRouter();
-const location = useLocationState();
-const meals = useMealFeedState();
-
-const query = ref("");
-const field = ref<HTMLInputElement>();
-let debounce: ReturnType<typeof setTimeout> | undefined;
-
-// Chips are derived from the feed: the areas people are actually posting from.
-const chips = computed(() => {
-  const counts = new Map<string, number>();
-  for (const meal of meals.items) {
-    const area = meal.location_text.trim();
-    if (!area) continue;
-    counts.set(area, (counts.get(area) ?? 0) + 1);
-  }
-  const areas = [...counts.entries()]
-    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
-    .slice(0, 4)
-    .map(([area]) => area);
-  return [
-    { term: "", label: t("home.chips.nearby"), active: !query.value.trim() },
-    ...areas.map((area) => ({ term: area, label: area, active: query.value.trim() === area })),
-  ];
-});
-
-function applyChip(chip: { term: string }) {
-  query.value = chip.term;
-}
-
-function focusSearch() {
-  field.value?.focus();
-}
-
-const newest = ref("");
-const hasNew = ref(false);
-const pulling = ref(0);
-
-function noteNewest() {
-  let latest = "";
-  for (const meal of meals.items) if (meal.created > latest) latest = meal.created;
-  if (latest) newest.value = latest;
-}
-
-async function refresh() {
-  // The position is read *inside* the request window, so the frames while the device is
-  // locating are `loading`, not the all-facts-false frame the ladder answers with `fault`.
-  if (query.value.trim()) await meals.search(query.value, location.fix);
-  else await meals.load(() => location.ensure());
-  noteNewest();
-}
-
-async function refreshNow() {
-  location.rearm();
-  await refresh();
-  hasNew.value = false;
-}
-
-async function probe() {
-  const center = location.fix;
-  if (!center || !newest.value) return;
-  // A failed probe stays silent: no banner is the honest rendering of "we could not tell".
-  hasNew.value = (await hasNewer(center, newest.value)) === "yes";
-}
-
-let startY = 0;
-let tracking = false;
-
-function onPointerDown(event: PointerEvent) {
-  if (event.button !== 0 || globalThis.scrollY > 0) return;
-  startY = event.clientY;
-  tracking = true;
-}
-
-function onPointerMove(event: PointerEvent) {
-  if (!tracking) return;
-  const dy = event.clientY - startY;
-  pulling.value = dy > 0 ? Math.min(120, dy * 0.6) : 0;
-}
-
-async function onPointerUp() {
-  if (!tracking) return;
-  tracking = false;
-  const armed = pulling.value >= 70;
-  pulling.value = 0;
-  if (armed) await refreshNow();
-}
-
-function onVisible() {
-  if (document.visibilityState === "visible") void probe();
-}
-
-let releaseReconnect: (() => void) | null = null;
-
-watch(query, (value) => {
-  clearTimeout(debounce);
-  debounce = setTimeout(() => {
-    void meals.search(value, location.fix);
-  }, 280);
-});
-
-onMounted(() => {
-  void refresh();
-  document.addEventListener("visibilitychange", onVisible);
-  // Reconnect is one app-wide reading, not a second listener per screen.
-  releaseReconnect = onReconnect(() => void probe());
-});
-
-onUnmounted(() => {
-  clearTimeout(debounce);
-  document.removeEventListener("visibilitychange", onVisible);
-  releaseReconnect?.();
-  releaseReconnect = null;
-});
+const search = ref<InstanceType<typeof MealSearchView> | null>(null);
 </script>
 
 <template>
@@ -137,7 +22,7 @@ onUnmounted(() => {
     <template #bar>
       <AppBar class="home__bar">
         <template #lead>
-          <button type="button" class="home__search" :aria-label="t('home.search.open')" @click="focusSearch">
+          <button type="button" class="home__search" :aria-label="t('home.search.open')" @click="search?.focus()">
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
           </button>
         </template>
@@ -147,43 +32,10 @@ onUnmounted(() => {
       </AppBar>
     </template>
 
-    <div
-      class="home"
-      @pointerdown="onPointerDown"
-      @pointermove="onPointerMove"
-      @pointerup="onPointerUp"
-      @pointercancel="onPointerUp"
-    >
-    <div class="pull" :style="{ height: `${pulling}px` }" aria-hidden="true">
-      <span v-if="pulling > 0">{{ t("home.refresh.pull") }}</span>
-    </div>
-
-    <div class="search">
-      <svg class="search__icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
-      <input
-        ref="field"
-        v-model="query"
-        class="search__input"
-        :placeholder="t('home.search.placeholder')"
-        :aria-label="t('home.search.open')"
-        type="search"
-      />
-    </div>
-
-    <nav class="suggestions" :aria-label="t('home.chips.label')">
-      <Chip v-for="chip in chips" :key="chip.label" :active="chip.active" @select="applyChip(chip)">
-        {{ chip.label }}
-      </Chip>
-    </nav>
-
-    <Banner v-if="hasNew" tone="info" class="new">
-      <span>{{ t("home.banner.new") }}</span>
-      <button type="button" class="new__action" @click="refreshNow">
-        {{ t("home.banner.new.action") }}
-      </button>
-    </Banner>
-
-    <MealFeedView :art="potUrl" />
+    <div class="home">
+      <MealSearchView ref="search" />
+      <NewMealsBannerView />
+      <MealFeedView :art="potUrl" />
     </div>
 
     <template #bottom>
@@ -197,32 +49,6 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-}
-.pull {
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  overflow: hidden;
-  font-size: 12px;
-  color: var(--brown-mid);
-  transition: height 120ms ease;
-}
-.new {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2);
-}
-.new__action {
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 700;
-  background: none;
-  border: none;
-  color: var(--ink);
-  text-decoration: underline;
-  cursor: pointer;
-  padding: 0;
 }
 .home__bar {
   padding-top: 26px;
@@ -241,45 +67,5 @@ onUnmounted(() => {
   background: none;
   color: var(--ink);
   cursor: pointer;
-}
-.search {
-  position: relative;
-}
-.search__icon {
-  position: absolute;
-  inset-inline-start: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--brown-mid);
-  pointer-events: none;
-}
-.search__input {
-  width: 100%;
-  font-family: inherit;
-  font-size: 15px;
-  padding: 10px 16px;
-  padding-inline-start: 46px;
-  line-height: 22px;
-  border-radius: var(--radius-pill);
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--ink);
-  -webkit-appearance: none;
-  appearance: none;
-}
-.search__input:focus {
-  outline: 2px solid var(--butter);
-}
-.suggestions {
-  display: flex;
-  gap: var(--space-2);
-  overflow-x: auto;
-  scrollbar-width: none;
-  margin-top: 6px;
-  margin-inline: calc(var(--space-4) * -1);
-  padding-inline: var(--space-4);
-}
-.suggestions::-webkit-scrollbar {
-  display: none;
 }
 </style>

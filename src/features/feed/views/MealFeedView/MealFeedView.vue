@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 import { type Kind, resolveRegion } from "../../../../lib/region";
+import { usePullRefresh } from "../../../../shared/behaviour/usePullRefresh";
 import { useForcedRegionCondition } from "../../../../shared/conditions/useForcedRegionCondition";
 import { useNetworkCondition } from "../../../../shared/conditions/useNetworkCondition";
 import { useLocationState } from "../../../../shared/state/useLocationState";
@@ -49,13 +50,28 @@ function retry() {
   void meals.refresh();
 }
 
+// The section loads itself: the pull gesture and the first mount are the same request, and a
+// page that had to remember to start the feed was a page reading facts to do it. The position
+// is read *inside* the request window, so the frames while the device is locating are
+// `loading` rather than the all-facts-false frame the ladder answers with `fault`.
+onMounted(() => void meals.load(() => location.ensure()));
+const { pull, handlers } = usePullRefresh(() => meals.refresh());
+
 function open(id: string) {
   void router.push({ name: "meal", params: { id } });
 }
 </script>
 
 <template>
-  <section :data-kind="kind" class="feed">
+  <section
+    :data-kind="kind"
+    class="feed"
+    v-bind="handlers"
+  >
+    <div class="feed__pull" :style="{ height: `${pull}px` }" aria-hidden="true">
+      <span v-if="pull > 0">{{ t("home.refresh.pull") }}</span>
+    </div>
+
     <LoadingRendition v-if="kind === 'loading'" :rows="4" />
 
     <BlockedRendition v-else-if="kind === 'blocked'" @retry="retry" />
@@ -93,6 +109,15 @@ function open(id: string) {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+}
+.feed__pull {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: hidden;
+  font-size: 12px;
+  color: var(--brown-mid);
+  transition: height 120ms ease;
 }
 .feed__cta {
   display: inline-flex;

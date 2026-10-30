@@ -14,6 +14,7 @@ in `src/components/`, the platform re-exports in `src/ui/`.
 | Button | adaptive | `ui/adaptive/Button.vue` | primary/secondary/ghost; full-width default; loading disables | Implemented |
 | Card | adaptive | `ui/adaptive/Card.vue` | surface + border + soft shadow; optional padding/flat | Implemented |
 | Chip | adaptive | `ui/adaptive/Chip.vue` | pill; active = butter fill | Implemented |
+| Input | adaptive | `ui/adaptive/Input.vue` | the pill text field with an optional `leading` slot; `inheritAttrs: false` because its root is a wrapper, so `type="search"` and the accessible name are bound to the control on purpose | Implemented |
 | BrandMark | decoration | `shared/decorations/BrandMark.vue` | chef hat over «وجبة», sized by `size`; never mirrors | Implemented |
 | Field | adaptive | `ui/adaptive/Field.vue` | label + input/textarea + hint/error; `defineModel` | Implemented |
 | Avatar | adaptive | `ui/adaptive/Avatar.vue` | uploaded photo, else `AvatarArt` from the handle; a photo that fails to load degrades to the art. The brand hat is never used as a person (decision D3) | Implemented |
@@ -93,7 +94,9 @@ screen stays with the screen.
 
 | Unit | Feature | Facts it consults | Cases it selects between |
 |---|---|---|---|
-| MealFeedView | feed | Feed State, Location State, Network Condition, Forced Region Condition | loading · blocked · offline · stale · empty-filtered · empty · ready · fault |
+| MealFeedView | feed | Feed State, Location State, Network Condition, Forced Region Condition, Freshness (via the pull) | loading · blocked · offline · stale · empty-filtered · empty · ready · fault |
+| MealSearchView | feed | Feed State (`active`, `search`), Location State | none — one field and the suggestions under it |
+| NewMealsBannerView | feed | Freshness State, Feed State, Location State | the strip or nothing |
 | MainNavigationView | app shell | Active Route Condition | which tab reads as active, and what each control does |
 
 The feed View is the only place the ladder is called for the feed: the State reports facts and
@@ -113,6 +116,7 @@ A fact source returns data and never renders (`/states`). `State` = the outcome 
 | Network | Condition | `shared/conditions/useNetworkCondition.ts` | device reachability; `onReconnect` hands back its own release | App shell, Home (probe on reconnect) |
 | Feed snapshot | Condition | `shared/conditions/useFeedSnapshotCondition.ts` | whether an earlier run left a readable feed | Feed (the `stale` answer) |
 | Active route | Condition | `shared/conditions/useActiveRouteCondition.ts` | which route the app is on, and its key | MainNavigationView, pages that key their own teardown |
+| Freshness | State | `features/feed/behaviour/useFreshnessState.ts` | whether newer meals exist than the rows shown; the probe is ours to run and ours to write | NewMealsBannerView |
 | Forced region | Condition | `shared/conditions/useForcedRegionCondition.ts` | the `?state=` fact override, when dev or the harness has enabled it | MealFeedView (and every View the state matrix drives) |
 | Region ladder | pure derivation (not a source) | `lib/region.ts` | `resolveRegion(facts) → Kind` | every View that classifies a region, the e2e matrix |
 
@@ -123,6 +127,7 @@ A mechanism owns an effect but produces neither State nor Condition; a component
 | Unit | Base path | Purpose | Consumed by |
 |---|---|---|---|
 | `openExternally` | `shared/behaviour/useExternalOpen.ts` | One handoff out of the app shell (native browser → new tab), returning whether anything opened; the only place that knows `noopener` makes `window.open` return null | Settings, `useExternal` (so CookRow), the WhatsApp ladder |
+| `usePullRefresh` | `shared/behaviour/usePullRefresh.ts` | The drag: distance, the 70px threshold, and the handlers to bind. It reports an intent and lets the caller reload, because *what* a refresh means is a fact question, not a gesture one | MealFeedView (M4 swaps its internals for `QPullToRefresh` without touching the View) |
 
 ## Known gaps
 

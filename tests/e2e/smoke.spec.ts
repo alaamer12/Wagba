@@ -43,7 +43,7 @@ test("first launch provisions an anonymous account", async ({ page }) => {
 test("suggestion chips are derived from the feed and filter it", async ({ page }) => {
   await page.goto("/#/home");
   await expect(page.locator('[data-kind="ready"]')).toBeVisible({ timeout: 30_000 });
-  const labels = (await page.locator(".suggestions button").allTextContents()).map((label) =>
+  const labels = (await page.locator(".search__chips button").allTextContents()).map((label) =>
     label.trim(),
   );
   expect(labels.length).toBeGreaterThan(1);
