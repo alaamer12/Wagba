@@ -1,0 +1,22 @@
+// One source of colour truth. Values come from docs/design/design-system.md.
+//
+// The map is emitted twice: as runtime custom properties by app.scss, and as Quasar's
+// compile-time Sass variables by quasar.variables.scss. `tests/unit/palette.test.ts` fails if
+// either side hardcodes a value instead of reading this map, so the two cannot drift.
+@use "sass:map";
+
+$tokens: (
+  "cream": #faf1df,
+  "surface": #fffcfa,
+  "border": #e8d9c0,
+  "ink": rgb(63 34 5),
+  "brown-mid": rgb(107 78 49),
+  "butter": #f5c518,
+  "butter-soft": #fce9a8,
+  "heart": #fdd484,
+  "hat": #b2691d,
+  "danger": #b4553f,
+  // Quasar names these; the app rarely shows them, but they must still have one home.
+  "positive": #21ba45,
+  "info": #31ccec,
+);

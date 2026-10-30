@@ -1,25 +1,20 @@
 // Quasar Sass (& SCSS) Variables
 // --------------------------------------------------
-// To customize the look and feel of this app, you can override
-// the Sass/SCSS variables found in Quasar's source Sass/SCSS files.
+// Every colour below is read from tokens.scss. Do not write a literal here: the palette test
+// (`tests/unit/palette.test.ts`) fails when a value stops coming from the map, because that is
+// how the app ends up with two colour truths again.
 
-// Check documentation for full list of Quasar variables
+@use "tokens" as tokens;
+@use "sass:map";
 
-// Your own variables (that are declared here) and Quasar's own
-// ones will be available out of the box in your .vue/.scss/.sass files
+$primary: map.get(tokens.$tokens, "butter");
+$secondary: map.get(tokens.$tokens, "butter-soft");
+$accent: map.get(tokens.$tokens, "heart");
 
-// It's highly recommended to change the default colors
-// to match your app's branding.
-// Tip: Use the "Theme Builder" on Quasar's documentation website.
+$dark: map.get(tokens.$tokens, "ink");
+$dark-page: map.get(tokens.$tokens, "cream");
 
-$primary: #1976d2;
-$secondary: #26a69a;
-$accent: #9c27b0;
-
-$dark: #1d1d1d;
-$dark-page: #121212;
-
-$positive: #21ba45;
-$negative: #c10015;
-$info: #31ccec;
-$warning: #f2c037;
+$positive: map.get(tokens.$tokens, "positive");
+$negative: map.get(tokens.$tokens, "danger");
+$info: map.get(tokens.$tokens, "info");
+$warning: map.get(tokens.$tokens, "hat");
