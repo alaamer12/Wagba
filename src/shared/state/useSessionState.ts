@@ -26,6 +26,12 @@ export const useSessionState = defineStore("session", () => {
     Boolean(profile.value?.display_name && profile.value?.handle && profile.value?.whatsapp),
   );
   const ready = computed(() => phase.value === "ready");
+  /**
+   * The handle freezes on its first saved value. The server enforces it (the `users`
+   * update hook refuses a change), and this is the one place the client reads it —
+   * the form and the write path used to decode the same rule from two objects.
+   */
+  const handleFrozen = computed(() => Boolean(profile.value?.handle));
 
   let booting: Promise<void> | null = null;
 
@@ -71,6 +77,7 @@ export const useSessionState = defineStore("session", () => {
     failure: computed(() => failure.value),
     ready,
     isComplete,
+    handleFrozen,
     boot,
     ensureReady,
     refresh,

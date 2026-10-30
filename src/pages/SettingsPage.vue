@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { Capacitor } from "@capacitor/core";
 import { computed, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
@@ -13,6 +12,7 @@ import { STORE_URL } from "../config";
 import { currentLocale, setLocale } from "../i18n";
 import { listMine } from "../services/meals";
 import { fileUrl } from "../services/pb";
+import { openExternally } from "../shared/behaviour/useExternalOpen";
 import { useFavoritesState } from "../shared/state/useFavoritesState";
 import { useSessionState } from "../shared/state/useSessionState";
 
@@ -44,13 +44,7 @@ function toggleLanguage() {
 }
 
 async function openExternal(url: string) {
-  if (!url) return;
-  if (Capacitor.isNativePlatform()) {
-    const { Browser } = await import("@capacitor/browser");
-    await Browser.open({ url });
-    return;
-  }
-  globalThis.open?.(url, "_blank");
+  await openExternally(url);
 }
 
 async function share() {

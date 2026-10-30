@@ -1,4 +1,5 @@
 import { Capacitor } from "@capacitor/core";
+import { openExternally } from "../shared/behaviour/useExternalOpen";
 
 /** E.164 digits, no plus. Egyptian local numbers lose the leading zero. */
 export function toE164(raw: string): string {
@@ -11,7 +12,9 @@ export type WhatsAppResult = "app" | "web" | "missing";
 
 /**
  * Deep link first, web second, browser window last. The order is the product
- * decision in docs/decisions.md#whatsapp-deep-link-first-wame-fallback.
+ * decision in docs/decisions.md#whatsapp-deep-link-first-wame-fallback. The window
+ * step is shared with every other external handoff (`openExternally`), because that
+ * is where the `noopener` trap lives.
  */
 export function useWhatsApp() {
   async function open(phone: string, text: string): Promise<WhatsAppResult> {
@@ -26,29 +29,11 @@ export function useWhatsApp() {
         await AppLauncher.openUrl({ url: deepLink });
         return "app";
       } catch {
-        try {
-          const { Browser } = await import("@capacitor/browser");
-          await Browser.open({ url: webLink });
-          return "web";
-        } catch {
-          return "missing";
-        }
+        return (await openExternally(webLink)) ? "web" : "missing";
       }
     }
 
-    // `window.open(url, "_blank", "noopener")` returns null by spec, so using the
-    // feature string makes a successful handoff look like a failure. Open first,
-    // then sever the opener reference.
-    const win = globalThis.open?.(webLink, "_blank");
-    if (win) {
-      try {
-        win.opener = null;
-      } catch {
-        /* cross-origin window: nothing to null */
-      }
-      return "web";
-    }
-    return "missing";
+    return (await openExternally(webLink)) ? "web" : "missing";
   }
 
   return { open };

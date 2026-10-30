@@ -52,6 +52,14 @@ A fact source returns data and never renders (`/states`). `State` = the outcome 
 | Feed snapshot | Condition | `shared/conditions/useFeedSnapshotCondition.ts` | whether an earlier run left a readable feed | Feed (the `stale` answer) |
 | Region ladder | pure derivation (not a source) | `lib/region.ts` | `resolveRegion(facts) → Kind` | Feed state, the e2e matrix |
 
+## behaviour mechanisms — `shared/behaviour`
+
+A mechanism owns an effect but produces neither State nor Condition; a component or view consumes it to shape *when* or *how* something acts.
+
+| Unit | Base path | Purpose | Consumed by |
+|---|---|---|---|
+| `openExternally` | `shared/behaviour/useExternalOpen.ts` | One handoff out of the app shell (native browser → new tab), returning whether anything opened; the only place that knows `noopener` makes `window.open` return null | Settings, `useExternal` (so CookRow), the WhatsApp ladder |
+
 ## Known gaps
 
 - **The avatar art is programmatic.** The part *axes* are implemented; the hand-drawn part set from `reference/avatar.html` is deferred. Swapping art does not change selection logic.

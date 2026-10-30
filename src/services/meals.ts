@@ -171,17 +171,27 @@ export async function updateMeal(
   }
 }
 
-/** True when a newer available meal exists inside the radius than `since`. */
-export async function hasNewer(center: LatLng, since: string, radiusKm = 10): Promise<boolean> {
+/**
+ * Whether a newer available meal exists inside the radius than `since`.
+ *
+ * Three answers, not two: a probe that failed and a probe that found nothing look the
+ * same to a caller when the failure is swallowed, and the banner would then claim
+ * "nothing new" on the strength of a request that never got an answer.
+ */
+export async function hasNewer(
+  center: LatLng,
+  since: string,
+  radiusKm = 10,
+): Promise<"yes" | "no" | "unknown"> {
   try {
     const res = await pb.collection("meals").getList(1, 1, {
       filter: `status = 'available' && created > "${quote(since)}" && ${boxFilter(center, radiusKm)}`,
       fields: "id",
       skipTotal: true,
     });
-    return res.items.length > 0;
+    return res.items.length > 0 ? "yes" : "no";
   } catch {
-    return false;
+    return "unknown";
   }
 }
 

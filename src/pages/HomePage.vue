@@ -97,7 +97,8 @@ async function refreshNow() {
 async function probe() {
   const center = location.fix;
   if (!center || !newest.value) return;
-  hasNew.value = await hasNewer(center, newest.value);
+  // A failed probe stays silent: no banner is the honest rendering of "we could not tell".
+  hasNew.value = (await hasNewer(center, newest.value)) === "yes";
 }
 
 let startY = 0;

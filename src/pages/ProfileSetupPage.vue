@@ -26,7 +26,8 @@ const tiktok = ref(session.profile?.tiktok_url ?? "");
 const error = ref("");
 const saving = ref(false);
 
-const frozenHandle = computed(() => session.profile?.handle ?? "");
+// The rule lives on the session state; this only resolves the value to display.
+const frozenHandle = computed(() => (session.handleFrozen ? (session.profile?.handle ?? "") : ""));
 const handleBase = ref("");
 const handlePreview = computed(() => {
   if (frozenHandle.value) return frozenHandle.value;

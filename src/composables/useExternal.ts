@@ -1,20 +1,6 @@
-import { Capacitor } from "@capacitor/core";
+import { openExternally } from "../shared/behaviour/useExternalOpen";
 
-/** Open a link outside the app shell: system browser on device, a tab on web. */
+/** Kept as a named composable so a component asks for "open externally", not for a path. */
 export function useExternal() {
-  async function open(url: string): Promise<void> {
-    if (!url) return;
-    if (Capacitor.isNativePlatform()) {
-      try {
-        const { Browser } = await import("@capacitor/browser");
-        await Browser.open({ url });
-        return;
-      } catch {
-        /* fall through to window */
-      }
-    }
-    globalThis.open?.(url, "_blank");
-  }
-
-  return { open };
+  return { open: openExternally };
 }

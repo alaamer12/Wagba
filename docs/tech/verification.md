@@ -37,13 +37,18 @@ The definition of done. Each test is a journey, locale-aware (runs in `ar` and `
 
 ### 2. State matrix (`tests/e2e/states.spec.ts`)
 
-All ten kinds — `ready`, `empty`, `empty-filtered`, `stale`, `fault`, `loading`, `blocked`, `submitting`, `rejected`, `unknown` — forced through `?state=` plus `window.__WAGBA_FORCE_STATE`, in both locales, each asserting `data-kind`, capturing `artifacts/states/<locale>/<kind>.png`, and failing on any page error. The harness injects facts; it never bypasses `resolveRegion`.
+All ten kinds — `ready`, `empty`, `empty-filtered`, `stale`, `fault`, `loading`, `blocked`, `submitting`, `rejected`, `unknown` — forced through `?state=` plus `window.__WAGBA_FORCE_STATE`, in both locales, each asserting `data-kind`, capturing `artifacts/states/<locale>/<kind>.png`, and failing on any page error.
+
+**What this does not prove.** The harness injects the *kind*, not the facts, so it shows that a case renders and nothing about how it is reached — the claim that "the ladder still runs" was false as written (defect F39). Measured against real fact combinations: five kinds are reached by driving facts (`ready`, `empty-filtered`, `stale`, `fault`, `blocked`), four are forced-only (`empty`, `loading`, `submitting`, `rejected`), and `submitting`/`rejected` on a read screen have no fact producer at all, so they render the fallback fault panel behind a `data-kind` that the code never chose. M3 replaces the injection with facts, adds a reachability test per case, and marks unreachable kinds `N/A` instead of photographing them.
 
 ### 3. Unit matrix (`tests/unit`)
 
 - **Geo** (`geo.test.ts`): bbox is a superset of the radius circle for 400 random centres × 40 points; antimeridian split; pole clamping with no division by zero; radius clamping; wrapped longitudes; distance sanity (Cairo–Alexandria, poles).
 - **Search** (`search.test.ts`): stopword removal, single-digit retention, handle tokens, taa marbuta/alef/tashkeel/Arabic-Indic folding, order independence, de-article expansion, punctuation rejection.
 - **Region** (`region.test.ts`): precedence ladder (blocked > submitting > rejected > loading > stale > fault > empty-filtered > empty > ready), stale vs loading, unknown kinds.
+- **Feed timing** (`feed-state.test.ts`): the position read is inside the request window (a locating device is `loading`, never `fault`), rows are not replaced by skeletons mid-query, a missing position is a transient device answer, an invalidated feed refuses the answer still in flight, and the newest query wins.
+- **Error mapping** (`errors.test.ts`): the status→code table, retry class per cause, and `isUniqueViolation` refusing to call a validation or authorization 400 an idempotent success.
+- **Architecture rules** (`arch-rules.test.ts`): one planted violation per `states-check` rule is caught, and two correctly shaped files (a View that reads a fact, a Rendition with a paired listener) are not flagged.
 - **Fold** (`normalize.test.ts`), **i18n parity** (`i18n.test.ts`), **avatar determinism** (`avatar.test.ts`).
 
 ### 4. API contract (`tools/verify-api.ts`)

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from "vue";
 import { useI18n } from "vue-i18n";
 import AppButton from "../components/base/AppButton.vue";
 import AppBar from "../components/layout/AppBar.vue";
@@ -9,9 +10,12 @@ import { SUPPORT_WHATSAPP } from "../config";
 const { t } = useI18n();
 const whatsapp = useWhatsApp();
 const configured = SUPPORT_WHATSAPP.trim().length > 0;
+// The handoff reports three outcomes; discarding the verdict told the user nothing when
+// the app was simply not installed — the same screen's own answer already exists.
+const unreachable = ref(false);
 
-function contactSupport() {
-  void whatsapp.open(SUPPORT_WHATSAPP, t("contact.title"));
+async function contactSupport() {
+  unreachable.value = (await whatsapp.open(SUPPORT_WHATSAPP, t("contact.title"))) === "missing";
 }
 </script>
 
@@ -26,7 +30,8 @@ function contactSupport() {
     <AppButton v-if="configured" :block="false" class="cta" @click="contactSupport">
       {{ t('contact.whatsapp') }}
     </AppButton>
-    <p v-else class="none">{{ t('contact.none') }}</p>
+    <p v-if="unreachable" class="none">{{ t('error.wa.missing') }}</p>
+    <p v-else-if="!configured" class="none">{{ t('contact.none') }}</p>
   </PageShell>
 </template>
 

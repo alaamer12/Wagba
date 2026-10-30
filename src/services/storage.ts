@@ -21,27 +21,43 @@ async function prefs() {
 
 export async function read(key: string): Promise<string | null> {
   const p = await prefs();
-  if (p) {
-    const { value } = await p.get({ key: PREFIX + key });
-    return value ?? null;
+  try {
+    if (p) {
+      const { value } = await p.get({ key: PREFIX + key });
+      return value ?? null;
+    }
+    return globalThis.localStorage?.getItem(PREFIX + key) ?? null;
+  } catch {
+    // Private mode, quota, or a disabled store: the credential is unreadable, which the
+    // session reports as a fresh provisioning, not as a crash inside boot.
+    return null;
   }
-  return globalThis.localStorage?.getItem(PREFIX + key) ?? null;
 }
 
-export async function write(key: string, value: string): Promise<void> {
+export async function write(key: string, value: string): Promise<boolean> {
   const p = await prefs();
-  if (p) {
-    await p.set({ key: PREFIX + key, value });
-    return;
+  try {
+    if (p) {
+      await p.set({ key: PREFIX + key, value });
+      return true;
+    }
+    globalThis.localStorage?.setItem(PREFIX + key, value);
+    return true;
+  } catch {
+    // Written-or-not changes what survives a restart; callers that must know can ask.
+    return false;
   }
-  globalThis.localStorage?.setItem(PREFIX + key, value);
 }
 
 export async function remove(key: string): Promise<void> {
   const p = await prefs();
-  if (p) {
-    await p.remove({ key: PREFIX + key });
-    return;
+  try {
+    if (p) {
+      await p.remove({ key: PREFIX + key });
+      return;
+    }
+    globalThis.localStorage?.removeItem(PREFIX + key);
+  } catch {
+    /* nothing to clean up if the store is unusable */
   }
-  globalThis.localStorage?.removeItem(PREFIX + key);
 }
