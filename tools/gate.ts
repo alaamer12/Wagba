@@ -47,6 +47,10 @@ const steps = [
     },
   },
   { name: "api", run: () => sh("bun", ["tools/verify-api.ts"], "api") },
+  {
+    name: "audit",
+    run: () => sh(".venv/Scripts/python.exe", ["tools/db-audit.py"], "audit"),
+  },
   { name: "build", run: () => sh("bunx", ["quasar", "build", "-m", "spa"], "build") },
   {
     name: "serve",
@@ -66,14 +70,29 @@ const steps = [
     },
   },
   {
-    name: "e2e",
+    name: "e2e:ar",
     run: () =>
-      sh("bunx", ["playwright", "test", "--project=ar"], "e2e", {
+      sh("bunx", ["playwright", "test", "--project=ar"], "e2e-ar", {
+        BASE_URL: "http://127.0.0.1:9100",
+      }),
+  },
+  {
+    name: "e2e:en",
+    run: () =>
+      sh("bunx", ["playwright", "test", "--project=en"], "e2e-en", {
         BASE_URL: "http://127.0.0.1:9100",
       }),
   },
   { name: "docs", run: () => sh("bun", ["tools/linkcheck.ts"], "docs") },
 ];
+
+// The full profile adds the volume run; the fast profile keeps the inner loop.
+if (process.argv.includes("--full")) {
+  steps.splice(steps.length - 1, 0, {
+    name: "stress",
+    run: () => sh("bun", ["tools/stress.ts", "--rows=2000"], "stress"),
+  });
+}
 
 let failed = 0;
 for (const step of steps) {
