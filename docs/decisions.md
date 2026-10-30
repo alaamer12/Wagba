@@ -48,6 +48,13 @@ Statuses: **settled** (evidence-backed, do not revisit without new information),
 **Why:** PocketBase has no anonymous provider. A generated credential is pure PocketBase, needs no server code, keeps API rules working normally, and lets phone verification attach to the same record later. A custom route re-invents the same credential storage with extra surface. No auth at all means anyone with the URL can edit any meal.
 **Status:** settled.
 
+### The account exists before the profile does
+
+**Chosen:** `handle` and `whatsapp` are optional at the row level. Profile Setup writes them; a partial unique index (`WHERE handle != ''`) covers chosen handles only; the update hook freezes a handle once it is non-empty.
+**Rejected:** requiring both at account creation (the app would have to invent a visible identity nobody chose); provisioning a temporary `tmp_…` handle (guessable escape hatch in the freeze rule, and it can leak into a shared link if the profile is abandoned).
+**Evidence:** with `required: true`, first-launch provisioning failed `400 validation_required` on both fields — the account could not exist before the form that fills them. A plain unique index would then have rejected the second unprofiled account, because every empty handle is equal.
+**Status:** settled; `tools/verify-api.ts` covers two empty handles coexisting, the one-time set, and the freeze.
+
 ### Phone OTP deferred to v1.1
 
 **Chosen:** ship without it.
@@ -275,6 +282,26 @@ oxlint was the serious alternative and is what the Quasar repository itself now 
 **Why Biome anyway:** one tool, and template-rule coverage that oxlint does not have.
 **Cost accepted:** experimental `.vue` parsing, per-file rule overrides that hide genuinely unused variables, and formatter output that can change between minor versions.
 **Status:** settled, with the highest revisit-likelihood of anything in this file. Re-check when Biome closes #4726.
+
+### Direction belongs to the locale, not to Quasar
+
+**Chosen:** the app sets `dir` on `<html>` from the active locale and overrides two pieces of Quasar's stylesheet: `html, body, #q-app { direction: ltr }` and the heading line boxes (`h1` carries `line-height: 6rem`).
+**Evidence:** with `html[dir=rtl]` set, `getComputedStyle(document.body).direction` still returned `ltr`, and an `h1` styled at 20 px measured **96 px** of line box. The first made every screen render mirrored (the entire layout read left-to-right while the Arabic text read right-to-left); the second silently inflated every app bar and card title.
+**Why overrides, not a config flag:** Quasar CLI's `rtl` build option produces a second, direction-specific bundle; this app flips direction at runtime, so the rule has to be overridable at runtime.
+**Status:** settled, with a regression test: the locale-switch e2e asserts computed `direction` on `body` in both languages.
+
+### Ownership is the create rule's job, not a hook
+
+**Chosen:** the client sends `user = its own id` on create; the rule `user = @request.auth.id` is the enforcement.
+**Rejected:** letting `onRecordCreateRequest` stamp `user` from `e.auth` and never sending it.
+**Evidence:** PocketBase 0.28.4 evaluates the create rule against the submitted record **before** request hooks run — a create without `user` fails with `create rule failure` and the hook's `console.log` never fires. The hook-based stamp that an earlier draft described could not work, and the publish path was broken until the client sent the field.
+**Status:** settled; `tools/verify-api.ts` asserts both sides — an owned meal is accepted, a meal posted for another id is refused.
+
+### The empty-state illustrations are the supplied drawings
+
+**Chosen:** both drawings ship as delivered. Sources stay in `reference/illustrations/` (`.jfif`), app assets are 512 px-wide PNGs with the background keyed to transparency.
+**What changed in processing:** the pot drawing carried a baked-in Arabic caption; the caption rows were cropped off and every word on screen is live copy. Nothing was redrawn, recoloured, or re-composed — the mockup's sparkles and hearts around the pot belong to the mockup's rendition, not to the delivered file, and were not invented.
+**Status:** settled; `tools/parity.py` measures both empty states against their mockups, `tests/e2e/parity.spec.ts` captures them through the real app.
 
 ### The wordmark font is Baloo Bhaijaan 2
 

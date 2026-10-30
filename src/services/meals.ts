@@ -1,5 +1,5 @@
-import { boundingBox, distanceKm, type LatLng, searchKey } from "../../shared/normalize";
-import { toAppError } from "../types/errors";
+import { boundingBox, type LatLng, searchKey } from "../../shared/normalize";
+import { AppError, toAppError } from "../types/errors";
 import { type Meal, MealSchema, MealsPageSchema } from "../types/schemas";
 import { fileUrl, pb } from "./pb";
 
@@ -35,9 +35,7 @@ export async function listNearby(center: LatLng, radiusKm = 10): Promise<Meal[]>
       ...withQuery(center),
     });
     const items = MealsPageSchema.parse(res).items;
-    return items.sort(
-      (a, b) => distanceKm(center, { lat: 0, lng: 0 }) && a.distance_km - b.distance_km,
-    );
+    return items.sort((a, b) => a.distance_km - b.distance_km);
   } catch (err) {
     throw toAppError(err);
   }
@@ -60,7 +58,8 @@ export async function searchMeals(
       fields: LIST_FIELDS,
       ...withQuery(center),
     });
-    return MealsPageSchema.parse(res).items;
+    const items = MealsPageSchema.parse(res).items;
+    return items.sort((a, b) => a.distance_km - b.distance_km);
   } catch (err) {
     throw toAppError(err);
   }
@@ -79,12 +78,15 @@ export async function getMeal(id: string): Promise<Meal> {
 }
 
 export async function listMine(): Promise<Meal[]> {
+  // `@request.auth.id` is superuser-only inside a *filter* (403), so the owner id
+  // is interpolated. The service never sends one it does not hold.
+  const owner = pb.authStore.model?.id;
+  if (!owner) return [];
   try {
     const res = await pb
       .collection("meals")
-      .getFullList({ filter: "", sort: "-created", fields: LIST_FIELDS });
-    return MealsPageSchema.parse({ ...res, totalItems: res.length, page: 1, perPage: res.length })
-      .items;
+      .getFullList({ filter: `user = "${owner}"`, sort: "-created", fields: LIST_FIELDS });
+    return MealSchema.array().parse(res);
   } catch (err) {
     throw toAppError(err);
   }
@@ -105,7 +107,12 @@ export type NewMeal = {
 export async function publishMeal(input: NewMeal): Promise<Meal> {
   const photos = input.photos ?? [];
   if (photos.length > 5) throw toAppError(new Error("too many"));
+  const owner = pb.authStore.model?.id;
+  if (!owner) throw new AppError("VALIDATION", { reason: "no-session" });
   const form = new FormData();
+  // The create rule is `user = @request.auth.id`, evaluated before any request
+  // hook: ownership has to be in the payload, and the rule rejects a lie.
+  form.set("user", owner);
   form.set("title", input.title);
   form.set("description", input.description ?? "");
   if (input.price != null) form.set("price", String(input.price));

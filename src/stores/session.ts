@@ -17,10 +17,22 @@ export const useSessionStore = defineStore("session", () => {
     Boolean(profile.value?.display_name && profile.value?.handle && profile.value?.whatsapp),
   );
 
+  let booting: Promise<void> | null = null;
+
+  /** Idempotent: concurrent callers share one provisioning attempt. */
   async function boot(): Promise<void> {
-    const existing = await ensureSession();
-    profile.value = existing ?? (await provision());
-    ready.value = true;
+    booting ??= (async () => {
+      const existing = await ensureSession();
+      profile.value = existing ?? (await provision());
+      ready.value = true;
+    })().finally(() => {
+      booting = null;
+    });
+    return booting;
+  }
+
+  async function ensureReady(): Promise<void> {
+    if (!ready.value) await boot();
   }
 
   async function refresh(): Promise<void> {
@@ -28,10 +40,11 @@ export const useSessionStore = defineStore("session", () => {
   }
 
   async function save(input: ProfileInput): Promise<Profile> {
+    await ensureReady();
     const next = await saveProfile(input);
     profile.value = next;
     return next;
   }
 
-  return { profile, ready, isComplete, boot, refresh, save };
+  return { profile, ready, isComplete, boot, ensureReady, refresh, save };
 });

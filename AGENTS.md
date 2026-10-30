@@ -26,11 +26,14 @@ Wagba is an Egyptian app for finding homemade meals cooked near you, then messag
 ```bash
 bun dev                 # Quasar dev server on :9000 (HMR)
 bun build               # SPA build into dist/spa
-bun run gate            # the only definition of done: lint → types → unit → hooks → db → build → e2e → docs
+bun run gate            # the only definition of done: lint → types → unit → hooks → db → api → build → e2e → docs
 bun run docs:check      # link checker over docs/
 bun tools/pb.mjs reset|serve|restart|stop|superuser
 bun tools/seed.mjs      # deterministic: 3 cooks, 12 meals
+bun tools/verify-api.ts # the API contract: privacy, fold, handle freeze, cascade
 bun tools/build-hooks.mjs   # esbuild the shared fold into the goja bundle
+bun tools/build-avatar.ts   # compile reference/avatar-rig into src/lib/avatar-parts.ts
+bun tools/parity.py …       # regional mockup-vs-capture comparison (python, .venv)
 ```
 
 ## Layout
@@ -65,6 +68,14 @@ scratch/ artifacts/   ignored: probes and gate evidence. Never durable.
 - Each **hook handler runs in its own scope**: `require` shared code inside every handler.
 - The JS VM (goja) has **no `\p{…}`** property escapes; use explicit Unicode ranges.
 - Auth collections need an email identifier; the account uses a synthetic `<id>@wagba.local` that is never exposed.
+- **Create rules are evaluated against the submitted record before request hooks run** — an ownership field has to be in the payload; a hook cannot stamp it. A forged owner is refused by the rule.
+- **`@request.auth.id` is superuser-only inside a client *filter*** (403). Filter with the literal id; rules remain the authority.
+
+## Quasar rules — learned by rendering it
+
+- Quasar's stylesheet hard-codes `direction: ltr` on `html`/`body`/`#q-app`; `app.scss` overrides all three with `:root[dir]` plus `html body`/`html #q-app` rules. Without them the app renders LTR while the Arabic reads RTL.
+- Quasar's typography leaves `h1`–`h6` on **6rem/3.5rem line boxes**; `app.scss` sets `line-height: 1.3` for headings, and every component still sets its own size.
+- A profile form can be submitted before anonymous provisioning finishes; `useSessionStore().ensureReady()` is awaited before anything that needs an account.
 
 ## Documentation obligations
 

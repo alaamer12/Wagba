@@ -46,6 +46,7 @@ const steps = [
       return sh("bun", ["tools/seed.mjs"], "db-seed");
     },
   },
+  { name: "api", run: () => sh("bun", ["tools/verify-api.ts"], "api") },
   { name: "build", run: () => sh("bunx", ["quasar", "build", "-m", "spa"], "build") },
   {
     name: "serve",

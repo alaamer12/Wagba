@@ -85,6 +85,7 @@ async function publish() {
 }
 
 onMounted(async () => {
+  await session.ensureReady();
   if (!session.isComplete) {
     router.replace({ name: "profile-setup", query: { from: "add-meal" } });
     return;

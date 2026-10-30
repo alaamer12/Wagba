@@ -13,10 +13,13 @@ migrate((app) => {
   users.createRule = ''; // anonymous provisioning (device-generated credentials)
   users.updateRule = 'id = @request.auth.id';
   users.deleteRule = 'id = @request.auth.id';
+  // handle and whatsapp are empty until the profile form runs: the account is
+  // provisioned anonymously on first launch, before the user has typed anything.
+  // The form enforces both; the unique index below only covers chosen handles.
   users.fields.add(
     new TextField({ name: 'display_name', max: 80 }),
-    new TextField({ name: 'handle', required: true, min: 3, max: 24 }),
-    new TextField({ name: 'whatsapp', required: true, max: 20 }),
+    new TextField({ name: 'handle', max: 24 }),
+    new TextField({ name: 'whatsapp', max: 20 }),
     new TextField({ name: 'location_text', max: 120 }),
     new FileField({
       name: 'avatar',
@@ -28,7 +31,11 @@ migrate((app) => {
     new URLField({ name: 'instagram_url' }),
     new URLField({ name: 'tiktok_url' }),
   );
-  users.indexes = [...users.indexes, 'CREATE UNIQUE INDEX idx_users_handle ON users (handle)'];
+  users.indexes = [
+    ...users.indexes,
+    // Partial: many accounts may sit at '' until their owner picks a handle.
+    "CREATE UNIQUE INDEX idx_users_handle ON users (handle) WHERE handle != ''",
+  ];
   app.save(users);
 
   const usersId = app.findCollectionByNameOrId('users').id;

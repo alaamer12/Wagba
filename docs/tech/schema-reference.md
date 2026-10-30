@@ -29,8 +29,8 @@ PocketBase creates this collection; `0001_schema.js` extends it rather than defi
 | `email` | email | Required by the engine. **Synthetic**: `<id>@wagba.local`, never shown | — (credential identifier, not user data) |
 | `password` | password | Engine-managed (device-generated) | — |
 | `display_name` | text | max 80, not unique | `User.displayName` |
-| `handle` | text | **Required, min 3, max 24, Unique (`idx_users_handle`)** | `User.handle` |
-| `whatsapp` | text | Required, max 20, stored E.164 digits | `User.whatsapp` |
+| `handle` | text | max 24; may be empty until Profile Setup; **unique when set** (`idx_users_handle`, partial `WHERE handle != ''`) | `User.handle` |
+| `whatsapp` | text | max 20, stored E.164 digits; empty until Profile Setup | `User.whatsapp` |
 | `location_text` | text | max 120, display-only | `User.locationText` |
 | `avatar` | file | max 1, ≤2 MB, jpeg/png/webp; empty ⇒ generated avatar | `User.avatar` |
 | `facebook_url`, `instagram_url`, `tiktok_url` | url | optional | `User.socialLinks` |
@@ -45,6 +45,8 @@ PocketBase creates this collection; `0001_schema.js` extends it rather than defi
 | create | `""` | Anonymous provisioning is the product model |
 | update | `id = @request.auth.id` | Owner only |
 | delete | `id = @request.auth.id` | Owner only |
+
+**Provisioning order.** The account is created on first launch, before the profile exists: `handle` and `whatsapp` are therefore *row-optional*. Profile Setup writes both, and the `users` update hook refuses any later change to a non-empty `handle` — so the freeze happens on first *chosen* value, not on row creation. The unique index is partial (`WHERE handle != ''`) because every unprofiled account shares the empty string.
 
 **Never returned:** `email`, `password`, `tokenKey`. The enrich hook exposes only the public subset through `meals.cook`.
 
@@ -143,7 +145,7 @@ On the seeded data: **8 rows within 5 km of Cairo Tower**, 11 visible overall.
 
 **Search:** `status='available' && search_key ~ "{fold(query)}"` plus the same bbox. `search_key ~ 'mhshy'` returns «محشي بيتي».
 
-**My meals:** `filter = user = @request.auth.id`, both statuses, sorted `-created`.
+**My meals:** `filter = user = "{own id}"`, both statuses, sorted `-created`. The literal id is used because PocketBase refuses `@request.auth.id` inside a client filter (403, superuser-only); the list rule still scopes what the caller may read.
 
 **Favorites:** join-free — `favorites` for the user, then `meals?filter=id ?= …`; at MVP scale the client fetches both lists and intersects.
 
@@ -158,10 +160,15 @@ On the seeded data: **8 rows within 5 km of Cairo Tower**, 11 visible overall.
 
 ## 8. Engine caveats encoded as tests
 
-| Caveat | Test |
+`tools/verify-api.ts` runs after the seed in `bun run gate` and speaks HTTP only, so it tests the rules and hooks the way a client meets them.
+
+| Caveat | Check |
 |---|---|
-| No foreign-key enforcement — a dangling relation is accepted | orphan check after deletes (M5 e2e) |
-| Coordinates must never serialize | e2e asserts `latitude`/`longitude` are `0` in every meal payload |
-| Unavailable meals are invisible publicly | e2e asserts the anonymous list total is 11 |
-| Users are not listable anonymously | e2e asserts `totalItems === 0` |
-| `search_key` is non-empty on every meal | seed verification (`untitled` is the sentinel for a broken fold) |
+| Coordinates must never serialize | every listed meal has `latitude === 0 && longitude === 0` |
+| Unavailable meals are invisible publicly | the anonymous feed returns only `status = 'available'` rows |
+| `search_key` is non-empty on every meal | no empty or `untitled` keys (the sentinel for a broken fold) |
+| The fold matches a typo | `search_key ~ "mhshy"` returns «محشي بيتي» |
+| Users are not listable anonymously | `totalItems === 0` without a token, exactly 1 (self) with one |
+| The create rule owns the owner | a meal posted with another user's id is refused (400) |
+| Handle uniqueness and freezing | setting once succeeds; renaming is 400; a duplicate is 400 |
+| Cascade deletes work without foreign keys | deleting the account makes its meals 404 |

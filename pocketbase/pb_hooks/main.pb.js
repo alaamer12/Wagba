@@ -9,17 +9,9 @@
 //      cannot hold coordinates. Coordinates are ordinary fields, zeroed here.
 
 onRecordCreateRequest((e) => {
+  // Ownership is the create rule's job (`user = @request.auth.id`): PocketBase
+  // evaluates it against the submitted record, so the hook never rewrites `user`.
   const fold = require(`${__hooks}/lib/normalize.cjs`);
-  console.log('DBG keys', Object.keys(fold).join(','));
-  console.log('DBG title', JSON.stringify(e.record.getString('title')));
-  try {
-    console.log('DBG norm', JSON.stringify(fold.normalizeArabic('محشي')));
-    console.log('DBG fold', JSON.stringify(fold.fold('محشي')));
-    console.log('DBG key', JSON.stringify(fold.searchKey(['محشي بيتي', 'السيدة زينب'])));
-  } catch (err) {
-    console.log('DBG throw', String(err));
-  }
-  if (e.auth && e.auth.collection().name === 'users') e.record.set('user', e.auth.id);
 
   let cookName = '';
   try {

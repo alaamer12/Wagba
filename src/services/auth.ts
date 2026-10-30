@@ -1,7 +1,7 @@
 import { ClientResponseError } from "pocketbase";
 import { AppError, isUniqueViolation, toAppError } from "../types/errors";
 import { type Profile, ProfileSchema } from "../types/schemas";
-import { candidate, slugify, validateDisplayName } from "./handles";
+import { candidate, validateDisplayName } from "./handles";
 import { pb } from "./pb";
 import { read, write } from "./storage";
 
