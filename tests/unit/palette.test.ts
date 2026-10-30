@@ -18,9 +18,9 @@ const tokenEntries = [...tokensSource.matchAll(/"([a-z-]+)":\s*([^,\n]+),/g)].ma
   value: (m[2] ?? "").trim(),
 }));
 
-const quasarBindings = [...quasarSource.matchAll(/\$([a-z-]+):\s*map\.get\(tokens\.\$tokens,\s*"([a-z-]+)"\)/g)].map(
-  (m) => ({ variable: m[1] ?? "", token: m[2] ?? "" }),
-);
+const quasarBindings = [
+  ...quasarSource.matchAll(/\$([a-z-]+):\s*map\.get\(tokens\.\$tokens,\s*"([a-z-]+)"\)/g),
+].map((m) => ({ variable: m[1] ?? "", token: m[2] ?? "" }));
 
 describe("one palette", () => {
   it("reads a non-empty token map from tokens.scss", () => {
@@ -33,14 +33,27 @@ describe("one palette", () => {
     expect(appSource).toContain("@each $name, $value in tokens.$tokens");
     expect(appSource).toContain("--#{$name}");
     // No colour may be written literally in the emitted block: the block exists to derive them.
-    const rootBlock = appSource.slice(appSource.indexOf(":root"), appSource.indexOf("--radius-card"));
+    const rootBlock = appSource.slice(
+      appSource.indexOf(":root"),
+      appSource.indexOf("--radius-card"),
+    );
     for (const entry of tokenEntries) {
       expect(rootBlock).not.toContain(entry.value);
     }
   });
 
   it("binds Quasar's palette to tokens, never to literals", () => {
-    const variables = ["primary", "secondary", "accent", "dark", "dark-page", "positive", "negative", "info", "warning"];
+    const variables = [
+      "primary",
+      "secondary",
+      "accent",
+      "dark",
+      "dark-page",
+      "positive",
+      "negative",
+      "info",
+      "warning",
+    ];
     expect(quasarBindings.map((b) => b.variable).sort()).toEqual([...variables].sort());
     const names = new Set(tokenEntries.map((t) => t.name));
     for (const binding of quasarBindings) expect(names.has(binding.token)).toBe(true);
