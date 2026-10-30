@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { type Facts, normaliseKind, resolveRegion } from "../../src/stores/region";
+import { type Facts, normaliseKind, resolveRegion } from "../../src/lib/region";
 
 const base: Facts = { inFlight: false, hasRows: false, read: false, narrowing: false };
 

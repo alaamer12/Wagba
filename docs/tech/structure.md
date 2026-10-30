@@ -17,10 +17,14 @@
 │  │  ├─ base/               Primitives: Button, Card, Chip, Field, Avatar, EmptyState, Skeleton, Banner, Badge.
 │  │  ├─ layout/             PageShell, BottomBar, AppBar, Region.
 │  │  └─ present/            Domain-facing: MealCard, CookRow, DistanceLabel, PricePill, PhotoGrid, StatusBadge.
-│  ├─ stores/                Pinia state + invariants. The only place `kind` changes.
+│  ├─ stores/index.ts        The Pinia bootstrap Quasar expects. No domain state lives here.
+│  ├─ shared/state/          State sources: what *our own* work is doing — feed, session, location read, favorites.
+│  ├─ shared/conditions/     Condition sources: what the world imposes — reachability, permission, cached snapshot.
+│  ├─ shared/behaviour/      Mechanisms a view or component consumes (debounce, infinite append, pull).
+│  ├─ lib/                   Pure logic: the region ladder (`region.ts`), feed cache, avatar selection.
 │  ├─ services/              The ONLY importer of the PocketBase SDK. zod-parsed responses.
 │  ├─ config.ts              Support and store channels; empty hides the row that needs them.
-│  ├─ composables/           Device boundaries: geolocation, whatsapp, photos, network.
+│  ├─ composables/           Device boundaries: geolocation, whatsapp, photos.
 │  ├─ types/                 zod schemas per collection; types inferred, never hand-written twice.
 │  ├─ i18n/                  ar.json + en.json + locale resolution and direction.
 │  ├─ css/                   Tokens and globals. Values come from docs/design/design-system.md.
@@ -57,9 +61,9 @@
 
 | Decision | Single ground | Consumers | Protecting test |
 |---|---|---|---|
-| SDK isolation | `src/services/*.ts` | pages, stores, tests | `tools/gate.ts` grep step *(M9)* |
-| Response shape | `src/types/schemas.ts` (zod) | services, stores, units | `tests/unit/schemas.test.ts` *(M3)* |
-| State kinds | `src/stores/region.ts` → `resolveRegion` | Region, pages, e2e matrix | `tests/unit/states.test.ts` *(M4)* |
+| SDK isolation | `src/services/*.ts` | pages, state sources, tests | `bun run states:check` → `PB_IMPORT_OUTSIDE_SERVICES` |
+| Response shape | `src/types/schemas.ts` (zod) | services, state sources, units | `tests/unit/feed-state.test.ts`, `tools/verify-api.ts` |
+| State kinds | `src/lib/region.ts` → `resolveRegion` | feed state, pages, e2e matrix | `tests/unit/region.test.ts` + `tests/unit/feed-state.test.ts` |
 | Arabic fold | `shared/normalize.ts` | search service, PB hook | `tests/unit/normalize.test.ts` (10 passing) |
 | Distance | `shared/normalize.ts` (`distanceKm`) | feed sort, enrich hook | `tests/unit/normalize.test.ts` |
 | Coordinates hidden | schema `hidden: true` | every list/detail response | e2e: no `latitude` key *(M5)* |

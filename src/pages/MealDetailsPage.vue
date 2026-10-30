@@ -11,10 +11,10 @@ import AppRegion from "../components/layout/AppRegion.vue";
 import PageShell from "../components/layout/PageShell.vue";
 import CookRow from "../components/present/CookRow.vue";
 import { useWhatsApp } from "../composables/useWhatsApp";
+import type { Kind } from "../lib/region";
 import { getMeal, photoUrl } from "../services/meals";
-import { useFavoritesStore } from "../stores/favorites";
-import type { Kind } from "../stores/region";
-import { useSessionStore } from "../stores/session";
+import { useFavoritesState } from "../shared/state/useFavoritesState";
+import { useSessionState } from "../shared/state/useSessionState";
 import { AppError } from "../types/errors";
 import type { Meal } from "../types/schemas";
 
@@ -22,12 +22,14 @@ const { t, locale } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const whatsapp = useWhatsApp();
-const favorites = useFavoritesStore();
-const session = useSessionStore();
+const favorites = useFavoritesState();
+const session = useSessionState();
 
 const meal = ref<Meal | null>(null);
 const kind = ref<Kind>("loading");
-const saved = ref(false);
+// Membership is read from the journal, never mirrored into a local flag: a copy seeded
+// "only if loaded" showed a saved meal as unsaved for the whole visit after a cold start.
+const saved = computed(() => (meal.value ? favorites.has(meal.value.id) : false));
 const waMissing = ref(false);
 const slides = ref<HTMLImageElement[]>([]);
 const gallery = computed(() =>
@@ -51,7 +53,7 @@ async function load() {
 async function toggleSave() {
   if (!meal.value) return;
   await session.ensureReady();
-  saved.value = await favorites.toggle(meal.value.id);
+  await favorites.toggle(meal.value.id);
 }
 
 async function contact() {
@@ -72,7 +74,9 @@ const priceLabel = computed(() =>
 
 onMounted(async () => {
   await load();
-  if (favorites.loaded) saved.value = meal.value ? favorites.has(meal.value.id) : false;
+  // A journal that cannot be read is a background failure: the meal still opens, and the
+  // toggle the user actually presses reports its own error.
+  await favorites.ensureLoaded().catch(() => {});
 });
 </script>
 

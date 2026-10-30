@@ -7,6 +7,12 @@ import { mkdirSync, writeFileSync } from "node:fs";
 const LOGS = "artifacts/logs";
 mkdirSync(LOGS, { recursive: true });
 
+// The static server the e2e steps run against. It must be the child of this run: a
+// detached survivor from an earlier gate answers on the same port and the suite then
+// tests a bundle that no longer matches the source. Held in an object so the teardown
+// sees the declared type rather than narrowing the initializer away.
+const harness: { server: ReturnType<typeof spawn> | null } = { server: null };
+
 // steps are plain objects: { name, run() }
 
 function sh(cmd: string, args: string[], log: string, env?: Record<string, string>): number {
@@ -60,8 +66,7 @@ const steps = [
   {
     name: "serve",
     run: async () => {
-      const child = spawn("bun", ["tools/serve.mjs", "9100"], { detached: true, stdio: "ignore" });
-      child.unref();
+      harness.server = spawn("bun", ["tools/serve.mjs", "9100"], { stdio: "ignore" });
       for (let i = 0; i < 40; i++) {
         try {
           const res = await fetch("http://127.0.0.1:9100/");
@@ -111,6 +116,9 @@ for (const step of steps) {
   }
 }
 
+// Every path out of the loop tears the servers down, including a red step.
+harness.server?.kill();
+harness.server = null;
 spawnSync("bun", ["tools/pb.mjs", "stop"], { stdio: "ignore" });
 spawnSync("cmd", ["/c", "netstat -ano"], { stdio: "ignore" });
 

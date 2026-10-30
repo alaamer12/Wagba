@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import type { Kind } from "../../stores/region";
+import type { Kind } from "../../lib/region";
 
 const props = defineProps<{ kind: Kind }>();
 const slotName = computed(() => (props.kind === "unknown" ? "fault" : props.kind));

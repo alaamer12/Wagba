@@ -9,8 +9,8 @@ import PageShell from "../components/layout/PageShell.vue";
 import { usePhotoPicker } from "../composables/usePhotoPicker";
 import { getMeal, publishMeal, updateMeal } from "../services/meals";
 import { fileUrl } from "../services/pb";
-import { useLocationStore } from "../stores/location";
-import { useSessionStore } from "../stores/session";
+import { useLocationState } from "../shared/state/useLocationState";
+import { useSessionState } from "../shared/state/useSessionState";
 import { AppError, toAppError } from "../types/errors";
 
 type PhotoItem =
@@ -20,8 +20,8 @@ type PhotoItem =
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
-const session = useSessionStore();
-const location = useLocationStore();
+const session = useSessionState();
+const location = useLocationState();
 const picker = usePhotoPicker();
 
 const editingId = computed(() =>
@@ -39,7 +39,9 @@ const locationText = ref(session.profile?.location_text ?? "");
 const photos = ref<PhotoItem[]>([]);
 const error = ref("");
 const submitting = ref(false);
-const blocked = ref(false);
+// Denied is the device's answer, read from the location state — not a local flag this
+// page writes after trying, which is how the same fact came to have two owners.
+const blocked = computed(() => location.blocked);
 
 function addItems(files: File[]): PhotoItem[] {
   return files.map((file, index) => ({
@@ -97,10 +99,7 @@ async function publish() {
   submitting.value = true;
   try {
     const center = await location.ensure();
-    if (!center) {
-      blocked.value = true;
-      return;
-    }
+    if (!center) return;
     const input = {
       title: title.value.trim(),
       description: description.value.trim(),
@@ -165,8 +164,9 @@ onMounted(async () => {
       error.value = t("error.fault.body");
     }
   }
-  const center = await location.ensure();
-  blocked.value = !center;
+  // Entry captures the fix the meal will be pinned to (screens.md §Add Meal); the panel
+  // that appears when the device refuses is derived, not set here.
+  void location.ensure();
 });
 
 onUnmounted(() => {

@@ -9,21 +9,21 @@ import AppBar from "../components/layout/AppBar.vue";
 import PageShell from "../components/layout/PageShell.vue";
 import MealCard from "../components/present/MealCard.vue";
 import { getMeal } from "../services/meals";
-import { useFavoritesStore } from "../stores/favorites";
-import { useSessionStore } from "../stores/session";
+import { useFavoritesState } from "../shared/state/useFavoritesState";
+import { useSessionState } from "../shared/state/useSessionState";
 import type { Meal } from "../types/schemas";
 
 const { t } = useI18n();
 const router = useRouter();
-const favorites = useFavoritesStore();
-const session = useSessionStore();
+const favorites = useFavoritesState();
+const session = useSessionState();
 const meals = ref<Meal[]>([]);
 const loading = ref(true);
 
 onMounted(async () => {
   try {
     await session.ensureReady();
-    if (!favorites.loaded) await favorites.load();
+    await favorites.ensureLoaded();
     const results = await Promise.allSettled([...favorites.ids].map((id) => getMeal(id)));
     meals.value = results
       .filter((r): r is PromiseFulfilledResult<Meal> => r.status === "fulfilled")

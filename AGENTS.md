@@ -47,8 +47,8 @@ bun tools/parity.py …       # regional mockup-vs-capture comparison (python, .
 
 ```
 src/pages        route surfaces              src/services   ONLY PocketBase SDK importer
-src/components   base | layout | present     src/stores     state + the only place `kind` is set
-src/composables  device boundaries           src/lib        pure logic (avatar, feed cache)
+src/components   base | layout | present     src/shared     state/ (our own work) + conditions/ (the world)
+src/composables  device boundaries           src/lib        pure logic (region ladder, avatar, feed cache)
 shared/          the Arabic fold + distance — imported by the app AND bundled for the hook
 pocketbase/      pb_migrations (app API) + pb_hooks/main.pb.js + pb_data (ignored)
 tools/           gate, pb, seed, build-hooks, serve, linkcheck

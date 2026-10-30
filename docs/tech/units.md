@@ -38,6 +38,20 @@ Location is `src/components/`.
 | MealCard | present | `present/MealCard.vue` | cover, title, 2-line description, cook avatar+name, distance | Implemented |
 | CookRow | present | `present/CookRow.vue` | avatar + name + `@handle` + social links (external open) on the details page | Implemented |
 
+## fact sources — `shared/state` and `shared/conditions`
+
+A fact source returns data and never renders (`/states`). `State` = the outcome of our own work; `Condition` = what the world imposes, read-only to every consumer.
+
+| Unit | Kind | Base path | Owns | Consumed by |
+|---|---|---|---|---|
+| Feed | State | `shared/state/useMealFeedState.ts` | rows, `read`, `inFlight`, request sequence, the only `kind` derivation | Home, the chip row, My/Favorites indirectly |
+| Session | State | `shared/state/useSessionState.ts` | profile, `phase` (idle · provisioning · ready · failed), completeness | every screen that needs an account |
+| Location read | State | `shared/state/useLocationState.ts` | the fix we obtained and the outcome of our attempt | Home, Add/Edit Meal |
+| Favorites | State | `shared/state/useFavoritesState.ts` | saved ids, per-id pending, `ensureLoaded` | Details, Favorites, Settings |
+| Network | Condition | `shared/conditions/useNetworkCondition.ts` | device reachability; `onReconnect` hands back its own release | App shell, Home (probe on reconnect) |
+| Feed snapshot | Condition | `shared/conditions/useFeedSnapshotCondition.ts` | whether an earlier run left a readable feed | Feed (the `stale` answer) |
+| Region ladder | pure derivation (not a source) | `lib/region.ts` | `resolveRegion(facts) → Kind` | Feed state, the e2e matrix |
+
 ## Known gaps
 
 - **The avatar art is programmatic.** The part *axes* are implemented; the hand-drawn part set from `reference/avatar.html` is deferred. Swapping art does not change selection logic.

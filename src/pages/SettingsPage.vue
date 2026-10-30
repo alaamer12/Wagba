@@ -13,13 +13,13 @@ import { STORE_URL } from "../config";
 import { currentLocale, setLocale } from "../i18n";
 import { listMine } from "../services/meals";
 import { fileUrl } from "../services/pb";
-import { useFavoritesStore } from "../stores/favorites";
-import { useSessionStore } from "../stores/session";
+import { useFavoritesState } from "../shared/state/useFavoritesState";
+import { useSessionState } from "../shared/state/useSessionState";
 
 const { t } = useI18n();
 const router = useRouter();
-const session = useSessionStore();
-const favorites = useFavoritesStore();
+const session = useSessionState();
+const favorites = useFavoritesState();
 
 const version = "0.1.0";
 const mineCount = ref(0);
@@ -81,7 +81,7 @@ async function share() {
 
 onMounted(async () => {
   await session.ensureReady();
-  if (!favorites.loaded) await favorites.load();
+  await favorites.ensureLoaded();
   try {
     mineCount.value = (await listMine()).length;
   } catch {

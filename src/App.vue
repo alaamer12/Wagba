@@ -1,20 +1,26 @@
 <script setup lang="ts">
-import { onMounted } from "vue";
-import { useNetwork } from "./composables/useNetwork";
-import { useSessionStore } from "./stores/session";
+import { onMounted, onUnmounted } from "vue";
+import { startNetworkCondition } from "./shared/conditions/useNetworkCondition";
+import { useSessionState } from "./shared/state/useSessionState";
 
-const session = useSessionStore();
-const network = useNetwork();
+const session = useSessionState();
+let releaseNetwork: (() => void) | null = null;
 
 onMounted(async () => {
-  network.start();
-  // Anonymous provisioning happens on first launch; failures surface on the
-  // screens that need an account rather than blocking the whole app.
+  releaseNetwork = startNetworkCondition();
+  // Anonymous provisioning happens on first launch. A failure is now recorded as a phase
+  // on the session and surfaces on the screens that need an account, instead of being
+  // dropped on the floor as "Home will somehow show it".
   try {
     await session.boot();
   } catch {
-    /* offline first launch — Home will show its fault state */
+    /* phase === "failed" */
   }
+});
+
+onUnmounted(() => {
+  releaseNetwork?.();
+  releaseNetwork = null;
 });
 </script>
 

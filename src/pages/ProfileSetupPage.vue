@@ -9,13 +9,13 @@ import AppBar from "../components/layout/AppBar.vue";
 import PageShell from "../components/layout/PageShell.vue";
 import { slugify } from "../services/handles";
 import { fileUrl } from "../services/pb";
-import { useSessionStore } from "../stores/session";
+import { useSessionState } from "../shared/state/useSessionState";
 import { AppError } from "../types/errors";
 
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
-const session = useSessionStore();
+const session = useSessionState();
 
 const displayName = ref(session.profile?.display_name ?? "");
 const whatsapp = ref(session.profile?.whatsapp ?? "");

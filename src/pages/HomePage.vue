@@ -14,16 +14,17 @@ import AppRegion from "../components/layout/AppRegion.vue";
 import BottomBar from "../components/layout/BottomBar.vue";
 import PageShell from "../components/layout/PageShell.vue";
 import MealCard from "../components/present/MealCard.vue";
+import { type Kind, normaliseKind } from "../lib/region";
 import { hasNewer } from "../services/meals";
-import { useLocationStore } from "../stores/location";
-import { useMealsStore } from "../stores/meals";
-import { type Kind, normaliseKind } from "../stores/region";
+import { onReconnect } from "../shared/conditions/useNetworkCondition";
+import { useLocationState } from "../shared/state/useLocationState";
+import { useMealFeedState } from "../shared/state/useMealFeedState";
 
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
-const location = useLocationStore();
-const meals = useMealsStore();
+const location = useLocationState();
+const meals = useMealFeedState();
 
 const query = ref("");
 const field = ref<HTMLInputElement>();
@@ -71,7 +72,6 @@ const kind = computed<Kind>(() => {
 
 const newest = ref("");
 const hasNew = ref(false);
-const refreshing = ref(false);
 const pulling = ref(0);
 
 function noteNewest() {
@@ -81,22 +81,17 @@ function noteNewest() {
 }
 
 async function refresh() {
-  const center = await location.ensure();
-  if (!center) return;
-  if (query.value.trim()) await meals.search(query.value, center);
-  else await meals.load(center);
+  // The position is read *inside* the request window, so the frames while the device is
+  // locating are `loading`, not the all-facts-false frame the ladder answers with `fault`.
+  if (query.value.trim()) await meals.search(query.value, location.fix);
+  else await meals.load(() => location.ensure());
   noteNewest();
 }
 
 async function refreshNow() {
-  refreshing.value = true;
-  try {
-    location.reset();
-    await refresh();
-    hasNew.value = false;
-  } finally {
-    refreshing.value = false;
-  }
+  location.rearm();
+  await refresh();
+  hasNew.value = false;
 }
 
 async function probe() {
@@ -133,9 +128,11 @@ function onVisible() {
 }
 
 function retry() {
-  location.reset();
+  location.rearm();
   void refresh();
 }
+
+let releaseReconnect: (() => void) | null = null;
 
 watch(query, (value) => {
   clearTimeout(debounce);
@@ -147,12 +144,15 @@ watch(query, (value) => {
 onMounted(() => {
   void refresh();
   document.addEventListener("visibilitychange", onVisible);
-  globalThis.addEventListener("online", onVisible);
+  // Reconnect is one app-wide reading, not a second listener per screen.
+  releaseReconnect = onReconnect(() => void probe());
 });
 
 onUnmounted(() => {
+  clearTimeout(debounce);
   document.removeEventListener("visibilitychange", onVisible);
-  globalThis.removeEventListener("online", onVisible);
+  releaseReconnect?.();
+  releaseReconnect = null;
 });
 </script>
 

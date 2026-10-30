@@ -1,5 +1,8 @@
 // The state ladder. One pure function decides what a region shows; components
 // render, they never decide. docs/tech/states.md owns the rules and the matrix.
+//
+// A derivation, not a fact source: it answers "which case is this?" from facts somebody
+// else holds, so it lives with the other pure logic rather than beside the stores.
 
 export type Kind =
   | "blocked"
