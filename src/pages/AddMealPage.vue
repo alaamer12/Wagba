@@ -12,6 +12,7 @@ import { useSessionState } from "../shared/state/useSessionState";
 import { AppError, toAppError } from "../types/errors";
 import Button from "../ui/adaptive/Button.vue";
 import Field from "../ui/adaptive/Field.vue";
+import LoadingRendition from "../ui/renditions/LoadingRendition.vue";
 
 type PhotoItem =
   | { id: string; kind: "existing"; name: string; url: string }
@@ -39,6 +40,11 @@ const locationText = ref(session.profile?.location_text ?? "");
 const photos = ref<PhotoItem[]>([]);
 const error = ref("");
 const submitting = ref(false);
+// An edit form whose values have not arrived yet is not a form the user may fill: typing
+// into it worked, then `loadForEdit` overwrote every field with the record it was still
+// fetching. The save resolved with the old title and the app navigated as if it had stored
+// the new one — only measurable because the e2e run under load typed faster than the fetch.
+const ready = ref(!editing.value);
 // Denied is the device's answer, read from the location state — not a local flag this
 // page writes after trying, which is how the same fact came to have two owners.
 const blocked = computed(() => location.blocked);
@@ -162,6 +168,8 @@ onMounted(async () => {
       await loadForEdit();
     } catch {
       error.value = t("error.fault.body");
+    } finally {
+      ready.value = true;
     }
   }
   // Entry captures the fix the meal will be pinned to (screens.md §Add Meal); the panel
@@ -182,7 +190,8 @@ onUnmounted(() => {
       <AppBar :title="editing ? t('add.editTitle') : t('add.title')" back />
     </template>
 
-    <form class="form" @submit.prevent="publish">
+    <LoadingRendition v-if="!ready" :rows="4" />
+    <form v-else class="form" @submit.prevent="publish">
       <div class="upload">
         <span class="upload__label">{{ t("add.photos.title") }}</span>
         <div v-if="photos.length" class="grid">

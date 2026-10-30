@@ -164,7 +164,16 @@ test("S2 cook completes a profile, publishes, edits, hides, shows and deletes", 
   await item.getByRole("button", { name: t.edit }).click();
   const renamed = `${meal} مشوية`;
   await page.getByLabel(t.mealName, { exact: false }).fill(renamed);
+  // The answer is asserted on the record the server wrote, not on the navigation the app
+  // chose: an update that resolved with the *old* title still navigated home, and every
+  // later assertion then read like a stale cache. Under load that is exactly what happened.
+  const saved = page.waitForResponse(
+    (res) =>
+      /\/api\/collections\/meals\/records\//.test(res.url()) && res.request().method() === "PATCH",
+  );
   await page.getByRole("button", { name: t.publish }).click();
+  const written = (await (await saved).json()) as { title: string };
+  expect(written.title).toBe(renamed);
   await expect(page).toHaveURL(/#\/home/, { timeout: 20_000 });
   await page.goto("/#/mine");
   await expect(page.getByText(renamed).first()).toBeVisible({ timeout: 20_000 });
