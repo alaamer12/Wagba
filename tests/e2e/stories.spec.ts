@@ -403,3 +403,13 @@ test("S11 every Settings row does something", async ({ page }) => {
   await page.getByRole("button", { name: /اللغة|Language/ }).click();
   await expect(page.locator("html")).toHaveAttribute("dir", before === "rtl" ? "ltr" : "rtl");
 });
+
+test("S12 a meal tab narrows; an empty tab is not an empty cook", async ({ page }) => {
+  // A fresh account has posted nothing, so "All" honestly answers `empty`. On "Available" the
+  // honest answer is that the tab filtered everything out — not that this cook exists with no
+  // meals behind them (F52). No publish is needed: the distinction is what is asserted.
+  await page.goto("/#/mine");
+  await expect(page.locator('[data-kind="empty"]')).toBeVisible({ timeout: 30_000 });
+  await page.getByRole("tab").nth(1).click();
+  await expect(page.locator('[data-kind="empty-filtered"]')).toBeVisible({ timeout: 15_000 });
+});

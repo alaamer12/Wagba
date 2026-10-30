@@ -10,6 +10,7 @@ import { useSessionState } from "../../../../shared/state/useSessionState";
 import type { Meal } from "../../../../types/schemas";
 import Button from "../../../../ui/adaptive/Button.vue";
 import Segmented from "../../../../ui/adaptive/Segmented.vue";
+import EmptyFilteredRendition from "../../../../ui/renditions/EmptyFilteredRendition.vue";
 import EmptyRendition from "../../../../ui/renditions/EmptyRendition.vue";
 import FaultRendition from "../../../../ui/renditions/FaultRendition.vue";
 import LoadingRendition from "../../../../ui/renditions/LoadingRendition.vue";
@@ -60,6 +61,10 @@ const kind = computed<Kind>(() => {
     inFlight: inFlight.value,
     hasRows: visible.value.length > 0,
     read: read.value,
+    // The tab is a narrowing (F52). Without it a cook holding three available meals who opens
+    // "Not available" was told they had never posted anything — the ladder's `empty` means the
+    // read found nothing, not that a filter hid something.
+    narrowing: filter.value !== "all",
   });
 });
 
@@ -144,6 +149,10 @@ function removed(id: string) {
           @ask-delete="(id) => (pendingId = id)"
         />
       </StaleRendition>
+
+      <EmptyFilteredRendition v-else-if="kind === 'empty-filtered'">
+        <Button :block="false" @click="filter = 'all'">{{ t("myMeals.filter.all") }}</Button>
+      </EmptyFilteredRendition>
 
       <EmptyRendition
         v-else-if="kind === 'empty'"
