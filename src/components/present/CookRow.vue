@@ -4,7 +4,7 @@ import { useI18n } from "vue-i18n";
 import { useExternal } from "../../composables/useExternal";
 import { fileUrl } from "../../services/pb";
 import type { Meal } from "../../types/schemas";
-import AppAvatar from "../base/AppAvatar.vue";
+import Avatar from "../../ui/adaptive/Avatar.vue";
 
 const props = defineProps<{ meal: Meal }>();
 const { t } = useI18n();
@@ -32,7 +32,7 @@ const socials = computed(() =>
 
 <template>
   <div class="cook-row">
-    <AppAvatar :src="avatar" :handle="meal.cook.handle ?? ''" :size="44" :label="t('avatar.alt')" />
+    <Avatar :src="avatar" :handle="meal.cook.handle ?? ''" :size="44" :label="t('avatar.alt')" />
     <div class="cook-row__text">
       <span class="cook-row__label">{{ t('meal.cook.label') }}</span>
       <span class="cook-row__name">{{ meal.cook.display_name }}</span>

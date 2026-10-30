@@ -2,15 +2,15 @@
 import { computed, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
-import AppAvatar from "../components/base/AppAvatar.vue";
-import AppButton from "../components/base/AppButton.vue";
-import AppField from "../components/base/AppField.vue";
 import AppBar from "../components/layout/AppBar.vue";
 import PageShell from "../components/layout/PageShell.vue";
 import { slugify } from "../services/handles";
 import { fileUrl } from "../services/pb";
 import { useSessionState } from "../shared/state/useSessionState";
 import { AppError } from "../types/errors";
+import Avatar from "../ui/adaptive/Avatar.vue";
+import Button from "../ui/adaptive/Button.vue";
+import Field from "../ui/adaptive/Field.vue";
 
 const { t } = useI18n();
 const route = useRoute();
@@ -81,13 +81,13 @@ onMounted(async () => {
     </template>
 
     <div class="intro">
-      <AppAvatar :src="avatarSrc" :handle="handlePreview" :size="76" :label="t('avatar.alt')" />
+      <Avatar :src="avatarSrc" :handle="handlePreview" :size="76" :label="t('avatar.alt')" />
       <p class="intro__sub">{{ session.isComplete ? t('settings.account.section') : t('profile.subtitle') }}</p>
       <p class="intro__hint">{{ t('profile.avatar.hint') }}</p>
     </div>
 
     <form class="form" @submit.prevent="save">
-      <AppField v-model="displayName" :label="t('profile.name.label')" :placeholder="t('profile.name.placeholder')" required />
+      <Field v-model="displayName" :label="t('profile.name.label')" :placeholder="t('profile.name.placeholder')" required />
       <div class="handle">
         <span class="handle__label">{{ t('profile.handle.label') }}</span>
         <span v-if="frozenHandle" class="handle__value is-frozen">@{{ frozenHandle }}</span>
@@ -102,16 +102,16 @@ onMounted(async () => {
         />
         <span class="handle__hint">{{ frozenHandle ? t('profile.handle.frozen') : t('profile.handle.hint') }}</span>
       </div>
-      <AppField v-model="whatsapp" :label="t('profile.whatsapp.label')" :placeholder="t('profile.whatsapp.placeholder')" type="tel" required />
-      <AppField v-model="locationText" :label="t('profile.location.label')" required />
+      <Field v-model="whatsapp" :label="t('profile.whatsapp.label')" :placeholder="t('profile.whatsapp.placeholder')" type="tel" required />
+      <Field v-model="locationText" :label="t('profile.location.label')" required />
 
       <h3 class="section">{{ t('profile.social.heading') }}</h3>
-      <AppField v-model="facebook" label="Facebook" type="url" />
-      <AppField v-model="instagram" label="Instagram" type="url" />
-      <AppField v-model="tiktok" label="TikTok" type="url" />
+      <Field v-model="facebook" label="Facebook" type="url" />
+      <Field v-model="instagram" label="Instagram" type="url" />
+      <Field v-model="tiktok" label="TikTok" type="url" />
 
       <p v-if="error" class="error">{{ error }}</p>
-      <AppButton type="submit" :loading="saving">{{ t('profile.save') }}</AppButton>
+      <Button type="submit" :loading="saving">{{ t('profile.save') }}</Button>
     </form>
   </PageShell>
 </template>

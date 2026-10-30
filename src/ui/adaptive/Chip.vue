@@ -1,12 +1,14 @@
 <script setup lang="ts">
+import BaseButton from "../base/Button.vue";
+
 defineProps<{ active?: boolean }>();
 defineEmits<{ select: [] }>();
 </script>
 
 <template>
-  <button type="button" class="app-chip" :class="{ 'is-active': active }" @click="$emit('select')">
+  <BaseButton type="button" class="app-chip" :class="{ 'is-active': active }" @click="$emit('select')">
     <slot />
-  </button>
+  </BaseButton>
 </template>
 
 <style scoped>

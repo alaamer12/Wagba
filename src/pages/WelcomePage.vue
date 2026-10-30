@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
-import AppButton from "../components/base/AppButton.vue";
-import BrandMark from "../components/base/BrandMark.vue";
+import BrandMark from "../shared/decorations/BrandMark.vue";
+import Button from "../ui/adaptive/Button.vue";
 
 const { t } = useI18n();
 const router = useRouter();
@@ -17,7 +17,7 @@ function start() {
     <BrandMark :size="44" />
     <p class="welcome__tagline">{{ t('welcome.tagline') }}</p>
     <img src="../assets/brand/chef-hat.svg" alt="" class="welcome__illustration" />
-    <AppButton class="welcome__cta" @click="start">{{ t('welcome.cta') }}</AppButton>
+    <Button class="welcome__cta" @click="start">{{ t('welcome.cta') }}</Button>
   </div>
 </template>
 

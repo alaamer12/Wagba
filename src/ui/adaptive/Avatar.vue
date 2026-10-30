@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed } from "vue";
-import hatUrl from "../../assets/brand/chef-hat.svg";
+import { computed, ref } from "vue";
+import BaseImg from "../base/Img.vue";
 import AvatarArt from "./AvatarArt.vue";
 
 const props = withDefaults(
@@ -9,13 +9,23 @@ const props = withDefaults(
 );
 
 const style = computed(() => ({ width: `${props.size}px`, height: `${props.size}px` }));
+
+// A picture that fails to load used to leave a broken frame; the generated face is the
+// same identity either way, so a 404 degrades to it instead of to nothing. The chef hat
+// is never a person (decision D3) — it is brand art and belongs to BrandMark.
+const broken = ref(false);
+const photo = computed(() => Boolean(props.src) && !broken.value);
 </script>
 
 <template>
   <span class="avatar" :style="style" role="img" :aria-label="label">
-    <img v-if="src" :src="src" :alt="label" />
-    <AvatarArt v-else-if="handle" :handle="handle" :label="label" />
-    <img v-else class="avatar__fallback" :src="hatUrl" alt="" />
+    <BaseImg
+      v-if="photo"
+      :src="src"
+      :alt="label"
+      @error="broken = true"
+    />
+    <AvatarArt v-else :handle="handle" :label="label" />
   </span>
 </template>
 

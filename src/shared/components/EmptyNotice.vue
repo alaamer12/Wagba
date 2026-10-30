@@ -1,18 +1,30 @@
 <script setup lang="ts">
-import chefUrl from "../../assets/illustrations/chef-wandering.png";
+import Image from "../../ui/adaptive/Photo.vue";
+import Text from "../../ui/adaptive/Text.vue";
 
+// A notice that says "nothing here". The illustration is supplied by the caller because
+// it is per screen, not per kind (states.md): Home shows the pot, My Meals the chef, and
+// `fault` or `blocked` deliberately carry no drawing at all. A default here would put one
+// screen's artwork inside a global unit — which is what this line used to be.
 withDefaults(defineProps<{ title: string; body?: string; art?: string; artSize?: number }>(), {
   body: "",
-  art: chefUrl,
+  art: "",
   artSize: 300,
 });
 </script>
 
 <template>
   <div class="empty">
-    <img :src="art" alt="" class="empty__art" :style="{ width: `${artSize}px` }" />
-    <p class="empty__title">{{ title }}</p>
-    <p v-if="body" class="empty__body">{{ body }}</p>
+    <Image
+      v-if="art"
+      class="empty__art"
+      :src="art"
+      alt=""
+      fit="auto"
+      :style="{ width: `${artSize}px` }"
+    />
+    <Text class="empty__title">{{ title }}</Text>
+    <Text v-if="body" class="empty__body">{{ body }}</Text>
     <div v-if="$slots.default" class="empty__actions">
       <slot />
     </div>

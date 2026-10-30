@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import BaseButton from "../base/Button.vue";
+
 withDefaults(
   defineProps<{
     variant?: "primary" | "secondary" | "ghost";
@@ -12,14 +14,14 @@ withDefaults(
 </script>
 
 <template>
-  <button
+  <BaseButton
     :type="type"
     :disabled="disabled || loading"
     class="app-button"
     :class="[`is-${variant}`, { 'is-block': block, 'is-loading': loading }]"
   >
     <slot />
-  </button>
+  </BaseButton>
 </template>
 
 <style scoped>

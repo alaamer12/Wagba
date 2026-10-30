@@ -74,6 +74,26 @@ test("language switch flips direction, labels, and layout", async ({ page }, inf
   });
 });
 
+test("typed text reaches the model behind it", async ({ page }) => {
+  // The primitive tiers are re-exports, and a re-export that only spreads attributes
+  // silently drops `v-model` (a component binding compiles to a modelValue prop plus an
+  // update event, neither of which falls through to the nested <input>). The symptom is
+  // three layers away: the field looks typed-in, the model stays empty, validation fails.
+  // So assert the derivation, not the DOM value: the handle preview is computed from the
+  // display name, and it only moves if the name reached the model.
+  await page.goto("/#/profile");
+  const name = page.getByLabel(/الاسم|Name/);
+  const handle = page.getByLabel("handle");
+
+  const before = await handle.getAttribute("placeholder");
+  await name.fill("منصور علي");
+  const after = await handle.getAttribute("placeholder");
+
+  expect(after).toBeTruthy();
+  expect(after).not.toBe(before);
+  await expect(name).toHaveValue("منصور علي");
+});
+
 test("meal details renders the photo and the cook block", async ({ page }, info) => {
   await page.goto("/#/home");
   await expect(page.locator('[data-kind="ready"] article').first()).toBeVisible({

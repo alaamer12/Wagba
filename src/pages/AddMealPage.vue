@@ -2,8 +2,6 @@
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
-import AppButton from "../components/base/AppButton.vue";
-import AppField from "../components/base/AppField.vue";
 import AppBar from "../components/layout/AppBar.vue";
 import PageShell from "../components/layout/PageShell.vue";
 import { usePhotoPicker } from "../composables/usePhotoPicker";
@@ -12,6 +10,8 @@ import { fileUrl } from "../services/pb";
 import { useLocationState } from "../shared/state/useLocationState";
 import { useSessionState } from "../shared/state/useSessionState";
 import { AppError, toAppError } from "../types/errors";
+import Button from "../ui/adaptive/Button.vue";
+import Field from "../ui/adaptive/Field.vue";
 
 type PhotoItem =
   | { id: string; kind: "existing"; name: string; url: string }
@@ -219,11 +219,11 @@ onUnmounted(() => {
         <p class="upload__hint">{{ t("add.photos.hint") }}</p>
       </div>
 
-      <AppField v-model="title" :label="t('add.name.label')" :placeholder="t('add.name.placeholder')" required />
-      <AppField v-model="description" :label="t('add.description.label')" :hint="t('add.description.optional')" multiline />
-      <AppField v-model="price" :label="t('add.price.label')" :placeholder="t('add.price.placeholder')" type="number" />
-      <AppField v-model="quantity" :label="t('add.quantity.label')" type="number" />
-      <AppField v-model="availableTime" :label="t('add.availability.label')" />
+      <Field v-model="title" :label="t('add.name.label')" :placeholder="t('add.name.placeholder')" required />
+      <Field v-model="description" :label="t('add.description.label')" :hint="t('add.description.optional')" multiline />
+      <Field v-model="price" :label="t('add.price.label')" :placeholder="t('add.price.placeholder')" type="number" />
+      <Field v-model="quantity" :label="t('add.quantity.label')" type="number" />
+      <Field v-model="availableTime" :label="t('add.availability.label')" />
 
       <fieldset class="radio">
         <legend>{{ t("add.delivery.label") }}</legend>
@@ -231,12 +231,12 @@ onUnmounted(() => {
         <label><input v-model="delivery" type="radio" value="delivery" /> {{ t("add.delivery.available") }}</label>
       </fieldset>
 
-      <AppField v-model="locationText" :label="t('add.location.label')" :hint="t('add.location.hint')" :placeholder="t('add.location.placeholder')" required />
+      <Field v-model="locationText" :label="t('add.location.label')" :hint="t('add.location.hint')" :placeholder="t('add.location.placeholder')" required />
 
       <p v-if="blocked" class="error">{{ t("error.location.title") }} — {{ t("error.location.body") }}</p>
       <p v-else-if="error" class="error">{{ error }}</p>
 
-      <AppButton type="submit" :loading="submitting" :disabled="blocked">{{ t("add.publish") }}</AppButton>
+      <Button type="submit" :loading="submitting" :disabled="blocked">{{ t("add.publish") }}</Button>
     </form>
   </PageShell>
 </template>

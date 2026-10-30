@@ -2,9 +2,6 @@
 import { computed, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
-import AppAvatar from "../components/base/AppAvatar.vue";
-import AppButton from "../components/base/AppButton.vue";
-import AppCard from "../components/base/AppCard.vue";
 import AppBar from "../components/layout/AppBar.vue";
 import BottomBar from "../components/layout/BottomBar.vue";
 import PageShell from "../components/layout/PageShell.vue";
@@ -15,6 +12,9 @@ import { fileUrl } from "../services/pb";
 import { openExternally } from "../shared/behaviour/useExternalOpen";
 import { useFavoritesState } from "../shared/state/useFavoritesState";
 import { useSessionState } from "../shared/state/useSessionState";
+import Avatar from "../ui/adaptive/Avatar.vue";
+import Button from "../ui/adaptive/Button.vue";
+import Card from "../ui/adaptive/Card.vue";
 
 const { t } = useI18n();
 const router = useRouter();
@@ -90,8 +90,8 @@ onMounted(async () => {
       <AppBar :title="t('settings.title')" />
     </template>
 
-    <AppCard v-if="complete" class="account">
-      <AppAvatar :src="avatarSrc" :handle="profile?.handle ?? ''" :size="56" :label="t('avatar.alt')" />
+    <Card v-if="complete" class="account">
+      <Avatar :src="avatarSrc" :handle="profile?.handle ?? ''" :size="56" :label="t('avatar.alt')" />
       <div class="account__text">
         <span class="account__name">{{ profile?.display_name }}</span>
         <span class="account__handle">@{{ profile?.handle }}</span>
@@ -112,17 +112,17 @@ onMounted(async () => {
       <button type="button" class="link" @click="router.push({ name: 'profile-setup' })">
         {{ t('settings.edit') }}
       </button>
-    </AppCard>
+    </Card>
 
-    <AppCard v-else class="welcome">
+    <Card v-else class="welcome">
       <h2 class="welcome__title">{{ t('settings.account.incomplete.title') }}</h2>
       <p class="welcome__body">{{ t('settings.account.incomplete.body') }}</p>
-      <AppButton :block="false" @click="router.push({ name: 'add-meal' })">
+      <Button :block="false" @click="router.push({ name: 'add-meal' })">
         {{ t('settings.account.incomplete.cta') }}
-      </AppButton>
-    </AppCard>
+      </Button>
+    </Card>
 
-    <AppCard :padded="false">
+    <Card :padded="false">
       <button type="button" class="row" @click="router.push({ name: 'my-meals' })">
         <span>{{ t('settings.myMeals') }}</span>
         <span class="row__count">{{ mineCount }}</span>
@@ -131,9 +131,9 @@ onMounted(async () => {
         <span>{{ t('settings.favorites') }}</span>
         <span class="row__count">{{ favorites.ids.size }}</span>
       </button>
-    </AppCard>
+    </Card>
 
-    <AppCard :padded="false">
+    <Card :padded="false">
       <button type="button" class="row" @click="toggleLanguage">
         <span>{{ t('settings.language') }}</span>
         <span class="row__muted">{{ currentLocale() === 'ar' ? 'العربية' : 'English' }}</span>
@@ -142,9 +142,9 @@ onMounted(async () => {
         <span>{{ t('settings.share') }}</span>
         <span class="row__muted">{{ shared ? t('settings.share.done') : '' }}</span>
       </button>
-    </AppCard>
+    </Card>
 
-    <AppCard :padded="false">
+    <Card :padded="false">
       <button type="button" class="row" @click="router.push({ name: 'about' })">
         <span>{{ t('settings.about') }}</span>
         <span class="row__chevron" aria-hidden="true">›</span>
@@ -162,7 +162,7 @@ onMounted(async () => {
         <span class="row__chevron" aria-hidden="true">›</span>
       </button>
       <div class="row is-static"><span>{{ t('settings.version', { v: version }) }}</span></div>
-    </AppCard>
+    </Card>
 
     <template #bottom>
       <BottomBar />

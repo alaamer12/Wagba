@@ -10,24 +10,46 @@ Location is `src/components/`.
 
 | Unit | Tier | Base path | Mechanism | Status |
 |---|---|---|---|---|
-| AppButton | base | `base/AppButton.vue` | primary/secondary/ghost; full-width default; loading disables | Implemented |
-| AppCard | base | `base/AppCard.vue` | surface + border + soft shadow; optional padding/flat | Implemented |
-| AppChip | base | `base/AppChip.vue` | pill; active = butter fill | Implemented |
-| BrandMark | base | `base/BrandMark.vue` | chef hat over «وجبة», sized by `size`; never mirrors | Implemented |
-| AppField | base | `base/AppField.vue` | label + input/textarea + hint/error; `defineModel` | Implemented |
-| AppAvatar | base | `base/AppAvatar.vue` | uploaded photo, else `AvatarArt` from the handle, else the brand hat | Implemented |
-| AvatarArt | base | `base/AvatarArt.vue` | the verified rig: 12 slots, 22 parts, palette axes for skin/shirt/backdrop | Implemented |
-| AppEmpty | base | `base/AppEmpty.vue` | illustration + title + body + action slot | Implemented |
-| AppSkeleton | base | `base/AppSkeleton.vue` | card-shaped shimmer blocks | Implemented |
-| AppBanner | base | `base/AppBanner.vue` | inline strip for `stale`; info/warning | Implemented |
-| AppBadge | base | `base/AppBadge.vue` | status pill; neutral/muted | Implemented |
+| Button | adaptive | `ui/adaptive/Button.vue` | primary/secondary/ghost; full-width default; loading disables | Implemented |
+| Card | adaptive | `ui/adaptive/Card.vue` | surface + border + soft shadow; optional padding/flat | Implemented |
+| Chip | adaptive | `ui/adaptive/Chip.vue` | pill; active = butter fill | Implemented |
+| BrandMark | decoration | `shared/decorations/BrandMark.vue` | chef hat over «وجبة», sized by `size`; never mirrors | Implemented |
+| Field | adaptive | `ui/adaptive/Field.vue` | label + input/textarea + hint/error; `defineModel` | Implemented |
+| Avatar | adaptive | `ui/adaptive/Avatar.vue` | uploaded photo, else `AvatarArt` from the handle; a photo that fails to load degrades to the art. The brand hat is never used as a person (decision D3) | Implemented |
+| Photo | adaptive | `ui/adaptive/Photo.vue` | lazy image, covering its box, `failed` event and a `fallback` slot for the no-image case | Implemented |
+| AvatarArt | adaptive | `ui/adaptive/AvatarArt.vue` | the verified rig: 12 slots, 22 parts, palette axes for skin/shirt/backdrop | Implemented |
+| EmptyNotice | component | `shared/components/EmptyNotice.vue` | title + body + action slot; the illustration is passed in because it is per screen, not per kind | Implemented |
+| Skeleton | adaptive | `ui/adaptive/Skeleton.vue` | card-shaped shimmer blocks | Implemented |
+| Banner | adaptive | `ui/adaptive/Banner.vue` | inline strip for `stale`; info/warning | Implemented |
+| Badge | adaptive | `ui/adaptive/Badge.vue` | status pill; neutral/muted | Implemented |
+
+## ui/base — the platform control, named once
+
+| Unit | Path | What it is |
+|---|---|---|
+| Button | `ui/base/Button.vue` | the native `<button>`, no styling |
+| Input | `ui/base/Input.vue` | the native `<input>` |
+| Textarea | `ui/base/Textarea.vue` | the native `<textarea>` |
+| Img | `ui/base/Img.vue` | the native `<img>` |
+| Text | `ui/base/Text.vue` | `<p>` |
+| Heading | `ui/base/Heading.vue` | `<h1>`…`<h4>` chosen by `level` |
+
+Each is a re-export seam and nothing else — no props invented to justify the file. The one
+exception is a *contract*: `v-model` on a component compiles to a `modelValue` prop plus an
+`update:modelValue` event, and neither reaches a nested `<input>` by attribute fallthrough, so
+`Input`/`Textarea` implement it here or it is implemented nowhere. A wrapper that only spreads
+attrs looks identical in review and silently breaks binding three layers away — which is how the
+profile form came to type into a field that never updated its model.
+
+`ui/adaptive` is built from these, and a Component imports the adaptive tier, never this one
+(`structure.md` import direction).
 
 ## layout — shells
 
 | Unit | Tier | Base path | Mechanism | Status |
 |---|---|---|---|---|
 | PageShell | layout | `layout/PageShell.vue` | safe-area padding, content column, bottom slot | Implemented |
-| AppBar | layout | `layout/AppBar.vue` | sticky bar; `lead` / `title` / `actions` slots, optional back | Implemented |
+| Bar | layout | `layout/AppBar.vue` | sticky bar; `lead` / `title` / `actions` slots, optional back | Implemented |
 | BottomBar | layout | `layout/BottomBar.vue` | floating rounded bar, three slots, raised center add button | Implemented |
 | Region | layout | `layout/AppRegion.vue` | renders exactly one slot from `kind`, stamps `data-kind` | Implemented |
 

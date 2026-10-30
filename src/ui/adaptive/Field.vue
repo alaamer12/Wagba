@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import BaseInput from "../base/Input.vue";
+import BaseTextarea from "../base/Textarea.vue";
+
 const model = defineModel<string>({ default: "" });
 withDefaults(
   defineProps<{
@@ -29,7 +32,7 @@ withDefaults(
       {{ label }}
       <span v-if="required" class="field__req" aria-hidden="true">*</span>
     </span>
-    <textarea
+    <BaseTextarea
       v-if="multiline"
       v-model="model"
       class="field__input"
@@ -37,7 +40,7 @@ withDefaults(
       :disabled="disabled"
       rows="3"
     />
-    <input
+    <BaseInput
       v-else
       v-model="model"
       class="field__input"

@@ -2,17 +2,18 @@
 import { computed, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
-import AppBadge from "../components/base/AppBadge.vue";
-import AppButton from "../components/base/AppButton.vue";
-import AppEmpty from "../components/base/AppEmpty.vue";
-import AppSegmented from "../components/base/AppSegmented.vue";
-import AppSkeleton from "../components/base/AppSkeleton.vue";
+import chefUrl from "../assets/illustrations/chef-wandering.png";
 import AppBar from "../components/layout/AppBar.vue";
 import BottomBar from "../components/layout/BottomBar.vue";
 import PageShell from "../components/layout/PageShell.vue";
 import MealCard from "../components/present/MealCard.vue";
 import { deleteMeal, listMine, setMealStatus } from "../services/meals";
+import EmptyNotice from "../shared/components/EmptyNotice.vue";
 import type { Meal } from "../types/schemas";
+import Badge from "../ui/adaptive/Badge.vue";
+import Button from "../ui/adaptive/Button.vue";
+import Segmented from "../ui/adaptive/Segmented.vue";
+import Skeleton from "../ui/adaptive/Skeleton.vue";
 
 const { t } = useI18n();
 const router = useRouter();
@@ -83,43 +84,43 @@ onMounted(load);
       </AppBar>
     </template>
 
-    <AppSegmented v-model="filter" :options="options" />
+    <Segmented v-model="filter" :options="options" />
 
-    <AppSkeleton v-if="loading" :rows="3" />
+    <Skeleton v-if="loading" :rows="3" />
 
     <template v-else-if="visible.length">
       <div v-for="meal in visible" :key="meal.id" class="item">
         <div class="item__head">
-          <AppBadge :tone="meal.status === 'available' ? 'neutral' : 'muted'">
+          <Badge :tone="meal.status === 'available' ? 'neutral' : 'muted'">
             {{ meal.status === 'available' ? t('myMeals.status.available') : t('myMeals.status.unavailable') }}
-          </AppBadge>
+          </Badge>
         </div>
         <MealCard :meal="meal" @click="router.push({ name: 'meal', params: { id: meal.id } })" />
         <div class="item__actions">
-          <AppButton variant="ghost" @click="router.push({ name: 'edit-meal', params: { id: meal.id } })">
+          <Button variant="ghost" @click="router.push({ name: 'edit-meal', params: { id: meal.id } })">
             {{ t("myMeals.edit") }}
-          </AppButton>
-          <AppButton variant="secondary" @click="toggle(meal)">
+          </Button>
+          <Button variant="secondary" @click="toggle(meal)">
             {{ meal.status === 'available' ? t('myMeals.hide') : t('myMeals.show') }}
-          </AppButton>
-          <AppButton variant="ghost" @click="askDelete(meal)">{{ t('myMeals.delete') }}</AppButton>
+          </Button>
+          <Button variant="ghost" @click="askDelete(meal)">{{ t('myMeals.delete') }}</Button>
         </div>
       </div>
     </template>
 
-    <AppEmpty v-else class="my-empty" :title="t('myMeals.empty.title')" :body="t('myMeals.empty.body')" :art-size="180">
-      <AppButton :block="false" class="cta" @click="router.push({ name: 'add-meal' })">
+    <EmptyNotice v-else class="my-empty" :title="t('myMeals.empty.title')" :body="t('myMeals.empty.body')" :art="chefUrl" :art-size="180">
+      <Button :block="false" class="cta" @click="router.push({ name: 'add-meal' })">
         {{ t('myMeals.empty.cta') }}
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
-      </AppButton>
-    </AppEmpty>
+      </Button>
+    </EmptyNotice>
     <div v-if="pendingDelete" class="overlay" role="dialog" aria-modal="true" :aria-label="t('meal.delete.title')">
       <div class="dialog">
         <h2 class="dialog__title">{{ t("meal.delete.title") }}</h2>
         <p class="dialog__body">{{ t("meal.delete.body") }}</p>
         <div class="dialog__actions">
-          <AppButton :block="false" :loading="deleting" @click="confirmDelete">{{ t("common.confirm") }}</AppButton>
-          <AppButton :block="false" variant="ghost" @click="pendingDelete = null">{{ t("common.cancel") }}</AppButton>
+          <Button :block="false" :loading="deleting" @click="confirmDelete">{{ t("common.confirm") }}</Button>
+          <Button :block="false" variant="ghost" @click="pendingDelete = null">{{ t("common.cancel") }}</Button>
         </div>
       </div>
     </div>

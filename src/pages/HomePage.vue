@@ -3,12 +3,6 @@ import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
 import potUrl from "../assets/illustrations/pot-empty.png";
-import AppBanner from "../components/base/AppBanner.vue";
-import AppButton from "../components/base/AppButton.vue";
-import AppChip from "../components/base/AppChip.vue";
-import AppEmpty from "../components/base/AppEmpty.vue";
-import AppSkeleton from "../components/base/AppSkeleton.vue";
-import BrandMark from "../components/base/BrandMark.vue";
 import AppBar from "../components/layout/AppBar.vue";
 import AppRegion from "../components/layout/AppRegion.vue";
 import BottomBar from "../components/layout/BottomBar.vue";
@@ -16,9 +10,15 @@ import PageShell from "../components/layout/PageShell.vue";
 import MealCard from "../components/present/MealCard.vue";
 import { type Kind, normaliseKind } from "../lib/region";
 import { hasNewer } from "../services/meals";
+import EmptyNotice from "../shared/components/EmptyNotice.vue";
 import { onReconnect } from "../shared/conditions/useNetworkCondition";
+import BrandMark from "../shared/decorations/BrandMark.vue";
 import { useLocationState } from "../shared/state/useLocationState";
 import { useMealFeedState } from "../shared/state/useMealFeedState";
+import Banner from "../ui/adaptive/Banner.vue";
+import Button from "../ui/adaptive/Button.vue";
+import Chip from "../ui/adaptive/Chip.vue";
+import Skeleton from "../ui/adaptive/Skeleton.vue";
 
 const { t } = useI18n();
 const route = useRoute();
@@ -196,17 +196,17 @@ onUnmounted(() => {
     </div>
 
     <nav class="suggestions" :aria-label="t('home.chips.label')">
-      <AppChip v-for="chip in chips" :key="chip.label" :active="chip.active" @select="applyChip(chip)">
+      <Chip v-for="chip in chips" :key="chip.label" :active="chip.active" @select="applyChip(chip)">
         {{ chip.label }}
-      </AppChip>
+      </Chip>
     </nav>
 
-    <AppBanner v-if="hasNew" tone="info" class="new">
+    <Banner v-if="hasNew" tone="info" class="new">
       <span>{{ t("home.banner.new") }}</span>
       <button type="button" class="new__action" @click="refreshNow">
         {{ t("home.banner.new.action") }}
       </button>
-    </AppBanner>
+    </Banner>
 
     <AppRegion :kind="kind" class="home__region">
       <template #ready>
@@ -216,37 +216,37 @@ onUnmounted(() => {
       </template>
 
       <template #stale>
-        <AppBanner tone="warning">{{ t('home.banner.stale') }}</AppBanner>
+        <Banner tone="warning">{{ t('home.banner.stale') }}</Banner>
         <MealCard v-for="meal in meals.items" :key="meal.id" :meal="meal" />
       </template>
 
       <template #loading>
-        <AppSkeleton :rows="4" />
+        <Skeleton :rows="4" />
       </template>
 
       <template #empty>
-        <AppEmpty :art="potUrl" :art-size="210" :title="t('home.empty.title')" :body="t('home.empty.body')">
-          <AppButton :block="false" class="empty-cta" @click="router.push({ name: 'add-meal' })">
+        <EmptyNotice :art="potUrl" :art-size="210" :title="t('home.empty.title')" :body="t('home.empty.body')">
+          <Button :block="false" class="empty-cta" @click="router.push({ name: 'add-meal' })">
             {{ t('home.empty.cta') }}
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
-          </AppButton>
-        </AppEmpty>
+          </Button>
+        </EmptyNotice>
       </template>
 
       <template #empty-filtered>
-        <AppEmpty :title="t('home.search.empty')" />
+        <EmptyNotice :title="t('home.search.empty')" />
       </template>
 
       <template #blocked>
-        <AppEmpty :title="t('error.location.title')" :body="t('error.location.body')">
-          <AppButton @click="retry">{{ t('error.location.retry') }}</AppButton>
-        </AppEmpty>
+        <EmptyNotice :title="t('error.location.title')" :body="t('error.location.body')">
+          <Button @click="retry">{{ t('error.location.retry') }}</Button>
+        </EmptyNotice>
       </template>
 
       <template #fault>
-        <AppEmpty :title="t('error.fault.title')" :body="t('error.fault.body')">
-          <AppButton @click="retry">{{ t('common.retry') }}</AppButton>
-        </AppEmpty>
+        <EmptyNotice :title="t('error.fault.title')" :body="t('error.fault.body')">
+          <Button @click="retry">{{ t('common.retry') }}</Button>
+        </EmptyNotice>
       </template>
     </AppRegion>
     </div>

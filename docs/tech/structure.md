@@ -13,14 +13,19 @@
 ├─ src/
 │  ├─ pages/                 Route surfaces. One file per route in product/ux.md.
 │  ├─ layouts/               Page shells (bottom bar, app bar). Units, not pages.
+│  ├─ ui/
+│  │  ├─ base/               The platform control named once: Button, Input, Textarea, Img, Text, Heading. No styling.
+│  │  ├─ adaptive/           base + this app's skin: Button, Card, Chip, Field, Avatar, Photo, Skeleton, Banner, Badge, Segmented.
+│  │  └─ renditions/         Global cases a View can select: loading, fault, blocked, stale, empty.
 │  ├─ components/
-│  │  ├─ base/               Primitives: Button, Card, Chip, Field, Avatar, EmptyState, Skeleton, Banner, Badge.
-│  │  ├─ layout/             PageShell, BottomBar, AppBar, Region.
-│  │  └─ present/            Domain-facing: MealCard, CookRow, DistanceLabel, PricePill, PhotoGrid, StatusBadge.
+│  │  └─ present/            Domain-facing: MealCard, CookRow. Props in, no service.
+│  ├─ shared/
+│  │  ├─ components/         Purposeful, feature-blind: EmptyNotice.
+│  │  ├─ decorations/        BrandMark and friends.
+│  │  ├─ state/              State sources: what *our own* work is doing — feed, session, location read, favorites.
+│  │  ├─ conditions/         Condition sources: what the world imposes — reachability, permission, cached snapshot.
+│  │  └─ behaviour/          Mechanisms with no fact of their own: external open, pull, infinite append.
 │  ├─ stores/index.ts        The Pinia bootstrap Quasar expects. No domain state lives here.
-│  ├─ shared/state/          State sources: what *our own* work is doing — feed, session, location read, favorites.
-│  ├─ shared/conditions/     Condition sources: what the world imposes — reachability, permission, cached snapshot.
-│  ├─ shared/behaviour/      Mechanisms a view or component consumes (debounce, infinite append, pull).
 │  ├─ lib/                   Pure logic: the region ladder (`region.ts`), feed cache, avatar selection.
 │  ├─ services/              The ONLY importer of the PocketBase SDK. zod-parsed responses.
 │  ├─ config.ts              Support and store channels; empty hides the row that needs them.

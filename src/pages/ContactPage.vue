@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useI18n } from "vue-i18n";
-import AppButton from "../components/base/AppButton.vue";
 import AppBar from "../components/layout/AppBar.vue";
 import PageShell from "../components/layout/PageShell.vue";
 import { useWhatsApp } from "../composables/useWhatsApp";
 import { SUPPORT_WHATSAPP } from "../config";
+import Button from "../ui/adaptive/Button.vue";
 
 const { t } = useI18n();
 const whatsapp = useWhatsApp();
@@ -27,9 +27,9 @@ async function contactSupport() {
 
     <p class="body">{{ t('contact.body') }}</p>
 
-    <AppButton v-if="configured" :block="false" class="cta" @click="contactSupport">
+    <Button v-if="configured" :block="false" class="cta" @click="contactSupport">
       {{ t('contact.whatsapp') }}
-    </AppButton>
+    </Button>
     <p v-if="unreachable" class="none">{{ t('error.wa.missing') }}</p>
     <p v-else-if="!configured" class="none">{{ t('contact.none') }}</p>
   </PageShell>

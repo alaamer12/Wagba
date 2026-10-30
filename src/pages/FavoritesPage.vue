@@ -2,16 +2,17 @@
 import { onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
-import AppButton from "../components/base/AppButton.vue";
-import AppEmpty from "../components/base/AppEmpty.vue";
-import AppSkeleton from "../components/base/AppSkeleton.vue";
+import chefUrl from "../assets/illustrations/chef-wandering.png";
 import AppBar from "../components/layout/AppBar.vue";
 import PageShell from "../components/layout/PageShell.vue";
 import MealCard from "../components/present/MealCard.vue";
 import { getMeal } from "../services/meals";
+import EmptyNotice from "../shared/components/EmptyNotice.vue";
 import { useFavoritesState } from "../shared/state/useFavoritesState";
 import { useSessionState } from "../shared/state/useSessionState";
 import type { Meal } from "../types/schemas";
+import Button from "../ui/adaptive/Button.vue";
+import Skeleton from "../ui/adaptive/Skeleton.vue";
 
 const { t } = useI18n();
 const router = useRouter();
@@ -40,7 +41,7 @@ onMounted(async () => {
       <AppBar :title="t('favorites.title')" back />
     </template>
 
-    <AppSkeleton v-if="loading" :rows="2" />
+    <Skeleton v-if="loading" :rows="2" />
 
     <template v-else-if="meals.length">
       <MealCard
@@ -51,8 +52,8 @@ onMounted(async () => {
       />
     </template>
 
-    <AppEmpty v-else :title="t('favorites.empty')">
-      <AppButton @click="router.push({ name: 'home' })">{{ t('nav.meals') }}</AppButton>
-    </AppEmpty>
+    <EmptyNotice v-else :title="t('favorites.empty')" :art="chefUrl">
+      <Button @click="router.push({ name: 'home' })">{{ t('nav.meals') }}</Button>
+    </EmptyNotice>
   </PageShell>
 </template>

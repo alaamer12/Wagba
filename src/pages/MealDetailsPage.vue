@@ -2,10 +2,6 @@
 import { computed, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
-import AppButton from "../components/base/AppButton.vue";
-import AppCard from "../components/base/AppCard.vue";
-import AppEmpty from "../components/base/AppEmpty.vue";
-import AppSkeleton from "../components/base/AppSkeleton.vue";
 import AppBar from "../components/layout/AppBar.vue";
 import AppRegion from "../components/layout/AppRegion.vue";
 import PageShell from "../components/layout/PageShell.vue";
@@ -13,10 +9,14 @@ import CookRow from "../components/present/CookRow.vue";
 import { useWhatsApp } from "../composables/useWhatsApp";
 import type { Kind } from "../lib/region";
 import { getMeal, photoUrl } from "../services/meals";
+import EmptyNotice from "../shared/components/EmptyNotice.vue";
 import { useFavoritesState } from "../shared/state/useFavoritesState";
 import { useSessionState } from "../shared/state/useSessionState";
 import { AppError } from "../types/errors";
 import type { Meal } from "../types/schemas";
+import Button from "../ui/adaptive/Button.vue";
+import Card from "../ui/adaptive/Card.vue";
+import Skeleton from "../ui/adaptive/Skeleton.vue";
 
 const { t, locale } = useI18n();
 const route = useRoute();
@@ -111,7 +111,7 @@ onMounted(async () => {
           </div>
         </div>
 
-        <AppCard>
+        <Card>
           <h2 class="title">{{ meal?.title }}</h2>
           <p class="desc">{{ meal?.description }}</p>
           <div class="pills">
@@ -119,9 +119,9 @@ onMounted(async () => {
             <span v-if="meal?.delivery_option === 'delivery'" class="pill">{{ t('meal.delivery') }}</span>
             <span v-else-if="meal?.delivery_option === 'pickup'" class="pill">{{ t('add.delivery.pickup') }}</span>
           </div>
-        </AppCard>
+        </Card>
 
-        <AppCard v-if="meal?.quantity || meal?.available_time || meal?.location_text">
+        <Card v-if="meal?.quantity || meal?.available_time || meal?.location_text">
           <h3 class="section">{{ t('meal.details.heading') }}</h3>
           <dl class="facts">
             <template v-if="meal?.quantity">
@@ -137,33 +137,33 @@ onMounted(async () => {
               <dd>{{ meal.location_text }}</dd>
             </template>
           </dl>
-        </AppCard>
+        </Card>
 
-        <AppCard v-if="meal">
+        <Card v-if="meal">
           <CookRow :meal="meal" />
-        </AppCard>
+        </Card>
 
         <div class="actions">
-          <AppButton @click="contact">{{ t('meal.cta.whatsapp') }}</AppButton>
-          <AppButton variant="secondary" @click="toggleSave">{{ saved ? t('meal.saved') : t('meal.save') }}</AppButton>
+          <Button @click="contact">{{ t('meal.cta.whatsapp') }}</Button>
+          <Button variant="secondary" @click="toggleSave">{{ saved ? t('meal.saved') : t('meal.save') }}</Button>
         </div>
         <p v-if="waMissing" class="warn">{{ t('error.wa.missing') }}</p>
       </template>
 
       <template #loading>
-        <AppSkeleton :rows="3" />
+        <Skeleton :rows="3" />
       </template>
 
       <template #empty>
-        <AppEmpty :title="t('meal.gone')">
-          <AppButton @click="router.push({ name: 'home' })">{{ t('common.back') }}</AppButton>
-        </AppEmpty>
+        <EmptyNotice :title="t('meal.gone')">
+          <Button @click="router.push({ name: 'home' })">{{ t('common.back') }}</Button>
+        </EmptyNotice>
       </template>
 
       <template #fault>
-        <AppEmpty :title="t('error.fault.title')" :body="t('error.fault.body')">
-          <AppButton @click="load">{{ t('common.retry') }}</AppButton>
-        </AppEmpty>
+        <EmptyNotice :title="t('error.fault.title')" :body="t('error.fault.body')">
+          <Button @click="load">{{ t('common.retry') }}</Button>
+        </EmptyNotice>
       </template>
     </AppRegion>
   </PageShell>

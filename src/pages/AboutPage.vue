@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
-import AppCard from "../components/base/AppCard.vue";
-import BrandMark from "../components/base/BrandMark.vue";
 import AppBar from "../components/layout/AppBar.vue";
 import PageShell from "../components/layout/PageShell.vue";
+import BrandMark from "../shared/decorations/BrandMark.vue";
+import Card from "../ui/adaptive/Card.vue";
 
 const { t } = useI18n();
 const router = useRouter();
@@ -29,10 +29,10 @@ const points = [
       <p class="intro__body">{{ t('about.body') }}</p>
     </div>
 
-    <AppCard v-for="point in points" :key="point.title">
+    <Card v-for="point in points" :key="point.title">
       <h3 class="point__title">{{ t(point.title) }}</h3>
       <p class="point__body">{{ t(point.body) }}</p>
-    </AppCard>
+    </Card>
 
     <div class="links">
       <button type="button" class="link" @click="router.push({ name: 'terms' })">{{ t('settings.terms') }}</button>
