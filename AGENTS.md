@@ -34,6 +34,7 @@ bun run stress          # volume/concurrency/race report in artifacts/stress
 bun run audit           # SQLite integrity, indexes, orphans, query plans
 bun run pvc             # /pvc role-tree audit (tools/check_pvc.py, stdlib python)
 bun run states:check    # /states + role ratchet — fails only when a count GROWS (tools/arch-baseline.json)
+bun run chain:check     # markup wall — control/framework tags, QSL classes, seam overrides outside src/ui/base
 bun run docs:check      # link checker over docs/
 bun tools/pb.mjs reset|serve|restart|stop|superuser
 bun tools/seed.mjs      # deterministic: 3 cooks, 12 meals

@@ -16,7 +16,7 @@ in `src/components/`, the platform re-exports in `src/ui/`.
 | Chip | adaptive | `ui/adaptive/Chip.vue` | pill; active = butter fill | Implemented |
 | Input | adaptive | `ui/adaptive/Input.vue` | the pill text field with an optional `leading` slot; `inheritAttrs: false` because its root is a wrapper, so `type="search"` and the accessible name are bound to the control on purpose | Implemented |
 | BrandMark | decoration | `shared/decorations/BrandMark.vue` | chef hat over «وجبة», sized by `size`; never mirrors | Implemented |
-| Field | adaptive | `ui/adaptive/Field.vue` | label + input/textarea + hint/error; `defineModel` | Implemented |
+| Field | adaptive | `ui/adaptive/Field.vue` | label (`for`-linked to the control's `id`) + input/textarea + hint/error; `defineModel` | Implemented |
 | Avatar | adaptive | `ui/adaptive/Avatar.vue` | uploaded photo, else `AvatarArt` from the handle; a photo that fails to load degrades to the art. The brand hat is never used as a person (decision D3) | Implemented |
 | Photo | adaptive | `ui/adaptive/Photo.vue` | lazy image, covering its box, `failed` event and a `fallback` slot for the no-image case | Implemented |
 | AvatarArt | adaptive | `ui/adaptive/AvatarArt.vue` | the verified rig: 12 slots, 22 parts, palette axes for skin/shirt/backdrop | Implemented |
@@ -29,19 +29,25 @@ in `src/components/`, the platform re-exports in `src/ui/`.
 
 | Unit | Path | What it is |
 |---|---|---|
-| Button | `ui/base/Button.vue` | the native `<button>`, no styling |
-| Input | `ui/base/Input.vue` | the native `<input>` |
-| Textarea | `ui/base/Textarea.vue` | the native `<textarea>` |
+| Button | `ui/base/Button.vue` | Quasar's `QBtn`: press, keyboard, disabled and loading/progress; the focus ring is restored on the focused node (Quasar ships `.no-outline` as `!important`) |
+| Input | `ui/base/Input.vue` | Quasar's `QInput`; `id` seeds its `for` (QInput overwrites a passed id), and focus is redirected from its label root to the control |
+| Textarea | `ui/base/Textarea.vue` | `QInput type="textarea"`, same contract as Input |
+| Skeleton | `ui/base/Skeleton.vue` | Quasar's `QSkeleton`; `animation="none"` keeps the still placeholder look |
+| FileInput | `ui/base/FileInput.vue` | the native `<input type="file">`, hidden; `open()` is the contract, `files` is the only output |
+| ChoiceGroup | `ui/base/ChoiceGroup.vue` | `fieldset` + `legend` + native radios; radio semantics are the contract, not a tablist |
 | Img | `ui/base/Img.vue` | the native `<img>` |
 | Text | `ui/base/Text.vue` | `<p>` |
 | Heading | `ui/base/Heading.vue` | `<h1>`…`<h4>` chosen by `level` |
+| Label | `ui/base/Label.vue` | the native `<label>`; `for` names the control's id, which `Input`/`Textarea` take as their `id` |
 
-Each is a re-export seam and nothing else — no props invented to justify the file. The one
-exception is a *contract*: `v-model` on a component compiles to a `modelValue` prop plus an
+Each is a re-export seam and nothing else — no props invented to justify the file. The
+exceptions are *contracts*: `v-model` on a component compiles to a `modelValue` prop plus an
 `update:modelValue` event, and neither reaches a nested `<input>` by attribute fallthrough, so
-`Input`/`Textarea` implement it here or it is implemented nowhere. A wrapper that only spreads
-attrs looks identical in review and silently breaks binding three layers away — which is how the
-profile form came to type into a field that never updated its model.
+`Input`/`Textarea` implement it here or it is implemented nowhere; and `Label`'s `for` is the
+association a control's `id` meets, because Quasar's field root is itself a `<label>` and a
+second one nested inside it is invalid markup. A wrapper that only spreads attrs looks identical
+in review and silently breaks binding three layers away — which is how the profile form came to
+type into a field that never updated its model.
 
 `ui/adaptive` is built from these, and a Component imports the adaptive tier, never this one
 (`structure.md` import direction).

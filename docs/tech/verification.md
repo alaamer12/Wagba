@@ -105,6 +105,26 @@ Two auditors, deliberately orthogonal, because one kind of pattern cannot see th
 
 **Known blind spot at baseline:** `check_pvc.py` reports *no findings* on this tree while the stores are still named `useMealsStore` and `useNetwork`, because its fact-source regex matches `use*State|Condition`. Renaming them (milestone M1) is what makes the auditor able to see this app; a clean report before then proves only that it had nothing to match.
 
+## Markup law
+
+`bun run chain:check` is the fourth enforcer, and the only one that reads markup. It exists because
+Quasar resolves `q-*` tags at compile time: a template can name the framework while every import rule
+in the repo reports a clean tree.
+
+| Code | Severity | Catches |
+|---|---|---|
+| `CONTROL_TAG_OUTSIDE_BASE` | error | a native `button/input/img/textarea/label/fieldset` above `src/ui/base/**` |
+| `FW_TAG_OUTSIDE_BASE` | error | a `q-*` or `Q*` tag outside the seam |
+| `QSL_CLASS_ON_ELEMENT` | error | Quasar utility classes (`q-*`, `text-h*`, `fullscreen`, `bg-*`) on our elements |
+| `STYLE_BINDING_ON_SEAM` | error | `:style`/`style=` on a base or adaptive tag |
+| `APPEARANCE_OVERRIDE_ON_SEAM` | error | another file's selector painting a class bound on a seam tag |
+| `FW_NAME_IN_VOCABULARY` | warning | a `QBtn`-shaped identifier in script text |
+| `TEXT_TAG_OUTSIDE_BASE` | warning | `<p>`/`<h1>`–`<h4>` above the seam |
+
+`tests/unit/chain-rules.test.ts` arms it: glob liveness, one planted violation per code, controls
+(`<Button>` vs `<button>`, `v-if="a < b"`, `button {` in a style block, the constant `QUALITY`), and
+doc/registry parity. The suite runs inside the gate, so a rule cannot land unarmed.
+
 ## Locales
 
 Both projects run every spec. Stories take their labels from `tests/e2e/stories.spec.ts`; smoke and a11y are locale-agnostic; the state matrix captures both directions.

@@ -61,6 +61,10 @@
 5. **`src/**` may not import from `pocketbase/**` or `android/**`.** Those are other runtimes.
 6. **Only `pb_migrations/` changes schema.** The dashboard is for content and debugging, never for fields, rules, or indexes.
 7. **`scratch/` and `artifacts/` are never imported and never committed.**
+8. **`src/ui/base/**` is the only tier that may write a native control tag or name the framework.** A `button`, `input`, `img`, `textarea`, `label`, `fieldset` or `q-*`/`Q*` tag above it is a defect, not a shortcut. Enforced by `bun run chain:check` (`CONTROL_TAG_OUTSIDE_BASE`, `FW_TAG_OUTSIDE_BASE`, `QSL_CLASS_ON_ELEMENT`, `FW_NAME_IN_VOCABULARY`).
+9. **A seam unit is not styled from outside.** `:style` on a base/adaptive tag is `STYLE_BINDING_ON_SEAM`; a `<style>` rule outside `src/ui/**` that paints a class bound on a seam tag is `APPEARANCE_OVERRIDE_ON_SEAM`. Layout on the parent is legal; colour, padding, border, shadow and type are the unit's or a variant's.
+10. **The boundary has a direction both ways.** `src/ui/base/**` may not import app, feature or page code (`BASE_IMPORT_ESCAPE`): a seam that imports upward becomes a dump.
+11. **Quasar enters only through the seam.** `biome.json` refuses `quasar`/`@quasar/extras` imports outside `src/ui/base/**`; the one named exception is `shared/behaviour/PullRefresh.vue`, whose gesture is Quasar's `TouchPan`.
 
 ## 4. Authority table
 
@@ -85,6 +89,7 @@
 4. New state kind ⇒ an entry in `docs/tech/states.md` (lands in M4) change-cost table plus a matrix row.
 5. New user-visible string ⇒ a key in both locale files in the same change.
 6. A document that states a rule must name the test that enforces it, or say "review rule".
+7. A new markup rule ⇒ a planted fixture in `tests/unit/chain-rules.test.ts` in the same change; the suite runs inside the gate, so a code cannot ship unarmed.
 
 ## 6. Named absences
 
