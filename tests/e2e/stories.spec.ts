@@ -247,11 +247,10 @@ test("S4 search works by dish, cook name, handle, area, fold, digits and stopwor
   ];
   for (const [query, expected] of cases) {
     await search.fill(query);
-    await expect(page.locator('[data-kind="ready"] article').first()).toBeVisible({
-      timeout: 20_000,
-    });
-    const text = await page.locator('[data-kind="ready"]').textContent();
-    expect(text, `query: ${query}`).toContain(expected);
+    // Wait for *this* query's answer, not for "some rows are on screen": the previous
+    // result set is already visible, so the old assertion was satisfied before the debounced
+    // search had even gone out and read back the feed it had replaced.
+    await expect(page.locator('[data-kind="ready"]')).toContainText(expected, { timeout: 20_000 });
   }
 
   await search.fill("zzzz");

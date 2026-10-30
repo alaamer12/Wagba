@@ -54,8 +54,12 @@ test("suggestion chips are derived from the feed and filter it", async ({ page }
   await expect(page.locator('[data-kind="ready"] article').first()).toBeVisible({
     timeout: 15_000,
   });
-  const body = await page.locator('[data-kind="ready"]').textContent();
-  expect(body).toContain(area as string);
+  // The chip's label was taken from the feed that is already on screen, so "the region
+  // contains this area" was true before the click did anything. What proves the filter is
+  // that no row survives which does not carry the term.
+  await expect(
+    page.locator('[data-kind="ready"] article').filter({ hasNotText: area as string }),
+  ).toHaveCount(0, { timeout: 15_000 });
 });
 
 test("language switch flips direction, labels, and layout", async ({ page }, info) => {
