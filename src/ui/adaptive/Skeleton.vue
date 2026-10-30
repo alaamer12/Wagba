@@ -1,14 +1,19 @@
 <script setup lang="ts">
+import BaseSkeleton from "../base/Skeleton.vue";
+
+// The shape of a loading card: a thumb and two lines. base is Quasar's QSkeleton; the classes
+// below keep the cream blocks and their measurements, and the animation is left off because the
+// design is a still placeholder.
 withDefaults(defineProps<{ rows?: number }>(), { rows: 3 });
 </script>
 
 <template>
   <div class="skeleton-list" aria-hidden="true">
     <div v-for="row in rows" :key="row" class="skeleton-card">
-      <div class="skeleton-thumb" />
+      <BaseSkeleton class="skeleton-thumb" animation="none" />
       <div class="skeleton-lines">
-        <div class="skeleton-line" />
-        <div class="skeleton-line is-short" />
+        <BaseSkeleton class="skeleton-line" animation="none" />
+        <BaseSkeleton class="skeleton-line is-short" animation="none" />
       </div>
     </div>
   </div>
