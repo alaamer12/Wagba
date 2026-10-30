@@ -56,3 +56,6 @@ blob-report/
 reference/*.local.*
 android/app/build/
 android/.gradle/
+
+# Agent tooling (skills vendored per-project)
+.qoder/
