@@ -2,6 +2,8 @@
 // The API contract the docs promise, checked against a live PocketBase: privacy
 // shape, the fold's search key, the unique-handle index, the handle freeze, and
 // the relation cascade. Runs right after the seed step in the gate.
+import { readFileSync } from "node:fs";
+
 const BASE = process.env.PB_URL ?? "http://127.0.0.1:8090";
 const stamp = Date.now().toString(36);
 
@@ -59,7 +61,7 @@ check(
 );
 
 const list = await api(
-  "/api/collections/meals/records?perPage=100&fields=id,status,latitude,longitude,search_key,cook",
+  "/api/collections/meals/records?perPage=100&fields=id,user,collectionId,status,latitude,longitude,search_key,cook",
   {},
   anon.token,
 );
@@ -86,9 +88,25 @@ check(
     return (
       keys.includes("display_name") &&
       keys.includes("whatsapp") &&
+      keys.includes("id") &&
+      keys.includes("collectionId") &&
       !keys.includes("email") &&
       !keys.includes("username") &&
-      !keys.includes("tokenKey")
+      !keys.includes("tokenKey") &&
+      !keys.includes("password") &&
+      !keys.includes("verified")
+    );
+  }),
+);
+check(
+  "cook ids point at the cook, not the meal",
+  items.every((m) => {
+    const cook = m.cook as Json | undefined;
+    return (
+      Boolean(cook?.id) &&
+      cook?.id === m.user &&
+      Boolean(cook?.collectionId) &&
+      cook?.collectionId !== m.collectionId
     );
   }),
 );
@@ -159,6 +177,50 @@ check(
   "the create rule refuses a meal posted for someone else",
   stolen.status === 400,
   String(stolen.status),
+);
+
+// --- the cook's own file, reachable through the ids the feed exposes (F35) -------------
+// A cook avatar used to be requested under the *meal's* ids, so every real avatar 404'd
+// and the generated art quietly covered it up. No seeded cook has an avatar, which is
+// exactly why nothing in the suite ever proved the URL wrong.
+const avatarCook = await makeUser("avatarcook");
+const avatarForm = new FormData();
+avatarForm.set(
+  "avatar",
+  new Blob([readFileSync("tests/fixtures/photos/p1.jpg")], { type: "image/jpeg" }),
+  "avatar.jpg",
+);
+const avatarPatch = await api(
+  `/api/collections/users/records/${avatarCook.id}`,
+  { method: "PATCH", body: avatarForm },
+  avatarCook.token,
+);
+// Unavailable on purpose: a contract fixture must not appear in anyone's feed.
+const avatarMeal = await api(
+  "/api/collections/meals/records",
+  {
+    method: "POST",
+    body: JSON.stringify({ ...draft, user: avatarCook.id, status: "unavailable" }),
+  },
+  avatarCook.token,
+);
+const avatarRow = await api(
+  `/api/collections/meals/records/${String(avatarMeal.body.id ?? "")}`,
+  {},
+  avatarCook.token,
+);
+const cookSubset = (avatarRow.body.cook ?? {}) as Json;
+const avatarName = String(cookSubset.avatar ?? "");
+const avatarFetch = await fetch(
+  `${BASE}/api/files/${String(cookSubset.collectionId)}/${String(cookSubset.id)}/${avatarName}`,
+);
+check(
+  "a cook's avatar is fetchable at the ids the feed exposes",
+  avatarPatch.status === 200 &&
+    avatarMeal.status === 200 &&
+    avatarName.length > 0 &&
+    avatarFetch.status === 200,
+  `patch ${avatarPatch.status}, meal ${avatarMeal.status}, file ${avatarFetch.status}`,
 );
 
 const meal = await api(

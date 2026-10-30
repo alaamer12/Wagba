@@ -192,6 +192,7 @@ No mockup or spec source; drafted here because the flows require them.
 | `error.offline.browsing`    | انت مش متصل — دي آخر نتائج                                             | You are offline — showing the last results                                             |
 | `error.offline.publish`     | محتاج إنترنت تنشر الوجبة                                               | You need a connection to publish                                                       |
 | `error.publish.failed`      | الوجبة اتنشرتش. جرّب تاني                                               | The meal was not posted. Try again                                                     |
+| `error.photo.wrongType`     | الملف ده مش صورة                                                      | That file is not a photo                                                               |
 | `error.photo.tooLarge`      | الصورة كبيرة أوي                                                       | That photo is too large                                                                |
 | `error.photo.limit`         | خمس صور كفاية للوجبة الواحدة                                           | Five photos per meal                                                                   |
 | `error.field.required`      | {field} مطلوب                                                          | {field} is required                                                                    |

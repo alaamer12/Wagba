@@ -32,7 +32,9 @@ export function usePhotoPicker() {
   function validate(files: File[], existing = 0): File[] {
     if (existing + files.length > MAX_PHOTOS) throw new AppError("PHOTO_LIMIT");
     for (const file of files) {
-      if (!file.type.startsWith("image/")) throw new AppError("PHOTO_TOO_LARGE");
+      // A non-picture is its own answer: "too large" sends the user to compress a file
+      // that no amount of compressing would make uploadable.
+      if (!file.type.startsWith("image/")) throw new AppError("PHOTO_WRONG_TYPE");
       if (file.size > MAX_SOURCE_BYTES) throw new AppError("PHOTO_TOO_LARGE");
     }
     return files;

@@ -25,6 +25,8 @@ Behaviours discovered by running the engine against `pocketbase/pocketbase.exe` 
 | `onRecordEnrich` runs **inside** `e.next()` of `onRecordsListRequest`, once per record (3 records → 3 separate `SELECT users`), so a value written after `next()` never reaches the response | The per-row cook lookup cannot be pre-batched from the list hook. Any denormalized `cook` copy must be written at record-write time |
 | The 0.28.4 JSVM exposes **no `Dao()`** | There is no raw-SQL path from a hook; recomputing a counter column means `findRecordsByFilter` + `save`, which bounds how often it can run |
 | The JS SDK's `SendOptions extends RequestInit`, and the SDK has **no upload-progress callback** | Per-request `signal` abort works even with `autoCancellation(false)`; determinate publish progress would mean leaving the SDK, so the UI reports what is uploading rather than a fabricated percentage |
+| A record loaded through the DAO reports `collectionId` as **null**, and the auth collection's id is the constant `_pb_users_auth_`, not `users` | The cook subset's `collectionId` is resolved from `findCollectionByNameOrId('users').id`; a client cannot derive it from the collection name |
+| `findRecordById` inside a write hook can fail (a bad `user` id), and an empty `catch {}` there once baked a `search_key` **without the cook's name or handle** into the row | The meals create/update hooks now refuse the write instead of tolerating it; a silently degraded `search_key` is unsearchable until the next save |
 
 ## 1. `users` — auth collection
 
@@ -57,7 +59,7 @@ PocketBase creates this collection; `0001_schema.js` extends it rather than defi
 
 **Provisioning order.** The account is created on first launch, before the profile exists: `handle` and `whatsapp` are therefore *row-optional*. Profile Setup writes both, and the `users` update hook refuses any later change to a non-empty `handle` — so the freeze happens on first *chosen* value, not on row creation. The unique index is partial (`WHERE handle != ''`) because every unprofiled account shares the empty string.
 
-**Never returned:** `email`, `password`, `tokenKey`. The enrich hook exposes only the public subset through `meals.cook`.
+**Never returned:** `email`, `password`, `tokenKey`, `verified`. The enrich hook exposes only the public subset through `meals.cook`: `id`, `collectionId`, `display_name`, `handle`, `whatsapp`, `location_text`, `avatar`, `facebook_url`, `instagram_url`, `tiktok_url`. The two ids are there because a cook's avatar is a file on the *users* record, and a client that guesses from the meal's ids gets a 404.
 
 ## 2. `meals`
 
@@ -80,7 +82,7 @@ PocketBase creates this collection; `0001_schema.js` extends it rather than defi
 | `longitude` | number | −180…180, same zero/required caveat as latitude. Zeroed on every response | `Meal.location` |
 | `search_key` | text | Required, max 400, **denormalized** | — (derived) |
 | `distance_km` | number | **Response-only**: written by enrich, cleared on write | — (derived) |
-| `cook` | json | **Response-only**: public subset, written by enrich | — (derived) |
+| `cook` | json | **Response-only**: public subset incl. the cook's own `id`/`collectionId`, written by enrich | — (derived) |
 | `created`, `updated` | autodate | `onCreate`; `onUpdate` only for `updated` | `Meal.createdAt/updatedAt` |
 
 **Indexes, each justified by a read path:**
@@ -130,7 +132,7 @@ Every copy needs a named writer, a rebuild rule, and a home here — not in the 
 | Copy | Writer | Rebuild | Why sanctioned |
 |---|---|---|---|
 | `meals.search_key` | `onRecordCreateRequest` + `onRecordUpdateRequest` (meals); `onRecordUpdateRequest` (users, on rename) | Drop and recompute from `title + description + location_text + cook.display_name + cook.handle` | PocketBase cannot filter across a relation, and SQLite `LIKE` folds ASCII only — the Arabic fold must be pre-applied. The handle is in the key so a username search works |
-| `meals.cook` (json, response-only) | `onRecordEnrich` | Recomputed per request; never saved | `users` is owner-readable only, but buyers need name/handle/whatsapp/location/socials |
+| `meals.cook` (json, response-only) | `onRecordEnrich` | Recomputed per request; never saved | `users` is owner-readable only, but buyers need name/handle/whatsapp/location/socials — and the cook's own ids to resolve an avatar URL |
 | `meals.distance_km` (number, response-only) | `onRecordEnrich`, from the request's `lat`/`lng` | Recomputed per request; never saved | Ordering and labels are view data, not facts |
 
 **Refused:** a `favorites_count` cache, a duplicate of `description`, storing the viewer's position anywhere, and any column that can be derived from one query.

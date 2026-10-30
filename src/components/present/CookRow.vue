@@ -9,9 +9,18 @@ import AppAvatar from "../base/AppAvatar.vue";
 const props = defineProps<{ meal: Meal }>();
 const { t } = useI18n();
 const external = useExternal();
-const avatar = computed(() =>
-  props.meal.cook.avatar ? fileUrl(props.meal, props.meal.cook.avatar as string) : "",
-);
+// The avatar belongs to the cook's record, not the meal's.
+const avatar = computed(() => {
+  const name = props.meal.cook.avatar ?? "";
+  if (!name) return "";
+  return fileUrl(
+    {
+      collectionId: props.meal.cook.collectionId ?? "",
+      id: props.meal.cook.id ?? props.meal.user,
+    },
+    name,
+  );
+});
 const socials = computed(() =>
   [
     { label: "Facebook", url: props.meal.cook.facebook_url ?? "" },

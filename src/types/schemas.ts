@@ -4,6 +4,8 @@ import { z } from "zod";
 // boundary so a schema drift fails loudly here instead of as `undefined` in a card.
 
 export const CookSchema = z.object({
+  id: z.string().default(""),
+  collectionId: z.string().default(""),
   display_name: z.string().default(""),
   handle: z.string().default(""),
   whatsapp: z.string().default(""),

@@ -48,7 +48,9 @@ All ten kinds — `ready`, `empty`, `empty-filtered`, `stale`, `fault`, `loading
 
 ### 4. API contract (`tools/verify-api.ts`)
 
-HTTP-only, after the seed, so it meets the rules and hooks the way a client does. Covers: anonymous provisioning; feed visibility; coordinates never serialise; the public cook subset (no email/username/tokenKey); non-empty `search_key`; folded typo; self-only user reads; handle set-once, freeze and uniqueness; owner-only create; favorites need a session, are unique per pair, delete is owner-only; unavailable meals invisible to everyone but the owner; filter injection; length limits; six photos; non-image upload; pagination and `skipTotal`; antimeridian discovery; rename rebuilds the key with name and handle; cascade delete.
+HTTP-only, after the seed, so it meets the rules and hooks the way a client does. Covers: anonymous provisioning; feed visibility; coordinates never serialise; the public cook subset (no email/username/tokenKey/verified) **and the cook's own ids — asserted to be the cook's, not the meal's, plus a real avatar fetched at the URL those ids produce**; non-empty `search_key`; folded typo; self-only user reads; handle set-once, freeze and uniqueness; owner-only create; favorites need a session, are unique per pair, delete is owner-only; unavailable meals invisible to everyone but the owner; filter injection; length limits; six photos; non-image upload; pagination and `skipTotal`; antimeridian discovery; rename rebuilds the key with name and handle; cascade delete.
+
+The avatar assertion exists because the defect it catches was invisible: seeded cooks have no avatar, so every earlier check passed while a real cook's photo 404'd in the feed. A fixture that cannot express a case is not evidence for it.
 
 ### 5. GPS and bbox
 

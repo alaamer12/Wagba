@@ -1,17 +1,22 @@
-import { ClientResponseError } from "pocketbase";
 import { AppError, isUniqueViolation, toAppError } from "../types/errors";
 import { type Profile, ProfileSchema } from "../types/schemas";
 import { candidate, validateDisplayName } from "./handles";
-import { pb } from "./pb";
+import { pb, requireSession } from "./pb";
 import { read, write } from "./storage";
 
 // Anonymous provisioning. The device holds a generated credential; the user never
 // sees a sign-in screen. The engine needs an email-shaped identifier, so one is
 // synthesised and never exposed — see docs/tech/architecture.md#identity.
+//
+// `statusOf` reads the engine's status without importing the SDK here: only src/services
+// may touch the client, and `types/errors.ts` duck-types it for the same reason.
 
 const CRED_KEY = "credential";
 
 type Credential = { email: string; password: string };
+
+const statusOf = (err: unknown): number | undefined =>
+  typeof err === "object" && err !== null ? (err as { status?: number }).status : undefined;
 
 function randomHex(bytes = 16): string {
   const buf = new Uint8Array(bytes);
@@ -45,7 +50,7 @@ export async function ensureSession(): Promise<Profile | null> {
     await pb.collection("users").authWithPassword(credential.email, credential.password);
     return currentProfile();
   } catch (err) {
-    if (err instanceof ClientResponseError && err.status === 400) return null; // credential stale
+    if (statusOf(err) === 400) return null; // credential stale — provisioning will replace it
     throw toAppError(err);
   }
 }
@@ -66,7 +71,7 @@ export async function provision(): Promise<Profile> {
   try {
     await pb.collection("users").create(body);
   } catch (err) {
-    if (!(err instanceof ClientResponseError) || err.status !== 400) throw toAppError(err);
+    if (statusOf(err) !== 400) throw toAppError(err);
     // Already registered on this device but the session expired.
   }
   await pb.collection("users").authWithPassword(credential.email, credential.password);
@@ -76,6 +81,8 @@ export async function provision(): Promise<Profile> {
 }
 
 export async function currentProfile(): Promise<Profile | null> {
+  // The boot path's contract: no session means "no profile yet", which the caller renders
+  // as a phase — not an error, and never an empty list pretending to be one.
   const model = pb.authStore.model;
   if (!model) return null;
   try {
@@ -110,8 +117,7 @@ export async function saveProfile(input: ProfileInput): Promise<Profile> {
     .toLowerCase()
     .replace(/[^a-z0-9]/g, "");
   const baseSlug = edited.length >= 3 ? edited.slice(0, 20) : slug;
-  const model = pb.authStore.model;
-  if (!model) throw new AppError("VALIDATION", { reason: "no-session" });
+  const model = requireSession();
 
   const build = (handle: string) => {
     const form = new FormData();
@@ -129,7 +135,7 @@ export async function saveProfile(input: ProfileInput): Promise<Profile> {
   const needsHandle = !model.handle;
   if (!needsHandle) {
     try {
-      const record = await pb.collection("users").update(model.id, build(model.handle as string));
+      const record = await pb.collection("users").update(model.id, build(model.handle ?? ""));
       return ProfileSchema.parse(record);
     } catch (err) {
       throw toAppError(err);

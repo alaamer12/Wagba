@@ -88,6 +88,7 @@
   "error.handle.taken": "That username is taken, try another",
   "error.photo.limit": "Five photos per meal",
   "error.photo.tooLarge": "That photo is too large",
+  "error.photo.wrongType": "That file is not a photo",
   "error.wa.missing": "WhatsApp is not installed on this device",
   "error.field.required": "{field} is required",
   "avatar.alt": "Profile picture",

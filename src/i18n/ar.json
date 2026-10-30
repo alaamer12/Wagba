@@ -88,6 +88,7 @@
   "error.handle.taken": "الاسم ده متاخد، جرب غيره",
   "error.photo.limit": "خمس صور كفاية للوجبة الواحدة",
   "error.photo.tooLarge": "الصورة كبيرة أوي",
+  "error.photo.wrongType": "الملف ده مش صورة",
   "error.wa.missing": "الواتساب مش نصبان على الموبايل ده",
   "error.field.required": "{field} مطلوب",
   "avatar.alt": "صورة رمزية",

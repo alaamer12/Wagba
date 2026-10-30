@@ -5,9 +5,9 @@ import {
   MIN_RADIUS_KM,
   queryTokens,
 } from "../../shared/normalize";
-import { AppError, toAppError } from "../types/errors";
+import { toAppError } from "../types/errors";
 import { type Meal, MealSchema, MealsPageSchema } from "../types/schemas";
-import { fileUrl, pb } from "./pb";
+import { fileUrl, pb, requireSession } from "./pb";
 
 const LIST_FIELDS =
   "id,collectionId,title,description,price,quantity,status,photos,delivery_option,available_time,location_text,user,created,updated,distance_km,cook";
@@ -88,9 +88,10 @@ export async function getMeal(id: string): Promise<Meal> {
 
 export async function listMine(): Promise<Meal[]> {
   // `@request.auth.id` is superuser-only inside a *filter* (403), so the owner id
-  // is interpolated. The service never sends one it does not hold.
-  const owner = pb.authStore.model?.id;
-  if (!owner) return [];
+  // is interpolated. It never answers with an empty list for a missing session: an empty
+  // list is a true fact about a cook's meals, and confusing the two tells a cook they
+  // posted nothing when the request never left the device.
+  const owner = requireSession().id;
   try {
     const res = await pb
       .collection("meals")
@@ -116,8 +117,7 @@ export type NewMeal = {
 export async function publishMeal(input: NewMeal): Promise<Meal> {
   const photos = input.photos ?? [];
   if (photos.length > 5) throw toAppError(new Error("too many"));
-  const owner = pb.authStore.model?.id;
-  if (!owner) throw new AppError("VALIDATION", { reason: "no-session" });
+  const owner = requireSession().id;
   const form = new FormData();
   // The create rule is `user = @request.auth.id`, evaluated before any request
   // hook: ownership has to be in the payload, and the rule rejects a lie.

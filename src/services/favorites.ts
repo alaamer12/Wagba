@@ -1,10 +1,12 @@
-import { AppError, toAppError } from "../types/errors";
+import { isUniqueViolation, toAppError } from "../types/errors";
 import { FavoriteSchema } from "../types/schemas";
-import { pb } from "./pb";
+import { pb, requireSession } from "./pb";
+
+// The favorites journal. Reads are scoped to the signed-in account by an interpolated id
+// because `@request.auth.id` is forbidden inside a client filter (0.28.4 answers 403).
 
 export async function listFavoriteIds(): Promise<string[]> {
-  const model = pb.authStore.model;
-  if (!model) throw new AppError("VALIDATION", { reason: "no-session" });
+  const model = requireSession();
   try {
     const rows = await pb.collection("favorites").getFullList({
       filter: `user = "${model.id}"`,
@@ -17,28 +19,37 @@ export async function listFavoriteIds(): Promise<string[]> {
 }
 
 export async function addFavorite(mealId: string): Promise<void> {
-  const model = pb.authStore.model;
-  if (!model) throw new AppError("VALIDATION", { reason: "no-session" });
+  const model = requireSession();
   try {
     await pb.collection("favorites").create({ user: model.id, meal: mealId });
   } catch (err) {
-    // A duplicate pair is the desired state already; do not surface it.
-    const status = (err as { status?: number }).status;
-    if (status !== 400) throw toAppError(err);
+    // Only the duplicate pair is "already done". Every other refusal is a real failure,
+    // and swallowing it would mark a meal saved when nothing was saved.
+    if (isUniqueViolation(err)) return;
+    throw toAppError(err);
   }
 }
 
 export async function removeFavorite(mealId: string): Promise<void> {
-  const model = pb.authStore.model;
-  if (!model) throw new AppError("VALIDATION", { reason: "no-session" });
+  const model = requireSession();
+  let rows: Array<{ id: string }>;
   try {
-    const rows = await pb.collection("favorites").getFullList({
+    rows = await pb.collection("favorites").getFullList({
       filter: `user = "${model.id}" && meal = "${mealId}"`,
       fields: "id",
     });
-    await Promise.all(rows.map((row) => pb.collection("favorites").delete(row.id)));
   } catch (err) {
-    const status = (err as { status?: number }).status;
-    if (status !== 404) throw toAppError(err);
+    throw toAppError(err);
   }
+  await Promise.all(
+    rows.map(async (row) => {
+      try {
+        await pb.collection("favorites").delete(row.id);
+      } catch (err) {
+        // A row already gone is the wanted end state; the list above was honest about it.
+        if ((err as { status?: number }).status === 404) return;
+        throw toAppError(err);
+      }
+    }),
+  );
 }

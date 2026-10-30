@@ -28,7 +28,7 @@ Errors travel as `{ code, params }`. The UI renders `error.<CODE>` (see `src/i18
 | `NET_UNREACHABLE` | full on first load / toast mid-session | retry; cached rows stay as `stale` |
 | `VALIDATION` | inline | field-level, from the engine's 400 |
 | `PUBLISH_REJECTED` | inline | the form keeps its contents |
-| `PHOTO_LIMIT`, `PHOTO_TOO_LARGE` | inline | under the uploader |
+| `PHOTO_LIMIT`, `PHOTO_TOO_LARGE`, `PHOTO_WRONG_TYPE` | inline | under the uploader |
 | `MEAL_GONE` | inline | "this meal is gone" + back to Home |
 | `HANDLE_TAKEN` | inline | under the handle field, offers a retry |
 | `DISPLAY_NAME_INVALID` | inline | asks for a name with letters |

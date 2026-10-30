@@ -61,7 +61,9 @@ async function onFiles(event: Event) {
     error.value =
       err instanceof AppError && err.code === "PHOTO_LIMIT"
         ? t("error.photo.limit")
-        : t("error.photo.tooLarge");
+        : err instanceof AppError && err.code === "PHOTO_WRONG_TYPE"
+          ? t("error.photo.wrongType")
+          : t("error.photo.tooLarge");
   }
   input.value = "";
 }

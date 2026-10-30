@@ -12,9 +12,19 @@ const { t } = useI18n();
 const cover = computed(() =>
   props.meal.photos[0] ? photoUrl(props.meal, props.meal.photos[0]) : "",
 );
-const cookAvatar = computed(() =>
-  props.meal.cook.avatar ? fileUrl(props.meal, props.meal.cook.avatar as string) : "",
-);
+// The avatar belongs to the cook's record, not the meal's — the file URL is built from the
+// ids the server handed with it, falling back to the owner id the meal already carries.
+const cookAvatar = computed(() => {
+  const name = props.meal.cook.avatar ?? "";
+  if (!name) return "";
+  return fileUrl(
+    {
+      collectionId: props.meal.cook.collectionId ?? "",
+      id: props.meal.cook.id ?? props.meal.user,
+    },
+    name,
+  );
+});
 const distance = computed(() => Number(props.meal.distance_km ?? 0));
 </script>
 

@@ -16,20 +16,23 @@ onRecordCreateRequest((e) => {
   // Coordinates cannot be schema-required (PocketBase rejects 0 as blank, and 0 is
   // a real coordinate). The client always sends them for a publish; a record that
   // omits them lands at (0,0), which no Egypt-centred query reaches.
-  let cookName = '';
-  let cookHandle = '';
+  //
+  // A missing cook is refused, not tolerated: an empty catch here used to bake a
+  // search_key without the cook's name or handle into the row permanently, so the
+  // meal became unfindable by the person who cooked it until its next save.
+  let cook;
   try {
-    const cook = e.app.findRecordById('users', e.record.getString('user'));
-    cookName = cook.getString('display_name');
-    cookHandle = cook.getString('handle');
-  } catch (err) {}
+    cook = e.app.findRecordById('users', e.record.getString('user'));
+  } catch (err) {
+    throw new BadRequestError('meal without a cook', { user: 'invalid' });
+  }
 
   e.record.set('search_key', fold.searchKey([
     e.record.getString('title'),
     e.record.getString('description'),
     e.record.getString('location_text'),
-    cookName,
-    cookHandle,
+    cook.getString('display_name'),
+    cook.getString('handle'),
   ]) || 'untitled');
   e.record.set('distance_km', 0);
   e.record.set('cook', {});
@@ -38,20 +41,19 @@ onRecordCreateRequest((e) => {
 
 onRecordUpdateRequest((e) => {
   const fold = require(`${__hooks}/lib/normalize.cjs`);
-  let cookName = '';
-  let cookHandle = '';
+  let cook;
   try {
-    const cook = e.app.findRecordById('users', e.record.getString('user'));
-    cookName = cook.getString('display_name');
-    cookHandle = cook.getString('handle');
-  } catch (err) {}
+    cook = e.app.findRecordById('users', e.record.getString('user'));
+  } catch (err) {
+    throw new BadRequestError('meal without a cook', { user: 'invalid' });
+  }
 
   e.record.set('search_key', fold.searchKey([
     e.record.getString('title'),
     e.record.getString('description'),
     e.record.getString('location_text'),
-    cookName,
-    cookHandle,
+    cook.getString('display_name'),
+    cook.getString('handle'),
   ]) || 'untitled');
   e.record.set('distance_km', 0);
   e.record.set('cook', {});
@@ -102,7 +104,14 @@ onRecordEnrich((e) => {
 
   try {
     const cook = e.app.findRecordById('users', e.record.getString('user'));
+    // The eight public fields, chosen here and nowhere else. `id` and `collectionId` are
+    // the cook's own — without them a client cannot build a file URL for the cook's avatar
+    // and silently requests it under the meal's ids, which 404s for every real avatar.
+    // The users collection id is a `pbc_…` hash, and a record loaded through the DAO
+    // reports it as null, so it is resolved from the collection itself.
     e.record.set('cook', {
+      id: cook.id,
+      collectionId: e.app.findCollectionByNameOrId('users').id,
       display_name: cook.getString('display_name'),
       handle: cook.getString('handle'),
       whatsapp: cook.getString('whatsapp'),

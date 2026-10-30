@@ -45,7 +45,7 @@
 
 ## 3. Boundary rules (prohibitions, not preferences)
 
-1. **`src/services/` may import `pocketbase`; nothing else may.** A component that imports the SDK has taken over transport, retries, and zod parsing.
+1. **`src/services/` may import `pocketbase`; nothing else may.** A component that imports the SDK has taken over transport, retries, and zod parsing. Machine-enforced by `bun run states:check` (`PB_IMPORT_OUTSIDE_SERVICES`). `src/types/errors.ts` reads the engine's `status`/`response` by shape rather than importing `ClientResponseError`, so the error table can be imported by stores and pages without dragging the client along.
 2. **`src/components/**` may import `types/`, `i18n/`, and other components. It may NOT import `services/` or `stores/`** — a component that fetches is a page wearing a component's name. Pages own the wiring.
 3. **`src/pages/**` may import stores, composables, and components.** Pages do not call services directly except through store actions, so every state transition stays in one place.
 4. **`shared/` may not import from `src/`, and may not use Node built-ins.** It is bundled into the goja hook, which has neither.
