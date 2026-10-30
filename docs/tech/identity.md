@@ -84,7 +84,7 @@ One `rng()` call per axis, in a fixed order, so the same handle always produces 
 | Shirt       | 6 colours | From the palette, plus two accent hues         |
 | Backdrop    | 5 colours | Warm cream, mint, sky, peach, lavender         |
 
-Hair and facial hair are independent axes, so a hijab never overlaps a beard: the assembly rule clears facial hair when the hijab part is selected.
+Hair and facial hair are drawn as independent axes, and the assembly rule clears facial hair when the hijab is drawn — a hijab never overlaps a beard. On top of the draw, `pickAvatar(handle, displayName?)` biases those two axes by the display name's *guessed* gender (`src/lib/avatar-gender.ts` — suffix + lexicon evidence, never certainty): a name read as **female** never shows facial hair, a name read as **male** never shows the hijab, and `unknown` — including any call that passes no name — keeps the raw seeded draw. The bias post-processes the draws and consumes no extra `rng()` calls, so the one-draw-per-axis order stands; `AVATAR_VERSION` stays `v1` because the part set did not change. The faces of existing handles shift only where a caller begins passing a display name. Enforced by `tests/unit/avatar-gender.test.ts` against the corpus in `tests/unit/fixtures/`.
 
 ### No selector
 
