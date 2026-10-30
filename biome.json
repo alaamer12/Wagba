@@ -29,7 +29,42 @@
       "linter": {
         "rules": {
           "style": {
-            "noProcessEnv": "error"
+            "noProcessEnv": "error",
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "paths": {
+                  "quasar": "Framework imports belong to src/ui/base/**. Consume the seam instead (docs/tech/structure.md §3.8).",
+                  "@quasar/extras": "Framework imports belong to src/ui/base/**. Consume the seam instead (docs/tech/structure.md §3.8)."
+                },
+                "patterns": [
+                  {
+                    "group": ["@quasar/extras/**"],
+                    "message": "Framework imports belong to src/ui/base/**. Consume the seam instead (docs/tech/structure.md §3.8)."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/ui/base/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/shared/behaviour/PullRefresh.vue"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": "off"
           }
         }
       }

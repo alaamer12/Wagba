@@ -1,0 +1,80 @@
+path,code,detail
+src/app/_AppBar.vue,APPEARANCE_OVERRIDE_ON_SEAM,".bar__title paints font-size, font-weight at line 41"
+src/app/_NavTab.vue,APPEARANCE_OVERRIDE_ON_SEAM,".tab paints background, border, color, font-family, font-size, padding at line 18"
+src/app/_NavTab.vue,APPEARANCE_OVERRIDE_ON_SEAM,".tab, .is-active paints color, font-weight at line 31"
+src/app/AddMealAction.vue,APPEARANCE_OVERRIDE_ON_SEAM,".add paints background, border, border-radius, box-shadow, color, font-size, font-weight at line 16"
+src/app/BackAction.vue,APPEARANCE_OVERRIDE_ON_SEAM,".back paints background, border, color, font-family, font-size, padding at line 20"
+src/components/present/CookRow.vue,CONTROL_TAG_OUTSIDE_BASE,<button> at line 41
+src/components/present/MealCard.vue,CONTROL_TAG_OUTSIDE_BASE,<img> at line 34
+src/components/present/MealCard.vue,CONTROL_TAG_OUTSIDE_BASE,<img> at line 35
+src/components/present/MealCard.vue,TEXT_TAG_OUTSIDE_BASE,<h3> at line 38
+src/components/present/MealCard.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 39
+src/composables/usePhotoPicker.ts,FW_NAME_IN_VOCABULARY,QUALITY at line 7
+src/features/feed/views/MealFeedView/MealFeedView.vue,APPEARANCE_OVERRIDE_ON_SEAM,.feed__cta paints padding-block at line 122
+src/features/feed/views/MealFeedView/ReadyRendition.vue,CONTROL_TAG_OUTSIDE_BASE,<button> at line 15
+src/features/feed/views/NewMealsBannerView/NewMealsBannerView.vue,CONTROL_TAG_OUTSIDE_BASE,<button> at line 29
+src/features/meal/components/PhotoSlider.vue,CONTROL_TAG_OUTSIDE_BASE,<button> at line 39
+src/features/meal/components/PhotoSlider.vue,CONTROL_TAG_OUTSIDE_BASE,<img> at line 25
+src/features/meal/views/MealDetailView/ReadyRendition.vue,TEXT_TAG_OUTSIDE_BASE,<h2> at line 28
+src/features/meal/views/MealDetailView/ReadyRendition.vue,TEXT_TAG_OUTSIDE_BASE,<h3> at line 40
+src/features/meal/views/MealDetailView/ReadyRendition.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 29
+src/features/meal/views/MealDetailView/ReadyRendition.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 67
+src/features/mine/views/DeleteConfirmationView/DeleteConfirmationView.vue,TEXT_TAG_OUTSIDE_BASE,<h2> at line 63
+src/features/mine/views/DeleteConfirmationView/DeleteConfirmationView.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 64
+src/features/mine/views/DeleteConfirmationView/DeleteConfirmationView.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 65
+src/features/mine/views/MyMealsListView/MyMealsListView.vue,APPEARANCE_OVERRIDE_ON_SEAM,.cta paints padding-block at line 208
+src/features/onboarding/views/WelcomeView/WelcomeView.vue,CONTROL_TAG_OUTSIDE_BASE,<img> at line 23
+src/features/onboarding/views/WelcomeView/WelcomeView.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 22
+src/features/profile/components/HandleField.vue,CONTROL_TAG_OUTSIDE_BASE,<input> at line 41
+src/features/profile/views/AccountCardView/AccountCardView.vue,CONTROL_TAG_OUTSIDE_BASE,<button> at line 55
+src/features/profile/views/AccountCardView/AccountCardView.vue,CONTROL_TAG_OUTSIDE_BASE,<button> at line 66
+src/features/profile/views/AccountCtaView/AccountCtaView.vue,TEXT_TAG_OUTSIDE_BASE,<h2> at line 39
+src/features/profile/views/AccountCtaView/AccountCtaView.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 40
+src/features/profile/views/ProfileFormView/ProfileFormView.vue,TEXT_TAG_OUTSIDE_BASE,<h3> at line 273
+src/features/profile/views/ProfileFormView/ProfileFormView.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 230
+src/features/profile/views/ProfileFormView/ProfileFormView.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 233
+src/features/profile/views/ProfileFormView/ProfileFormView.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 236
+src/features/profile/views/ProfileFormView/ProfileFormView.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 278
+src/features/profile/views/SettingsRowsView/SettingsRow.vue,CONTROL_TAG_OUTSIDE_BASE,<button> at line 24
+src/features/publish/views/MealFormView/MealFormView.vue,CONTROL_TAG_OUTSIDE_BASE,<button> at line 293
+src/features/publish/views/MealFormView/MealFormView.vue,CONTROL_TAG_OUTSIDE_BASE,<button> at line 301
+src/features/publish/views/MealFormView/MealFormView.vue,CONTROL_TAG_OUTSIDE_BASE,<button> at line 309
+src/features/publish/views/MealFormView/MealFormView.vue,CONTROL_TAG_OUTSIDE_BASE,<fieldset> at line 354
+src/features/publish/views/MealFormView/MealFormView.vue,CONTROL_TAG_OUTSIDE_BASE,<img> at line 290
+src/features/publish/views/MealFormView/MealFormView.vue,CONTROL_TAG_OUTSIDE_BASE,<input> at line 316
+src/features/publish/views/MealFormView/MealFormView.vue,CONTROL_TAG_OUTSIDE_BASE,<input> at line 356
+src/features/publish/views/MealFormView/MealFormView.vue,CONTROL_TAG_OUTSIDE_BASE,<input> at line 357
+src/features/publish/views/MealFormView/MealFormView.vue,CONTROL_TAG_OUTSIDE_BASE,<label> at line 315
+src/features/publish/views/MealFormView/MealFormView.vue,CONTROL_TAG_OUTSIDE_BASE,<label> at line 356
+src/features/publish/views/MealFormView/MealFormView.vue,CONTROL_TAG_OUTSIDE_BASE,<label> at line 357
+src/features/publish/views/MealFormView/MealFormView.vue,CONTROL_TAG_OUTSIDE_BASE,<legend> at line 355
+src/features/publish/views/MealFormView/MealFormView.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 319
+src/features/publish/views/MealFormView/MealFormView.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 320
+src/features/publish/views/MealFormView/MealFormView.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 370
+src/features/publish/views/MealFormView/MealFormView.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 371
+src/pages/AboutPage.vue,CONTROL_TAG_OUTSIDE_BASE,<button> at line 38
+src/pages/AboutPage.vue,CONTROL_TAG_OUTSIDE_BASE,<button> at line 40
+src/pages/AboutPage.vue,TEXT_TAG_OUTSIDE_BASE,<h3> at line 33
+src/pages/AboutPage.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 28
+src/pages/AboutPage.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 29
+src/pages/AboutPage.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 34
+src/pages/AboutPage.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 43
+src/pages/ContactPage.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 28
+src/pages/ContactPage.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 33
+src/pages/ContactPage.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 34
+src/pages/ErrorNotFound.vue,FW_TAG_OUTSIDE_BASE,<q-btn> at line 12
+src/pages/ErrorNotFound.vue,QSL_CLASS_ON_ELEMENT,".fullscreen, .bg-blue, .q-pa-md at line 2"
+src/pages/ErrorNotFound.vue,QSL_CLASS_ON_ELEMENT,.q-mt-xl at line 12
+src/pages/ErrorNotFound.vue,QSL_CLASS_ON_ELEMENT,.text-h2 at line 8
+src/pages/HomePage.vue,CONTROL_TAG_OUTSIDE_BASE,<button> at line 25
+src/pages/MyMealsPage.vue,CONTROL_TAG_OUTSIDE_BASE,<button> at line 22
+src/pages/TermsPage.vue,TEXT_TAG_OUTSIDE_BASE,<h2> at line 20
+src/pages/TermsPage.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 17
+src/pages/TermsPage.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 21
+src/shared/components/EmptyNotice.vue,APPEARANCE_OVERRIDE_ON_SEAM,".empty__body paints color, font-size at line 56"
+src/shared/components/EmptyNotice.vue,APPEARANCE_OVERRIDE_ON_SEAM,".empty__title paints font-size, font-weight at line 51"
+src/shared/decorations/BrandMark.vue,CONTROL_TAG_OUTSIDE_BASE,<img> at line 8
+src/ui/adaptive/Avatar.vue,STYLE_BINDING_ON_SEAM,:style at line 27
+src/ui/adaptive/AvatarArt.vue,STYLE_BINDING_ON_SEAM,:style at line 20
+src/ui/adaptive/Field.vue,CONTROL_TAG_OUTSIDE_BASE,<label> at line 30
+src/ui/adaptive/Segmented.vue,CONTROL_TAG_OUTSIDE_BASE,<button> at line 8
