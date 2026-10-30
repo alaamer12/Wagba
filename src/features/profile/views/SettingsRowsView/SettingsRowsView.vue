@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 import { STORE_URL } from "../../../../config";
@@ -25,11 +25,29 @@ const favorites = useFavoritesState();
 
 const version = "0.1.0";
 const mineCount = ref(0);
-const shared = ref(false);
+// C14: a verdict for each way a share can end. `shared` is the system sheet having handed the
+// link off, `copied` is the clipboard standing in for it, `refused` is neither — and a row that
+// says nothing after all three looks, from the person's side, exactly like success.
+type ShareVerdict = "none" | "shared" | "copied" | "refused";
+const shareVerdict = ref<ShareVerdict>("none");
+const storeRefused = ref(false);
 // The confirmation is a courtesy, not a state: it clears itself, and the release belongs to the
 // unit that set it. While this lived in a Page the timer had no teardown at all, which is what
 // `TIMER_WITHOUT_CLEAR` counted.
 let clearShared: ReturnType<typeof setTimeout> | undefined;
+
+const shareHint = computed(() => {
+  switch (shareVerdict.value) {
+    case "shared":
+      return t("settings.share.shared");
+    case "copied":
+      return t("settings.share.done");
+    case "refused":
+      return t("settings.share.refused");
+    default:
+      return "";
+  }
+});
 
 function toggleLanguage() {
   setLocale(currentLocale() === "ar" ? "en" : "ar");
@@ -38,27 +56,40 @@ function toggleLanguage() {
 async function share() {
   const url = `${globalThis.location?.origin ?? ""}/#/welcome`;
   const payload = { title: "Wagba", text: `${t("welcome.tagline")} — Wagba`, url };
-  let done = false;
+  let verdict: ShareVerdict = "refused";
   if (navigator.share) {
     try {
       await navigator.share(payload);
-      done = true;
+      verdict = "shared";
     } catch {
-      /* dismissed or unavailable: fall back to the clipboard */
+      // Dismissed, or refused by the sheet. The clipboard is not a lie here: the person asked for
+      // the link to leave this screen, and a link on the clipboard left it. What must not happen
+      // is the row going quiet, so the verdict says which door it actually went through.
+      verdict = "refused";
     }
   }
-  if (!done) {
+  if (verdict === "refused") {
     try {
       await navigator.clipboard.writeText(`${payload.text} ${url}`);
-      done = true;
+      verdict = "copied";
     } catch {
-      /* clipboard blocked */
+      /* clipboard blocked: the refusal stays the answer */
     }
   }
-  shared.value = done;
+  shareVerdict.value = verdict;
   clearTimeout(clearShared);
   clearShared = setTimeout(() => {
-    shared.value = false;
+    shareVerdict.value = "none";
+  }, 2000);
+}
+
+async function openStore() {
+  // `openExternally` answers with a boolean, and the row never read it: a store that did not
+  // open and a store that opened looked identical. Same courtesy as the share row.
+  storeRefused.value = !(await openExternally(STORE_URL));
+  clearTimeout(clearShared);
+  clearShared = setTimeout(() => {
+    storeRefused.value = false;
   }, 2000);
 }
 
@@ -97,7 +128,8 @@ onMounted(async () => {
     />
     <SettingsRow
       :label="t('settings.share')"
-      :hint="shared ? t('settings.share.done') : ''"
+      :hint="shareHint"
+      :tone="shareVerdict === 'refused' ? 'bad' : 'note'"
       @activate="share"
     />
   </Card>
@@ -114,7 +146,9 @@ onMounted(async () => {
       v-if="STORE_URL"
       :label="t('settings.rate')"
       chevron
-      @activate="openExternally(STORE_URL)"
+      :hint="storeRefused ? t('settings.rate.refused') : ''"
+      :tone="storeRefused ? 'bad' : 'note'"
+      @activate="openStore"
     />
     <div class="row is-static"><span>{{ t('settings.version', { v: version }) }}</span></div>
   </Card>

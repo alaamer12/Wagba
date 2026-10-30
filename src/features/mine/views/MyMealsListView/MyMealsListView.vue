@@ -4,6 +4,7 @@ import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 import { type Kind, resolveRegion } from "../../../../lib/region";
 import { listMine, setMealStatus } from "../../../../services/meals";
+import PullRefresh from "../../../../shared/behaviour/PullRefresh.vue";
 import { useForcedRegionCondition } from "../../../../shared/conditions/useForcedRegionCondition";
 import { useNetworkCondition } from "../../../../shared/conditions/useNetworkCondition";
 import { useSessionState } from "../../../../shared/state/useSessionState";
@@ -128,56 +129,58 @@ function removed(id: string) {
     <Segmented v-model="filter" :options="options" />
 
     <section :data-kind="kind" class="mine__list">
-      <LoadingRendition v-if="kind === 'loading'" :rows="3" />
+      <PullRefresh :on-refresh="load">
+        <LoadingRendition v-if="kind === 'loading'" :rows="3" />
 
-      <OfflineRendition v-else-if="cachedRows && !online">
+        <OfflineRendition v-else-if="cachedRows && !online">
+          <ReadyRendition
+            :items="visible"
+            @open="open"
+            @edit="edit"
+            @toggle="toggle"
+            @ask-delete="(id) => (pendingId = id)"
+          />
+        </OfflineRendition>
+
+        <StaleRendition v-else-if="cachedRows">
+          <ReadyRendition
+            :items="visible"
+            @open="open"
+            @edit="edit"
+            @toggle="toggle"
+            @ask-delete="(id) => (pendingId = id)"
+          />
+        </StaleRendition>
+
+        <EmptyFilteredRendition v-else-if="kind === 'empty-filtered'">
+          <Button :block="false" @click="filter = 'all'">{{ t("myMeals.filter.all") }}</Button>
+        </EmptyFilteredRendition>
+
+        <EmptyRendition
+          v-else-if="kind === 'empty'"
+          class="my-empty"
+          :art="props.art"
+          :art-size="180"
+          :title="t('myMeals.empty.title')"
+          :body="t('myMeals.empty.body')"
+        >
+          <Button :block="false" class="cta" @click="router.push({ name: 'add-meal' })">
+            {{ t("myMeals.empty.cta") }}
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+          </Button>
+        </EmptyRendition>
+
         <ReadyRendition
+          v-else-if="kind === 'ready'"
           :items="visible"
           @open="open"
           @edit="edit"
           @toggle="toggle"
           @ask-delete="(id) => (pendingId = id)"
         />
-      </OfflineRendition>
 
-      <StaleRendition v-else-if="cachedRows">
-        <ReadyRendition
-          :items="visible"
-          @open="open"
-          @edit="edit"
-          @toggle="toggle"
-          @ask-delete="(id) => (pendingId = id)"
-        />
-      </StaleRendition>
-
-      <EmptyFilteredRendition v-else-if="kind === 'empty-filtered'">
-        <Button :block="false" @click="filter = 'all'">{{ t("myMeals.filter.all") }}</Button>
-      </EmptyFilteredRendition>
-
-      <EmptyRendition
-        v-else-if="kind === 'empty'"
-        class="my-empty"
-        :art="props.art"
-        :art-size="180"
-        :title="t('myMeals.empty.title')"
-        :body="t('myMeals.empty.body')"
-      >
-        <Button :block="false" class="cta" @click="router.push({ name: 'add-meal' })">
-          {{ t("myMeals.empty.cta") }}
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
-        </Button>
-      </EmptyRendition>
-
-      <ReadyRendition
-        v-else-if="kind === 'ready'"
-        :items="visible"
-        @open="open"
-        @edit="edit"
-        @toggle="toggle"
-        @ask-delete="(id) => (pendingId = id)"
-      />
-
-      <FaultRendition v-else @retry="load" />
+        <FaultRendition v-else @retry="load" />
+      </PullRefresh>
     </section>
 
     <DeleteConfirmationView

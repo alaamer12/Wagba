@@ -18,8 +18,8 @@ import type { Kind } from "@/lib/region";
 export type Cell = {
   kind: Kind;
   outcome: "case" | "fallback" | "data";
-  coveredBy?: string;
-  note?: string;
+  coveredBy?: string | undefined;
+  note?: string | undefined;
 };
 
 export type Screen = {
@@ -29,7 +29,9 @@ export type Screen = {
   cells: Cell[];
 };
 
-const fallback = (kind: Kind, note: string): Cell => ({ kind, outcome: "fallback", note });
+// Both helpers take the note optionally: a `fallback("unknown")` with no sentence attached is a
+// complete row, and `exactOptionalPropertyTypes` would otherwise refuse the forwarded undefined.
+const fallback = (kind: Kind, note?: string): Cell => ({ kind, outcome: "fallback", note });
 const cell = (kind: Kind, note?: string): Cell => ({ kind, outcome: "case", note });
 
 export const SCREENS: Screen[] = [

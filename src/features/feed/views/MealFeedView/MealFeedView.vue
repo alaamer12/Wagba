@@ -3,7 +3,7 @@ import { computed, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 import { type Kind, resolveRegion } from "../../../../lib/region";
-import { usePullRefresh } from "../../../../shared/behaviour/usePullRefresh";
+import PullRefresh from "../../../../shared/behaviour/PullRefresh.vue";
 import { useForcedRegionCondition } from "../../../../shared/conditions/useForcedRegionCondition";
 import { useNetworkCondition } from "../../../../shared/conditions/useNetworkCondition";
 import { useLocationState } from "../../../../shared/state/useLocationState";
@@ -50,12 +50,16 @@ function retry() {
   void meals.refresh();
 }
 
+// The pull re-runs whatever the feed last asked for, so a narrowed feed refreshes narrowed.
+function refresh() {
+  return meals.refresh();
+}
+
 // The section loads itself: the pull gesture and the first mount are the same request, and a
 // page that had to remember to start the feed was a page reading facts to do it. The position
 // is read *inside* the request window, so the frames while the device is locating are
 // `loading` rather than the all-facts-false frame the ladder answers with `fault`.
 onMounted(() => void meals.load(() => location.ensure()));
-const { pull, handlers } = usePullRefresh(() => meals.refresh());
 
 function open(id: string) {
   void router.push({ name: "meal", params: { id } });
@@ -63,44 +67,38 @@ function open(id: string) {
 </script>
 
 <template>
-  <section
-    :data-kind="kind"
-    class="feed"
-    v-bind="handlers"
-  >
-    <div class="feed__pull" :style="{ height: `${pull}px` }" aria-hidden="true">
-      <span v-if="pull > 0">{{ t("home.refresh.pull") }}</span>
-    </div>
+  <section :data-kind="kind" class="feed">
+    <PullRefresh :on-refresh="refresh">
+      <LoadingRendition v-if="kind === 'loading'" :rows="4" />
 
-    <LoadingRendition v-if="kind === 'loading'" :rows="4" />
+      <BlockedRendition v-else-if="kind === 'blocked'" @retry="retry" />
 
-    <BlockedRendition v-else-if="kind === 'blocked'" @retry="retry" />
+      <OfflineRendition v-else-if="cachedRows && !online">
+        <ReadyRendition :items="meals.items" @open="open" />
+      </OfflineRendition>
 
-    <OfflineRendition v-else-if="cachedRows && !online">
-      <ReadyRendition :items="meals.items" @open="open" />
-    </OfflineRendition>
+      <StaleRendition v-else-if="cachedRows">
+        <ReadyRendition :items="meals.items" @open="open" />
+      </StaleRendition>
 
-    <StaleRendition v-else-if="cachedRows">
-      <ReadyRendition :items="meals.items" @open="open" />
-    </StaleRendition>
+      <EmptyFilteredRendition v-else-if="kind === 'empty-filtered'" />
 
-    <EmptyFilteredRendition v-else-if="kind === 'empty-filtered'" />
+      <EmptyRendition
+        v-else-if="kind === 'empty'"
+        :art="props.art"
+        :art-size="210"
+        :title="t('home.empty.title')"
+        :body="t('home.empty.body')"
+      >
+        <Button class="feed__cta" @click="router.push({ name: 'add-meal' })">
+          {{ t("home.empty.cta") }}
+        </Button>
+      </EmptyRendition>
 
-    <EmptyRendition
-      v-else-if="kind === 'empty'"
-      :art="props.art"
-      :art-size="210"
-      :title="t('home.empty.title')"
-      :body="t('home.empty.body')"
-    >
-      <Button class="feed__cta" @click="router.push({ name: 'add-meal' })">
-        {{ t("home.empty.cta") }}
-      </Button>
-    </EmptyRendition>
+      <ReadyRendition v-else-if="kind === 'ready'" :items="meals.items" @open="open" />
 
-    <ReadyRendition v-else-if="kind === 'ready'" :items="meals.items" @open="open" />
-
-    <FaultRendition v-else @retry="retry" />
+      <FaultRendition v-else @retry="retry" />
+    </PullRefresh>
   </section>
 </template>
 
@@ -109,15 +107,6 @@ function open(id: string) {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-}
-.feed__pull {
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  overflow: hidden;
-  font-size: 12px;
-  color: var(--brown-mid);
-  transition: height 120ms ease;
 }
 .feed__cta {
   display: inline-flex;

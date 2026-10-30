@@ -2,6 +2,7 @@
 // The face is a function of the handle and the version prefix — never stored.
 // docs/tech/identity.md#avatar owns the rules; this file implements them.
 
+import { isItLikelyFemaleName } from "./avatar-gender";
 import { partLayers, RIG } from "./avatar-parts";
 
 export const AVATAR_VERSION = "v1";
@@ -70,20 +71,32 @@ function draw<T>(rng: () => number, list: readonly T[]): T {
   return list[Math.floor(rng() * list.length)] as T;
 }
 
-export function pickAvatar(handle: string): AvatarPick {
+export function pickAvatar(handle: string, displayName = ""): AvatarPick {
   const rng = mulberry32(fnv1a32(`${AVATAR_VERSION}:${handle}`));
   // One draw per axis, fixed order: adding a variant to one axis must not shift
-  // the others. The hijab rule runs after the draws for the same reason.
-  const hair = draw(rng, HAIR_IDS);
+  // the others. The name bias below runs strictly AFTER the draws, for the same
+  // reason — it post-processes them and never consumes or reorders rng() calls.
+  const drawnHair = draw(rng, HAIR_IDS);
   const beard = draw(rng, BEARD_IDS);
   const glasses = draw(rng, GLASSES_IDS);
   const skin = draw(rng, SKIN_PALETTES);
   const shirt = draw(rng, SHIRT_PALETTES);
   const backdrop = draw(rng, BACKDROP_PALETTES);
   const hairColour = draw(rng, HAIR_COLOURS);
+  // Three-valued guess; `unknown` (or no name passed at all) keeps today's pure
+  // seeded draw — an unguessable name never falls back to a default gender.
+  const gender = displayName.trim() === "" ? "unknown" : isItLikelyFemaleName(displayName);
+  let hair = drawnHair;
+  if (gender === "male" && hair === "hijab") {
+    // The hijab is only ever shown for a name read as female. No extra draw: step to
+    // the next listed style, deterministic and stable for a fixed part set.
+    hair = HAIR_IDS[(HAIR_IDS.indexOf("hijab") + 1) % HAIR_IDS.length] ?? drawnHair;
+  }
   return {
     hair,
-    beard: hair === "hijab" ? "none" : beard,
+    // Female names wear no facial hair; the pre-existing hijab rule still governs
+    // every `unknown` handle, exactly as before this change.
+    beard: gender === "female" || hair === "hijab" ? "none" : beard,
     glasses,
     hairColour,
     skin,

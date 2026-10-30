@@ -10,9 +10,11 @@ withDefaults(
     value?: string;
     /** The trailing word, rendered as `row__muted`. */
     hint?: string;
+    /** A hint that reads as a refusal rather than a note (C14: a verdict has a face). */
+    tone?: "note" | "bad";
     chevron?: boolean;
   }>(),
-  { value: "", hint: "", chevron: false },
+  { value: "", hint: "", tone: "note", chevron: false },
 );
 
 defineEmits<{ activate: [] }>();
@@ -22,7 +24,7 @@ defineEmits<{ activate: [] }>();
   <button type="button" class="row" @click="$emit('activate')">
     <span>{{ label }}</span>
     <span v-if="value" class="row__count">{{ value }}</span>
-    <span v-if="hint" class="row__muted">{{ hint }}</span>
+    <span v-if="hint" class="row__muted" :class="{ 'is-bad': tone === 'bad' }">{{ hint }}</span>
     <span v-if="chevron" class="row__chevron" aria-hidden="true">›</span>
   </button>
 </template>
@@ -50,6 +52,9 @@ defineEmits<{ activate: [] }>();
 .row__muted {
   color: var(--brown-mid);
   font-size: 13px;
+}
+.row__muted.is-bad {
+  color: var(--danger);
 }
 .row__count {
   color: var(--brown-mid);

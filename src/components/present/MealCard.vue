@@ -38,7 +38,7 @@ const distance = computed(() => Number(props.meal.distance_km ?? 0));
       <h3 class="meal-card__title">{{ meal.title }}</h3>
       <p class="meal-card__desc">{{ meal.description }}</p>
       <div class="meal-card__meta">
-        <Avatar :src="cookAvatar" :handle="meal.cook.handle ?? ''" :size="22" :label="t('avatar.alt')" />
+        <Avatar :src="cookAvatar" :handle="meal.cook.handle ?? ''" :display-name="meal.cook.display_name ?? ''" :size="22" :label="t('avatar.alt')" />
         <span class="meal-card__cook">{{ meal.cook.display_name }}</span>
         <span v-if="distance > 0" class="meal-card__distance">{{ t('home.card.distance', { n: distance }) }}</span>
       </div>

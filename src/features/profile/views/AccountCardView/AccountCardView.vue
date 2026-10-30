@@ -45,7 +45,7 @@ async function openExternal(url: string) {
 
 <template>
   <Card v-if="complete" class="account">
-    <Avatar :src="avatarSrc" :handle="profile?.handle ?? ''" :size="56" :label="t('avatar.alt')" />
+    <Avatar :src="avatarSrc" :handle="profile?.handle ?? ''" :display-name="profile?.display_name ?? ''" :size="56" :label="t('avatar.alt')" />
     <div class="account__text">
       <span class="account__name">{{ profile?.display_name }}</span>
       <span class="account__handle">@{{ profile?.handle }}</span>

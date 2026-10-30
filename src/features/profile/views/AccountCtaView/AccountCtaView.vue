@@ -23,14 +23,23 @@ const complete = computed(() => session.isComplete);
 onMounted(async () => {
   await session.ensureReady();
 });
+
+// F51: the row promises the first meal and the card says the account comes first — so the press
+// goes to the account, and queues the meal behind it. It used to push `add-meal`, which bounced
+// straight back here through the publish form's own interrupt: two screens, a GPS prompt for a
+// form nobody meant to open, and the account at the end of it anyway. This is D11′ in one hop —
+// the same journey the plus button takes, without the detour.
+function finishAccount() {
+  void router.push({ name: "profile-setup", query: { from: "add-meal" } });
+}
 </script>
 
 <template>
   <Card v-if="!complete" class="welcome">
     <h2 class="welcome__title">{{ t('settings.account.incomplete.title') }}</h2>
-    <p class="welcome__body">{{ t('settings.account.incomplete.body') }}</p>
-    <Button :block="false" @click="router.push({ name: 'add-meal' })">
-      {{ t('settings.account.incomplete.cta') }}
+    <p class="welcome__body">{{ t("settings.account.incomplete.body") }}</p>
+    <Button :block="false" @click="finishAccount">
+      {{ t("settings.account.incomplete.cta") }}
     </Button>
   </Card>
 </template>

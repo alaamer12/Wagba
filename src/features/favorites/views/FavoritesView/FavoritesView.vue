@@ -4,6 +4,7 @@ import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 import { type Kind, resolveRegion } from "../../../../lib/region";
 import { getMeal } from "../../../../services/meals";
+import PullRefresh from "../../../../shared/behaviour/PullRefresh.vue";
 import { useForcedRegionCondition } from "../../../../shared/conditions/useForcedRegionCondition";
 import { useFavoritesState } from "../../../../shared/state/useFavoritesState";
 import { useSessionState } from "../../../../shared/state/useSessionState";
@@ -29,6 +30,10 @@ const { forced } = useForcedRegionCondition();
 const rows = ref<Meal[]>([]);
 const read = ref(false);
 const inFlight = ref(false);
+// Removing is a per-row write, so it is pending per row and it fails per row: one cook's double
+// tap must not grey out the whole journal, and a refusal must not look like a successful remove.
+const removing = ref<string[]>([]);
+const refused = ref<string[]>([]);
 
 const kind = computed<Kind>(() => {
   const override = forced.value;
@@ -47,7 +52,9 @@ async function load() {
   inFlight.value = true;
   try {
     await session.ensureReady();
-    await favorites.ensureLoaded();
+    // `load`, not `ensureLoaded`: the latter exists to skip work when the journal is already in
+    // hand, which makes a refresh a no-op — the exact defect C3 names. A pull must re-ask.
+    await favorites.load();
     const wanted = [...favorites.ids];
     const settled = await Promise.allSettled(wanted.map((id) => getMeal(id)));
     rows.value = settled
@@ -69,19 +76,46 @@ onMounted(load);
 function open(id: string) {
   void router.push({ name: "meal", params: { id } });
 }
+
+// Removing from here and from Meal Details are the same action (screens.md §8), so this calls the
+// Favorites State rather than a second write path. Nothing is dropped optimistically: the row
+// leaves the list when the journal says it has left the journal, and a refusal leaves the row
+// exactly where it was, saying what happened.
+async function remove(id: string) {
+  if (removing.value.includes(id)) return;
+  removing.value = [...removing.value, id];
+  refused.value = refused.value.filter((mealId) => mealId !== id);
+  try {
+    const stillSaved = await favorites.toggle(id);
+    if (!stillSaved) rows.value = rows.value.filter((meal) => meal.id !== id);
+  } catch {
+    refused.value = [...refused.value, id];
+  } finally {
+    removing.value = removing.value.filter((mealId) => mealId !== id);
+  }
+}
 </script>
 
 <template>
   <section :data-kind="kind" class="saved">
-    <LoadingRendition v-if="kind === 'loading'" :rows="2" />
+    <PullRefresh :on-refresh="load">
+      <LoadingRendition v-if="kind === 'loading'" :rows="2" />
 
-    <EmptyRendition v-else-if="kind === 'empty'" :title="t('favorites.empty')" :art="props.art">
-      <Button @click="router.push({ name: 'home' })">{{ t("nav.meals") }}</Button>
-    </EmptyRendition>
+      <EmptyRendition v-else-if="kind === 'empty'" :title="t('favorites.empty')" :art="props.art">
+        <Button @click="router.push({ name: 'home' })">{{ t("nav.meals") }}</Button>
+      </EmptyRendition>
 
-    <ReadyRendition v-else-if="kind === 'ready'" :items="rows" @open="open" />
+      <ReadyRendition
+        v-else-if="kind === 'ready'"
+        :items="rows"
+        :removing="removing"
+        :refused="refused"
+        @open="open"
+        @remove="remove"
+      />
 
-    <FaultRendition v-else @retry="load" />
+      <FaultRendition v-else @retry="load" />
+    </PullRefresh>
   </section>
 </template>
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
 import AppBar from "../../../../app/_AppBar.vue";
@@ -7,21 +7,27 @@ import { useWhatsApp } from "../../../../composables/useWhatsApp";
 import { type Kind, resolveRegion } from "../../../../lib/region";
 import { photoUrl } from "../../../../services/meals";
 import { useForcedRegionCondition } from "../../../../shared/conditions/useForcedRegionCondition";
+import {
+  onReconnect,
+  useNetworkCondition,
+} from "../../../../shared/conditions/useNetworkCondition";
 import { useFavoritesState } from "../../../../shared/state/useFavoritesState";
 import { useSessionState } from "../../../../shared/state/useSessionState";
 import FaultRendition from "../../../../ui/renditions/FaultRendition.vue";
 import LoadingRendition from "../../../../ui/renditions/LoadingRendition.vue";
 import { useMealDetailState } from "../../behaviour/useMealDetailState";
 import GoneRendition from "./GoneRendition.vue";
+import OfflineFaultRendition from "./OfflineFaultRendition.vue";
 import ReadyRendition from "./ReadyRendition.vue";
 
-// One opened meal, and the four answers the screen can give about it.
+// One opened meal, and the answers the screen can give about it: loading, the meal, it is gone,
+// it could not be read, and it could not be read because the device is offline.
 //
 // The bar is rendered here rather than by the Page because its title *is* the meal: a Page that
 // read the detail State to label the chrome would be a Page reading a fact, which is the rule
 // this pass exists to satisfy. `_AppBar` is sticky, so it sits at the top of the shell's content
 // column exactly where the slot put it.
-const { t, locale } = useI18n();
+const { t, te, locale } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const detail = useMealDetailState();
@@ -29,6 +35,7 @@ const favorites = useFavoritesState();
 const session = useSessionState();
 const whatsapp = useWhatsApp();
 const { forced } = useForcedRegionCondition();
+const { online } = useNetworkCondition();
 
 const waMissing = ref(false);
 const saved = computed(() => (detail.meal ? favorites.has(detail.meal.id) : false));
@@ -46,6 +53,23 @@ const priceLabel = computed(() =>
   detail.meal?.price ? `${detail.meal.price} ${locale.value === "ar" ? "جنيه" : "EGP"}` : "",
 );
 
+// A failed read has two causes and this screen used to have one sentence for both. Details is
+// network-free by decision — it caches nothing, so it can never be `stale` — but the owner ruled
+// it must still *name* offline: "a problem occurred loading" is a lie about a device that cannot
+// ask. `data-kind` stays the ladder's answer (`fault`); only the wording changes.
+const offlineFault = computed(() => kind.value === "fault" && !online.value);
+
+// `error.offline.body` promises "the last results", which is a sentence for a screen that has
+// rows to show and not for this one. The exact pair is used the moment it exists in the catalog,
+// and the closest line we own is the fallback; no key is invented here, because a one-sided key
+// fails the parity test and blocks the run.
+const offlineTitle = computed(() =>
+  te("error.offline.fault.title") ? t("error.offline.fault.title") : t("error.offline.body"),
+);
+const offlineBody = computed(() =>
+  te("error.offline.fault.body") ? t("error.offline.fault.body") : "",
+);
+
 // The View resolves the file URLs so the slider stays presentation-only: building them is a
 // service call, and `PRESENTATION_IMPORTS_SERVICE` exists to keep that on this side of the seam.
 const slides = computed(() => {
@@ -59,6 +83,17 @@ onMounted(async () => {
   // toggle the user actually presses reports its own error.
   await favorites.ensureLoaded().catch(() => {});
 });
+
+// Offline is named and answered by itself: when the connection comes back the read the network
+// refused is made again (`decisions.md` — the user is never told to reload). Released on unmount,
+// which is the step the old network composable never had.
+let releaseReconnect: (() => void) | null = null;
+onMounted(() => {
+  releaseReconnect = onReconnect(() => {
+    if (!detail.meal && !detail.gone) detail.retry();
+  });
+});
+onBeforeUnmount(() => releaseReconnect?.());
 
 async function toggle() {
   if (!detail.meal) return;
@@ -91,6 +126,12 @@ async function contact() {
       :price-label="priceLabel"
       @contact="contact"
       @toggle="toggle"
+    />
+    <OfflineFaultRendition
+      v-else-if="offlineFault"
+      :title="offlineTitle"
+      :body="offlineBody"
+      @retry="detail.retry()"
     />
     <FaultRendition v-else @retry="detail.retry()" />
   </section>

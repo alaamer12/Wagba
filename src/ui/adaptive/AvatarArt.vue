@@ -3,9 +3,14 @@ import { computed, useId } from "vue";
 import { layerMarkup, paletteVars, pickAvatar } from "../../lib/avatar";
 import { RIG } from "../../lib/avatar-parts";
 
-const props = defineProps<{ handle: string; label?: string }>();
+const props = withDefaults(
+  defineProps<{ handle: string; label?: string; displayName?: string }>(),
+  { label: "", displayName: "" },
+);
 
-const pick = computed(() => pickAvatar(props.handle));
+// The handle seeds the face; the name only *biases* the gendered parts, and an empty or
+// unguessable name leaves the seeded pick untouched (lib/avatar-gender.ts).
+const pick = computed(() => pickAvatar(props.handle, props.displayName));
 const layers = computed(() => layerMarkup(pick.value));
 const vars = computed(() => paletteVars(pick.value));
 const clipId = `avatar-clip-${useId()}`;

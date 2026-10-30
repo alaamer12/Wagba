@@ -130,6 +130,10 @@ A fact source returns data and never renders (`/states`). `State` = the outcome 
 | Feed snapshot | Condition | `shared/conditions/useFeedSnapshotCondition.ts` | whether an earlier run left a readable feed | Feed (the `stale` answer) |
 | Active route | Condition | `shared/conditions/useActiveRouteCondition.ts` | which route the app is on, and its key | MainNavigationView, pages that key their own teardown |
 | Freshness | State | `features/feed/behaviour/useFreshnessState.ts` | whether newer meals exist than the rows shown; the probe is ours to run and ours to write | NewMealsBannerView |
+| Handle availability | State | `shared/state/useHandleAvailabilityState.ts` | the answer to "is this handle free", kept three-valued because a failed lookup is not a free one | ProfileFormView, HandleField |
+| Welcome seen | Condition | `shared/conditions/useWelcomeSeenCondition.ts` | whether this device has finished with the first-run screen; storage that refuses just repeats the screen rather than breaking it | router guard, WelcomeView |
+| Name-gender guess | pure derivation (not a source) | `lib/avatar-gender.ts` | `isItLikelyFemaleName(displayName) → female · male · unknown`; never a default gender | `lib/avatar.ts` `pickAvatar`, `tests/unit/avatar-gender.test.ts` |
+| Display-name rule | pure derivation (not a source) | `shared/displayName.ts` | letters (Arabic or Latin), digits and spaces only, with the bidi-control refusal first; in `shared/` so the hook can bundle the same file | `services/auth.saveProfile` (client-side only until a hook calls it) |
 | Meal detail | State | `features/meal/behaviour/useMealDetailState.ts` | the opened meal, its `facts`/`kind`, and `gone` kept apart from a transport failure | MealDetailView |
 | Forced region | Condition | `shared/conditions/useForcedRegionCondition.ts` | the `?state=` fact override, when dev or the harness has enabled it | MealFeedView (and every View the state matrix drives) |
 | Region ladder | pure derivation (not a source) | `lib/region.ts` | `resolveRegion(facts) → Kind` | every View that classifies a region, the e2e matrix |

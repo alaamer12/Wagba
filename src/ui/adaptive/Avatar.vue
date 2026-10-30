@@ -4,8 +4,14 @@ import BaseImg from "../base/Img.vue";
 import AvatarArt from "./AvatarArt.vue";
 
 const props = withDefaults(
-  defineProps<{ src?: string; handle?: string; label?: string; size?: number }>(),
-  { src: "", handle: "", label: "", size: 40 },
+  defineProps<{
+    src?: string;
+    handle?: string;
+    label?: string;
+    displayName?: string;
+    size?: number;
+  }>(),
+  { src: "", handle: "", label: "", displayName: "", size: 40 },
 );
 
 const style = computed(() => ({ width: `${props.size}px`, height: `${props.size}px` }));
@@ -25,7 +31,7 @@ const photo = computed(() => Boolean(props.src) && !broken.value);
       :alt="label"
       @error="broken = true"
     />
-    <AvatarArt v-else :handle="handle" :label="label" />
+    <AvatarArt v-else :handle="handle" :label="label" :display-name="displayName" />
   </span>
 </template>
 

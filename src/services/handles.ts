@@ -34,3 +34,47 @@ export function candidate(slug: string, width = 3): string {
 export function isValidHandle(handle: string): boolean {
   return new RegExp(`^[a-z][a-z0-9]{${HANDLE_MIN - 1},${HANDLE_MAX - 1}}$`).test(handle);
 }
+
+/**
+ * Words no account may hold, even when nothing else does — `identity.md#handle` lists them and
+ * this is the client's only copy. The engine does not enforce the list yet (no hook, no pattern
+ * on the field), so a reserved base is refused here and reported to the person typing it.
+ */
+export const RESERVED_BASES: readonly string[] = [
+  "admin",
+  "wagba",
+  "support",
+  "api",
+  "www",
+  "login",
+  "help",
+  "about",
+  "terms",
+  "privacy",
+];
+
+/**
+ * The base a handle is built from: trimmed, lowercased, anything outside `[a-z0-9]` dropped,
+ * capped at `SLUG_MAX`. The write path used to do this inline, which is how a rule came to live
+ * in two places; the form asks the same function so what it warns about is what will be stored.
+ */
+export function handleBase(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "")
+    .slice(0, SLUG_MAX);
+}
+
+/**
+ * Whether a base can actually become a handle: long enough to survive the mandatory digits, and
+ * starting with a letter. A base that fails this is not an error in the field — the save falls
+ * back to the name's own slug — so the form must say which handle the person is going to get.
+ */
+export function isUsableBase(base: string): boolean {
+  return /^[a-z]/.test(base) && base.length >= HANDLE_MIN;
+}
+
+export function isReservedBase(base: string): boolean {
+  return RESERVED_BASES.includes(base);
+}

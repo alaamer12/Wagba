@@ -4,8 +4,10 @@ import { useRouter } from "vue-router";
 import BrandMark from "../../../../shared/decorations/BrandMark.vue";
 import Button from "../../../../ui/adaptive/Button.vue";
 
-// The first screen, and the one decision on it: press once and the app never shows it again.
-// The View owns the redirect because the Page that mounted it has no route of its own to leave.
+// The first screen, and the one decision on it: the device is marked visited the first time it
+// paints, so this screen is a first launch and not a stop on the way Home (D10′). The marking is
+// the router's (`src/router/index.ts`) through `useWelcomeSeenCondition`, and the View owns the
+// button that leaves — the Page that mounted it has no route of its own to go to.
 const { t } = useI18n();
 const router = useRouter();
 

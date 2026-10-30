@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
 import AppBar from "../../../../app/_AppBar.vue";
@@ -14,6 +14,14 @@ import Button from "../../../../ui/adaptive/Button.vue";
 import Field from "../../../../ui/adaptive/Field.vue";
 import FaultRendition from "../../../../ui/renditions/FaultRendition.vue";
 import LoadingRendition from "../../../../ui/renditions/LoadingRendition.vue";
+import {
+  issuesByField,
+  MAX_PHOTOS,
+  type MealField,
+  type MealIssueReason,
+  mealIssues,
+  photoIssue,
+} from "./mealFormRules";
 
 type PhotoItem =
   | { id: string; kind: "existing"; name: string; url: string }
@@ -42,7 +50,16 @@ const availableTime = ref("");
 const delivery = ref<"pickup" | "delivery">("pickup");
 const locationText = ref(session.profile?.location_text ?? "");
 const photos = ref<PhotoItem[]>([]);
-const error = ref("");
+// C10: one message per field, rendered on the field it names. Every required check used to
+// collapse into a single line under the button, so a cook who missed the location was told
+// nothing about the location, and `Field`'s own `error` prop was never bound at all.
+const fieldErrors = ref<Partial<Record<MealField, string>>>({});
+// The uploader is not a `Field`, so its verdict is this View's own line, under the grid.
+const photoError = ref("");
+// The one line that names no control: the server's verdict on the last attempt. `error-ux.md`
+// keeps `PUBLISH_REJECTED` inline and says the form keeps its contents — a form that fails with
+// nothing on screen teaches the person to press the button twice.
+const formError = ref("");
 const loadFailed = ref(false);
 const submitting = ref(false);
 // An edit form whose values have not arrived yet is not a form the user may fill: typing into
@@ -61,15 +78,62 @@ function addItems(files: File[]): PhotoItem[] {
   }));
 }
 
+// Which words a field is labelled with, so a required-message names the field the person sees
+// rather than the key the schema calls it.
+const FIELD_LABEL: Record<MealField, string> = {
+  title: "add.name.label",
+  locationText: "add.location.label",
+  price: "add.price.label",
+  quantity: "add.quantity.label",
+};
+
+function issueMessage(field: MealField, reason: MealIssueReason): string {
+  if (reason === "required") return t("error.field.required", { field: t(FIELD_LABEL[field]) });
+  return reason === "whole" ? t("add.quantity.invalid") : t("add.price.invalid");
+}
+
+/** Every message the form's own rules produce right now, per field. */
+function validateForm(): boolean {
+  const issues = issuesByField(
+    mealIssues({
+      title: title.value,
+      locationText: locationText.value,
+      price: price.value,
+      quantity: quantity.value,
+    }),
+  );
+  const next: Partial<Record<MealField, string>> = {};
+  for (const field of Object.keys(issues) as MealField[]) {
+    const issue = issues[field];
+    if (issue) next[field] = issueMessage(field, issue.reason);
+  }
+  fieldErrors.value = next;
+  return Object.keys(next).length === 0;
+}
+
+function clearIssue(field: MealField) {
+  if (!fieldErrors.value[field]) return;
+  const next = { ...fieldErrors.value };
+  delete next[field];
+  fieldErrors.value = next;
+}
+
+// A message that outlives the correction it describes is a second opinion nobody asked for.
+watch(title, () => clearIssue("title"));
+watch(locationText, () => clearIssue("locationText"));
+watch(price, () => clearIssue("price"));
+watch(quantity, () => clearIssue("quantity"));
+
 async function onFiles(event: Event) {
   const input = event.target as HTMLInputElement;
   const files = Array.from(input.files ?? []);
   try {
     const allowed = picker.validate(files, photos.value.length);
     photos.value = [...photos.value, ...addItems(await picker.prepare(allowed))];
-    error.value = "";
+    photoError.value = "";
   } catch (err) {
-    error.value =
+    // Under the uploader, where the rejected file was chosen — not at the bottom of the form.
+    photoError.value =
       err instanceof AppError && err.code === "PHOTO_LIMIT"
         ? t("error.photo.limit")
         : err instanceof AppError && err.code === "PHOTO_WRONG_TYPE"
@@ -96,13 +160,14 @@ function move(index: number, delta: number) {
 }
 
 async function publish() {
-  error.value = "";
-  if (!title.value.trim()) {
-    error.value = t("error.field.required", { field: t("add.name.label") });
-    return;
-  }
-  if (!locationText.value.trim()) {
-    error.value = t("error.field.required", { field: t("add.location.label") });
+  formError.value = "";
+  // A new attempt re-reads what is actually in the form. A verdict about a file that never
+  // entered it belongs to that earlier attempt, not to this one.
+  photoError.value = "";
+  if (!validateForm()) return;
+  const overLimit = photoIssue(photos.value.length);
+  if (overLimit) {
+    photoError.value = t("error.photo.limit");
     return;
   }
   submitting.value = true;
@@ -135,10 +200,18 @@ async function publish() {
     feed.reset();
     router.replace({ name: "home" });
   } catch (err) {
-    error.value =
-      toAppError(err).code === "NET_UNREACHABLE"
+    // The engine's field names never reach a person (`error-ux.md`), and `toAppError` is what
+    // keeps that promise — so a refusal is placed by the code the service answered with, not by
+    // the raw field it complained about. `MEAL_GONE` is the 404 an edit of a deleted meal gets,
+    // and it names the meal, not a field: it used to read as "the meal was not posted. Try
+    // again", which is an invitation to retry something that can never work.
+    const code = toAppError(err).code;
+    formError.value =
+      code === "NET_UNREACHABLE"
         ? t("error.offline.body")
-        : t("error.publish.body");
+        : code === "MEAL_GONE"
+          ? t("meal.gone")
+          : t("error.publish.body");
   } finally {
     submitting.value = false;
   }
@@ -239,17 +312,43 @@ onUnmounted(() => {
           </div>
         </figure>
       </div>
-      <label v-if="photos.length < 5" class="upload__add">
+      <label v-if="photos.length < MAX_PHOTOS" class="upload__add">
         <input id="photos" type="file" accept="image/*" multiple @change="onFiles" />
         <span>{{ t("add.photos.add") }}</span>
       </label>
       <p class="upload__hint">{{ t("add.photos.hint") }}</p>
+      <p v-if="photoError" class="error">{{ photoError }}</p>
     </div>
 
-    <Field v-model="title" :label="t('add.name.label')" :placeholder="t('add.name.placeholder')" required />
-    <Field v-model="description" :label="t('add.description.label')" :hint="t('add.description.optional')" multiline />
-    <Field v-model="price" :label="t('add.price.label')" :placeholder="t('add.price.placeholder')" type="number" />
-    <Field v-model="quantity" :label="t('add.quantity.label')" type="number" />
+    <Field
+      v-model="title"
+      :class="{ error: !!fieldErrors.title }"
+      :label="t('add.name.label')"
+      :placeholder="t('add.name.placeholder')"
+      :error="fieldErrors.title ?? ''"
+      required
+    />
+    <Field
+      v-model="description"
+      :label="t('add.description.label')"
+      :hint="t('add.description.optional')"
+      multiline
+    />
+    <Field
+      v-model="price"
+      :class="{ error: !!fieldErrors.price }"
+      :label="t('add.price.label')"
+      :placeholder="t('add.price.placeholder')"
+      :error="fieldErrors.price ?? ''"
+      type="number"
+    />
+    <Field
+      v-model="quantity"
+      :class="{ error: !!fieldErrors.quantity }"
+      :label="t('add.quantity.label')"
+      :error="fieldErrors.quantity ?? ''"
+      type="number"
+    />
     <Field v-model="availableTime" :label="t('add.availability.label')" />
 
     <fieldset class="radio">
@@ -258,10 +357,18 @@ onUnmounted(() => {
       <label><input v-model="delivery" type="radio" value="delivery" /> {{ t("add.delivery.available") }}</label>
     </fieldset>
 
-    <Field v-model="locationText" :label="t('add.location.label')" :hint="t('add.location.hint')" :placeholder="t('add.location.placeholder')" required />
+    <Field
+      v-model="locationText"
+      :class="{ error: !!fieldErrors.locationText }"
+      :label="t('add.location.label')"
+      :hint="t('add.location.hint')"
+      :placeholder="t('add.location.placeholder')"
+      :error="fieldErrors.locationText ?? ''"
+      required
+    />
 
-    <p v-if="blocked" class="error">{{ t("error.location.title") }} — {{ t("error.location.body") }}</p>
-    <p v-else-if="error" class="error">{{ error }}</p>
+    <p v-if="blocked" class="notice">{{ t("error.location.title") }} — {{ t("error.location.body") }}</p>
+    <p v-else-if="formError" class="error">{{ formError }}</p>
 
     <Button type="submit" :loading="submitting" :disabled="blocked">{{ t("add.publish") }}</Button>
   </form>
@@ -372,6 +479,14 @@ onUnmounted(() => {
 }
 .error {
   color: var(--danger);
+}
+p.error {
+  font-size: 13px;
+  margin: 0;
+}
+/* The device's own refusal is a notice, not a fault in what the person typed. */
+p.notice {
+  color: var(--brown-mid);
   font-size: 13px;
   margin: 0;
 }
