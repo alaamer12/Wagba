@@ -92,6 +92,8 @@ Two auditors, deliberately orthogonal, because one kind of pattern cannot see th
 
 **The ratchet.** `states-check` writes per-rule counts to `tools/arch-baseline.json` when blessed, and otherwise exits non-zero only when a count **grows**. Lowering a number is progress and must be followed by `bun run states:check -- --bless`; raising one is a regression the gate refuses. This exists because a permanently-red audit is switched off within a milestone, and because the first baseline was blessed at 23 findings across 6 rules on 2026-10-30 — the register in [../decisions.md](../decisions.md) says why each one is scheduled away rather than excused.
 
+**The auditors are themselves tested.** `tests/unit/arch-rules.test.ts` plants one violation per rule in a temporary tree and asserts each is caught, plus two correctly shaped files (a View that reads a fact and selects a case, a props-only Rendition with a paired listener) that must **not** be flagged. A check nobody has watched refuse something is not evidence that it runs.
+
 **Known blind spot at baseline:** `check_pvc.py` reports *no findings* on this tree while the stores are still named `useMealsStore` and `useNetwork`, because its fact-source regex matches `use*State|Condition`. Renaming them (milestone M1) is what makes the auditor able to see this app; a clean report before then proves only that it had nothing to match.
 
 ## Locales
