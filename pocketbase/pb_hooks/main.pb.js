@@ -56,6 +56,18 @@ onRecordUpdateRequest((e) => {
 }, 'meals');
 
 onRecordUpdateRequest((e) => {
+  // The handle is frozen after its first save. The UI disables the field, but a
+  // crafted request must be refused too — a shared link depends on it.
+  const original = e.record.original();
+  const previous = original ? original.getString('handle') : '';
+  const next = e.record.getString('handle');
+  if (previous && previous !== next) {
+    throw new BadRequestError('handle is immutable', { handle: 'immutable' });
+  }
+  e.next();
+}, 'users');
+
+onRecordUpdateRequest((e) => {
   const fold = require(`${__hooks}/lib/normalize.cjs`);
   const name = e.record.getString('display_name');
   e.next();
