@@ -4,7 +4,8 @@ import { computed, onScopeDispose, ref } from "vue";
  * Pull-to-refresh as a machine with four real phases, driven by Quasar's pan gesture.
  *
  * The gesture itself is `v-touch-pan` (the framework's, and the one `QPullToRefresh` is built
- * from): it knows touch *and* mouse, it locks to the direction the modifier asks for, it puts
+ * from; `decisions.md` records why the widget itself is not used): it knows touch *and* mouse, it
+ * locks to the direction the modifier asks for, it puts
  * up the `grabbing` cursor and takes the text selection away for the length of the drag, and it
  * swallows the click that would otherwise follow a pull. What stays here is only what a
  * framework gesture cannot know: which distance arms a refresh, and that `refreshing` is the

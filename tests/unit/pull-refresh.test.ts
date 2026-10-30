@@ -70,6 +70,32 @@ describe("usePullRefresh", () => {
     expect(signal.distance.value).toBe(signal.travel);
   });
 
+  // Why `decisions.md` keeps this machine and declines `QPullToRefresh`: the widget emits only
+  // `refresh`, after the release, so a held drag has no `pulling`/`armed` phase a test could
+  // read. Here the phases are state, readable synchronously while the pointer is down, and
+  // arming is never itself a request.
+  it("reports every phase synchronously while the drag is held, and asks only on release", async () => {
+    const onRefresh = vi.fn(() => Promise.resolve());
+    const signal = machine(onRefresh);
+
+    signal.onPan(start());
+    expect(signal.phase.value).toBe("pulling");
+
+    signal.onPan(move(40));
+    expect(signal.phase.value).toBe("pulling");
+
+    signal.onPan(move(200));
+    expect(signal.phase.value).toBe("armed");
+    await Promise.resolve();
+    expect(onRefresh).not.toHaveBeenCalled();
+    expect(signal.phase.value).toBe("armed");
+
+    signal.onPan(release(200));
+    expect(signal.phase.value).toBe("refreshing");
+    expect(onRefresh).toHaveBeenCalledTimes(1);
+    await vi.waitFor(() => expect(signal.phase.value).toBe("idle"));
+  });
+
   it("holds `refreshing` for as long as the caller's own request takes", async () => {
     let finish = () => {};
     const onRefresh = vi.fn(

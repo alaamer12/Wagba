@@ -9,12 +9,17 @@ import { usePullRefresh } from "./usePullRefresh";
 // The gesture is the framework's `v-touch-pan` — the same primitive `QPullToRefresh` is built
 // from — because it already owns the parts that are easy to get wrong: touch *and* mouse, the
 // direction lock, the `grabbing` cursor, the selection held off for the length of the drag, and
-// the click swallowed after a pull so a drag never opens a meal. What the widget does not own is
-// the indicator: its `pullIcon` is not a slot in 2.35, and its armed phase is a private ref with
-// no class and no event, so the one thing defect C3 asks for — an armed state a person can see
-// and a test can name — is not observable through it. The three phases are therefore drawn here,
-// and what a refresh *means* is left to the View that owns the read: `onRefresh` is awaited,
-// which is the only thing that makes `refreshing` true rather than decorative.
+// the click swallowed after a pull so a drag never opens a meal. The widget around it was
+// considered and declined (`decisions.md`, "QPullToRefresh was not adopted"): in 2.35 its
+// `state`, `pulling` and `pullRatio` refs are private, it emits `refresh` only *after* the
+// release, and its puller is a fixed-position overlay outside the list's flow with one default
+// slot and no icon slot. So `pulling` and `armed` have neither a class nor an event to be read
+// from while the pointer is down — the one thing defect C3 asks for — and the e2e contract
+// (`pulling`/`armed` asserted mid-drag, then `refreshing` after release, on an in-flow
+// `[data-phase]` strip) would have to change. Buying them back would mean a second pointer
+// listener re-deriving the deltas beside Quasar's own gesture. The phases are therefore drawn
+// here, and what a refresh *means* is left to the View that owns the read: `onRefresh` is
+// awaited, which is the only thing that makes `refreshing` true rather than decorative.
 const props = defineProps<{ onRefresh: () => void | Promise<void> }>();
 
 const { t } = useI18n();
