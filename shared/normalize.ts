@@ -73,6 +73,37 @@ export function fold(input: string): string {
   return out;
 }
 
+/** Filler words that carry no location or dish meaning. Folded forms. */
+const STOPWORDS = new Set([
+  "fy",
+  "mn",
+  "ala",
+  "aly",
+  "an",
+  "and",
+  "ma",
+  "w",
+  "aw",
+  "ya",
+  "the",
+  "of",
+  "in",
+  "on",
+  "at",
+]);
+
+/** Query tokens: folded, de-duplicated, stopwords and single letters dropped. */
+export function queryTokens(query: string): string[] {
+  return [
+    ...new Set(
+      searchKey([query])
+        .split(" ")
+        // Single letters are noise; a single digit is a real token («٦ أكتوبر»).
+        .filter((token) => (token.length > 1 || /^[0-9]$/.test(token)) && !STOPWORDS.has(token)),
+    ),
+  ];
+}
+
 export function searchKey(parts: Array<string | null | undefined>): string {
   const tokens = parts
     .filter((p): p is string => typeof p === "string" && p.length > 0)
@@ -98,13 +129,45 @@ export function distanceKm(a: LatLng, b: LatLng): number {
   return 2 * R * Math.asin(Math.sqrt(Math.min(1, h)));
 }
 
-export function boundingBox(center: LatLng, radiusKm: number) {
-  const dLat = radiusKm / 111.19;
-  const dLng = radiusKm / (111.32 * Math.cos((center.lat * Math.PI) / 180));
-  return {
-    minLat: center.lat - dLat,
-    maxLat: center.lat + dLat,
-    minLng: center.lng - dLng,
-    maxLng: center.lng + dLng,
-  };
+export const MIN_RADIUS_KM = 0.1;
+export const MAX_RADIUS_KM = 50;
+const MIN_COS = 0.01;
+
+export type BoundingBox = {
+  minLat: number;
+  maxLat: number;
+  /** When `wraps` is true the box is `>= minLng || <= maxLng` across ±180. */
+  minLng: number;
+  maxLng: number;
+  wraps: boolean;
+};
+
+function wrapLng(lng: number): number {
+  return ((((lng + 180) % 360) + 360) % 360) - 180;
+}
+
+/**
+ * A latitude/longitude box that always contains the radius circle. The guards:
+ * radius clamped to [MIN, MAX], latitude clamped, cos(lat) floored so a polar
+ * centre does not divide by zero, and a box crossing ±180 reported as two ranges
+ * instead of a negative-width one.
+ */
+export function boundingBox(center: LatLng, radiusKm: number): BoundingBox {
+  const radius = Math.min(Math.max(radiusKm, MIN_RADIUS_KM), MAX_RADIUS_KM);
+  const lat = Math.max(-90, Math.min(90, center.lat));
+  const lng = wrapLng(center.lng);
+  const dLat = radius / 111.19;
+  const cos = Math.max(Math.cos((lat * Math.PI) / 180), MIN_COS);
+  const dLng = Math.min(180, radius / (111.32 * cos));
+
+  const minLat = Math.max(-90, lat - dLat);
+  const maxLat = Math.min(90, lat + dLat);
+
+  if (dLng >= 180) return { minLat, maxLat, minLng: -180, maxLng: 180, wraps: false };
+
+  const rawMin = lng - dLng;
+  const rawMax = lng + dLng;
+  if (rawMin < -180) return { minLat, maxLat, minLng: rawMin + 360, maxLng: rawMax, wraps: true };
+  if (rawMax > 180) return { minLat, maxLat, minLng: rawMin, maxLng: rawMax - 360, wraps: true };
+  return { minLat, maxLat, minLng: rawMin, maxLng: rawMax, wraps: false };
 }

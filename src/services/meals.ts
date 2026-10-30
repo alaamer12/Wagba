@@ -1,4 +1,10 @@
-import { boundingBox, type LatLng, searchKey } from "../../shared/normalize";
+import {
+  boundingBox,
+  type LatLng,
+  MAX_RADIUS_KM,
+  MIN_RADIUS_KM,
+  queryTokens,
+} from "../../shared/normalize";
 import { AppError, toAppError } from "../types/errors";
 import { type Meal, MealSchema, MealsPageSchema } from "../types/schemas";
 import { fileUrl, pb } from "./pb";
@@ -11,13 +17,16 @@ function quote(value: string): string {
 }
 
 function boxFilter(center: LatLng, radiusKm: number): string {
-  const bb = boundingBox(center, radiusKm);
+  const radius = Math.min(Math.max(radiusKm, MIN_RADIUS_KM), MAX_RADIUS_KM);
+  const bb = boundingBox(center, radius);
+  const lng = bb.wraps
+    ? `(longitude >= ${bb.minLng.toFixed(5)} || longitude <= ${bb.maxLng.toFixed(5)})`
+    : `longitude >= ${bb.minLng.toFixed(5)} && longitude <= ${bb.maxLng.toFixed(5)}`;
   return [
     `latitude >= ${bb.minLat.toFixed(5)}`,
     `latitude <= ${bb.maxLat.toFixed(5)}`,
-    `longitude >= ${bb.minLng.toFixed(5)}`,
-    `longitude <= ${bb.maxLng.toFixed(5)}`,
-    `geoDistance(longitude, latitude, ${center.lng}, ${center.lat}) <= ${radiusKm}`,
+    lng,
+    `geoDistance(longitude, latitude, ${center.lng}, ${center.lat}) <= ${radius}`,
   ].join(" && ");
 }
 
@@ -46,7 +55,7 @@ export async function searchMeals(
   center: LatLng | null,
   radiusKm = 10,
 ): Promise<Meal[]> {
-  const tokens = searchKey([query]).split(" ").filter(Boolean);
+  const tokens = queryTokens(query);
   if (tokens.length === 0) return [];
   const tokenFilter = tokens.map((t) => `search_key ~ "${quote(t)}"`).join(" && ");
   const geo = center ? ` && ${boxFilter(center, radiusKm)}` : "";
@@ -129,6 +138,50 @@ export async function publishMeal(input: NewMeal): Promise<Meal> {
     return MealSchema.parse(record);
   } catch (err) {
     throw toAppError(err);
+  }
+}
+
+/**
+ * Edit a meal. Photos are positional: a string keeps an existing file (this is
+ * how PocketBase keeps and reorders stored files), a File appends a new upload.
+ * Anything omitted from the list is removed.
+ */
+export async function updateMeal(
+  id: string,
+  input: Omit<NewMeal, "photos"> & { photos?: Array<string | File> },
+): Promise<Meal> {
+  const photos = input.photos ?? [];
+  if (photos.length > 5) throw toAppError(new Error("too many"));
+  const form = new FormData();
+  form.set("title", input.title);
+  form.set("description", input.description ?? "");
+  if (input.price != null) form.set("price", String(input.price));
+  if (input.quantity != null) form.set("quantity", String(input.quantity));
+  if (input.delivery) form.set("delivery_option", input.delivery);
+  form.set("available_time", input.availableTime ?? "");
+  form.set("location_text", input.locationText);
+  form.set("latitude", String(input.location.lat));
+  form.set("longitude", String(input.location.lng));
+  for (const photo of photos) form.append("photos", photo);
+  try {
+    const record = await pb.collection("meals").update(id, form);
+    return MealSchema.parse(record);
+  } catch (err) {
+    throw toAppError(err);
+  }
+}
+
+/** True when a newer available meal exists inside the radius than `since`. */
+export async function hasNewer(center: LatLng, since: string, radiusKm = 10): Promise<boolean> {
+  try {
+    const res = await pb.collection("meals").getList(1, 1, {
+      filter: `status = 'available' && created > "${quote(since)}" && ${boxFilter(center, radiusKm)}`,
+      fields: "id",
+      skipTotal: true,
+    });
+    return res.items.length > 0;
+  } catch {
+    return false;
   }
 }
 

@@ -60,8 +60,11 @@ migrate((app) => {
       { name: 'delivery_option', type: 'select', maxSelect: 1, values: ['pickup', 'delivery'] },
       { name: 'available_time', type: 'text', max: 60 },
       { name: 'location_text', type: 'text', required: true, max: 120 },
-      { name: 'latitude', type: 'number', required: true, min: -90, max: 90 },
-      { name: 'longitude', type: 'number', required: true, min: -180, max: 180 },
+      // Not `required`: PocketBase's required check rejects 0, which is a real
+      // coordinate on the equator and the prime meridian. The create hook refuses
+      // a payload without them instead.
+      { name: 'latitude', type: 'number', min: -90, max: 90 },
+      { name: 'longitude', type: 'number', min: -180, max: 180 },
       { name: 'search_key', type: 'text', required: true, max: 400 },
       { name: 'distance_km', type: 'number' },
       { name: 'cook', type: 'json', maxSize: 2000 },

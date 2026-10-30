@@ -41,7 +41,7 @@ There is no Order, Review, Message, or Notification entity in the MVP. See [../p
 | delivery | no | `pickup` or `delivery` |
 | availableTime | no | free text |
 | locationText | yes | 120 chars max, typed by the cook |
-| location | yes | coordinate pair, captured from GPS; never published |
+| location | yes, from the client | coordinate pair, captured from GPS; never published. Row-optional in storage because PocketBase rejects `0`, which is a real coordinate |
 
 \* A published meal is expected to carry at least one photo. The rule is a product expectation, not yet an engine constraint.
 

@@ -13,9 +13,15 @@ onRecordCreateRequest((e) => {
   // evaluates it against the submitted record, so the hook never rewrites `user`.
   const fold = require(`${__hooks}/lib/normalize.cjs`);
 
+  // Coordinates cannot be schema-required (PocketBase rejects 0 as blank, and 0 is
+  // a real coordinate). The client always sends them for a publish; a record that
+  // omits them lands at (0,0), which no Egypt-centred query reaches.
   let cookName = '';
+  let cookHandle = '';
   try {
-    cookName = e.app.findRecordById('users', e.record.getString('user')).getString('display_name');
+    const cook = e.app.findRecordById('users', e.record.getString('user'));
+    cookName = cook.getString('display_name');
+    cookHandle = cook.getString('handle');
   } catch (err) {}
 
   e.record.set('search_key', fold.searchKey([
@@ -23,6 +29,7 @@ onRecordCreateRequest((e) => {
     e.record.getString('description'),
     e.record.getString('location_text'),
     cookName,
+    cookHandle,
   ]) || 'untitled');
   e.record.set('distance_km', 0);
   e.record.set('cook', {});
@@ -32,8 +39,11 @@ onRecordCreateRequest((e) => {
 onRecordUpdateRequest((e) => {
   const fold = require(`${__hooks}/lib/normalize.cjs`);
   let cookName = '';
+  let cookHandle = '';
   try {
-    cookName = e.app.findRecordById('users', e.record.getString('user')).getString('display_name');
+    const cook = e.app.findRecordById('users', e.record.getString('user'));
+    cookName = cook.getString('display_name');
+    cookHandle = cook.getString('handle');
   } catch (err) {}
 
   e.record.set('search_key', fold.searchKey([
@@ -41,6 +51,7 @@ onRecordUpdateRequest((e) => {
     e.record.getString('description'),
     e.record.getString('location_text'),
     cookName,
+    cookHandle,
   ]) || 'untitled');
   e.record.set('distance_km', 0);
   e.record.set('cook', {});
@@ -62,8 +73,9 @@ onRecordUpdateRequest((e) => {
 onRecordUpdateRequest((e) => {
   const fold = require(`${__hooks}/lib/normalize.cjs`);
   const name = e.record.getString('display_name');
+  const handle = e.record.getString('handle');
   e.next();
-  if (!name) return;
+  if (!name && !handle) return;
   const meals = e.app.findRecordsByFilter('meals', 'user = {:u}', '', 0, 0, { u: e.record.id });
   for (const meal of meals) {
     meal.set('search_key', fold.searchKey([
@@ -71,6 +83,7 @@ onRecordUpdateRequest((e) => {
       meal.getString('description'),
       meal.getString('location_text'),
       name,
+      handle,
     ]) || 'untitled');
     e.app.save(meal);
   }

@@ -103,6 +103,13 @@ export type ProfileInput = {
  */
 export async function saveProfile(input: ProfileInput): Promise<Profile> {
   const slug = validateDisplayName(input.displayName);
+  // The user may edit the base; the numeric suffix stays mandatory, so the base
+  // is the only part the form can change.
+  const edited = (input.handle ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+  const baseSlug = edited.length >= 3 ? edited.slice(0, 20) : slug;
   const model = pb.authStore.model;
   if (!model) throw new AppError("VALIDATION", { reason: "no-session" });
 
@@ -131,7 +138,7 @@ export async function saveProfile(input: ProfileInput): Promise<Profile> {
 
   for (const width of [3, 4, 5]) {
     for (let attempt = 0; attempt < 4; attempt++) {
-      const handle = input.handle && attempt === 0 ? input.handle : candidate(slug, width);
+      const handle = candidate(baseSlug, width);
       try {
         const record = await pb.collection("users").update(model.id, build(handle));
         return ProfileSchema.parse(record);

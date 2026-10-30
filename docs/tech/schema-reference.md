@@ -67,8 +67,8 @@ PocketBase creates this collection; `0001_schema.js` extends it rather than defi
 | `delivery_option` | select | values `pickup \| delivery` | `Meal.delivery` |
 | `available_time` | text | max 60, free text for MVP | `Meal.availableTime` |
 | `location_text` | text | Required, max 120, typed by the cook | `Meal.locationText` |
-| `latitude` | number | Required, −90…90. **Zeroed on every response** | `Meal.location` |
-| `longitude` | number | Required, −180…180. **Zeroed on every response** | `Meal.location` |
+| `latitude` | number | −90…90. **Not `required`**: PocketBase rejects 0 in a required number field and 0 is a real coordinate; the client always sends it. Zeroed on every response | `Meal.location` |
+| `longitude` | number | −180…180, same zero/required caveat as latitude. Zeroed on every response | `Meal.location` |
 | `search_key` | text | Required, max 400, **denormalized** | — (derived) |
 | `distance_km` | number | **Response-only**: written by enrich, cleared on write | — (derived) |
 | `cook` | json | **Response-only**: public subset, written by enrich | — (derived) |
@@ -120,7 +120,7 @@ Every copy needs a named writer, a rebuild rule, and a home here — not in the 
 
 | Copy | Writer | Rebuild | Why sanctioned |
 |---|---|---|---|
-| `meals.search_key` | `onRecordCreateRequest` + `onRecordUpdateRequest` (meals); `onRecordUpdateRequest` (users, on rename) | Drop and recompute from `title + description + location_text + cook.display_name` | PocketBase cannot filter across a relation, and SQLite `LIKE` folds ASCII only — the Arabic fold must be pre-applied |
+| `meals.search_key` | `onRecordCreateRequest` + `onRecordUpdateRequest` (meals); `onRecordUpdateRequest` (users, on rename) | Drop and recompute from `title + description + location_text + cook.display_name + cook.handle` | PocketBase cannot filter across a relation, and SQLite `LIKE` folds ASCII only — the Arabic fold must be pre-applied. The handle is in the key so a username search works |
 | `meals.cook` (json, response-only) | `onRecordEnrich` | Recomputed per request; never saved | `users` is owner-readable only, but buyers need name/handle/whatsapp/location/socials |
 | `meals.distance_km` (number, response-only) | `onRecordEnrich`, from the request's `lat`/`lng` | Recomputed per request; never saved | Ordering and labels are view data, not facts |
 
@@ -137,13 +137,14 @@ The five reads that earn a written form. Each is executed exactly this way in `s
 ```
 filter = status='available'
       && latitude >= {lat - 10/111.19} && latitude <= {lat + 10/111.19}
-      && longitude >= {lng - 10/(111.32·cos lat)} && longitude <= {lng + …}
+      && longitude >= {lng - 10/(111.32·max(cos lat, 0.01))} && longitude <= {lng + …}
+      -- when the box crosses ±180 it is emitted as (lng >= min || lng <= max)
       && geoDistance(longitude, latitude, {lng}, {lat}) <= 10
 sort=-created, skipTotal=true, perPage=30
 ```
 On the seeded data: **8 rows within 5 km of Cairo Tower**, 11 visible overall.
 
-**Search:** `status='available' && search_key ~ "{fold(query)}"` plus the same bbox. `search_key ~ 'mhshy'` returns «محشي بيتي».
+**Search:** `status='available' && search_key ~ "{token}" && …` — every query token (folded, stopwords and single letters dropped, single digits kept) must match — plus the same bbox. `search_key ~ 'mhshy'` returns «محشي بيتي»; `search_key ~ 'krymfwad907'` returns that cook's meals.
 
 **My meals:** `filter = user = "{own id}"`, both statuses, sorted `-created`. The literal id is used because PocketBase refuses `@request.auth.id` inside a client filter (403, superuser-only); the list rule still scopes what the caller may read.
 
@@ -167,6 +168,7 @@ On the seeded data: **8 rows within 5 km of Cairo Tower**, 11 visible overall.
 | Coordinates must never serialize | every listed meal has `latitude === 0 && longitude === 0` |
 | Unavailable meals are invisible publicly | the anonymous feed returns only `status = 'available'` rows |
 | `search_key` is non-empty on every meal | no empty or `untitled` keys (the sentinel for a broken fold) |
+| A required number field cannot hold `0` | the API contract creates a meal at latitude 0 and finds it across ±180 |
 | The fold matches a typo | `search_key ~ "mhshy"` returns «محشي بيتي» |
 | Users are not listable anonymously | `totalItems === 0` without a token, exactly 1 (self) with one |
 | The create rule owns the owner | a meal posted with another user's id is refused (400) |

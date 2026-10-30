@@ -1,10 +1,10 @@
-import { toAppError } from "../types/errors";
+import { AppError, toAppError } from "../types/errors";
 import { FavoriteSchema } from "../types/schemas";
 import { pb } from "./pb";
 
 export async function listFavoriteIds(): Promise<string[]> {
   const model = pb.authStore.model;
-  if (!model) return [];
+  if (!model) throw new AppError("VALIDATION", { reason: "no-session" });
   try {
     const rows = await pb.collection("favorites").getFullList({
       filter: `user = "${model.id}"`,
@@ -18,7 +18,7 @@ export async function listFavoriteIds(): Promise<string[]> {
 
 export async function addFavorite(mealId: string): Promise<void> {
   const model = pb.authStore.model;
-  if (!model) return;
+  if (!model) throw new AppError("VALIDATION", { reason: "no-session" });
   try {
     await pb.collection("favorites").create({ user: model.id, meal: mealId });
   } catch (err) {
@@ -30,7 +30,7 @@ export async function addFavorite(mealId: string): Promise<void> {
 
 export async function removeFavorite(mealId: string): Promise<void> {
   const model = pb.authStore.model;
-  if (!model) return;
+  if (!model) throw new AppError("VALIDATION", { reason: "no-session" });
   try {
     const rows = await pb.collection("favorites").getFullList({
       filter: `user = "${model.id}" && meal = "${mealId}"`,

@@ -173,6 +173,236 @@ check(
   String(meal.status),
 );
 
+// --- view rules -----------------------------------------------------------------
+const viewSelf = await api(`/api/collections/users/records/${anon.id}`, {}, anon.token);
+const viewAnon = await api(`/api/collections/users/records/${anon.id}`);
+const viewOther = await api(`/api/collections/users/records/${anon.id}`, {}, other.token);
+check(
+  "a user record is self-only",
+  viewSelf.status === 200 && viewAnon.status === 404 && viewOther.status === 404,
+  `${viewSelf.status}/${viewAnon.status}/${viewOther.status}`,
+);
+
+// --- favorites ------------------------------------------------------------------
+const noSessionFavorite = await api("/api/collections/favorites/records", {
+  method: "POST",
+  body: JSON.stringify({ user: anon.id, meal: mealId }),
+});
+check(
+  "favorites need a session",
+  noSessionFavorite.status >= 400,
+  String(noSessionFavorite.status),
+);
+
+const fav = await api(
+  "/api/collections/favorites/records",
+  { method: "POST", body: JSON.stringify({ user: anon.id, meal: mealId }) },
+  anon.token,
+);
+const favId = String(fav.body.id ?? "");
+const favDupe = await api(
+  "/api/collections/favorites/records",
+  { method: "POST", body: JSON.stringify({ user: anon.id, meal: mealId }) },
+  anon.token,
+);
+const favList = await api("/api/collections/favorites/records", {}, anon.token);
+check(
+  "favorites are unique per (user, meal)",
+  fav.status === 200 && favDupe.status === 400 && favList.body.totalItems === 1,
+  `${fav.status}/${favDupe.status}/${favList.body.totalItems}`,
+);
+const favDelete = await api(
+  `/api/collections/favorites/records/${favId}`,
+  { method: "DELETE" },
+  anon.token,
+);
+const favDeleteAgain = await api(
+  `/api/collections/favorites/records/${favId}`,
+  { method: "DELETE" },
+  anon.token,
+);
+check(
+  "favorite delete is owner-only and idempotent-looking",
+  favDelete.status === 204 && favDeleteAgain.status === 404,
+  `${favDelete.status}/${favDeleteAgain.status}`,
+);
+
+// --- unavailable visibility -----------------------------------------------------
+const hiddenMeal = await api(
+  "/api/collections/meals/records",
+  { method: "POST", body: JSON.stringify({ ...draft, user: anon.id, status: "unavailable" }) },
+  anon.token,
+);
+const hiddenId = String(hiddenMeal.body.id ?? "");
+const hiddenAnonList = await api(
+  `/api/collections/meals/records?filter=${encodeURIComponent(`id = "${hiddenId}"`)}`,
+  {},
+  anon.token,
+);
+const hiddenAnonView = await api(`/api/collections/meals/records/${hiddenId}`);
+const hiddenOtherView = await api(`/api/collections/meals/records/${hiddenId}`, {}, other.token);
+const hiddenOwnerView = await api(`/api/collections/meals/records/${hiddenId}`, {}, anon.token);
+const hiddenAnonOnly = await api(
+  `/api/collections/meals/records?filter=${encodeURIComponent(`id = "${hiddenId}"`)}`,
+);
+check(
+  "an unavailable meal is invisible to everyone but its owner",
+  hiddenAnonList.body.totalItems === 1 && // the owner's own list keeps it
+    hiddenAnonOnly.body.totalItems === 0 &&
+    hiddenAnonView.status === 404 &&
+    hiddenOtherView.status === 404 &&
+    hiddenOwnerView.status === 200,
+  `${hiddenAnonList.body.totalItems}/${hiddenAnonOnly.body.totalItems}/${hiddenAnonView.status}/${hiddenOtherView.status}/${hiddenOwnerView.status}`,
+);
+await api(`/api/collections/meals/records/${hiddenId}`, { method: "DELETE" }, anon.token);
+
+// --- filter injection and limits ------------------------------------------------
+const injection = await api(
+  `/api/collections/meals/records?filter=${encodeURIComponent('search_key ~ "x" || 1=1')}`,
+  {},
+  anon.token,
+);
+const injectionItems = (injection.body.items as Json[] | undefined) ?? [];
+check(
+  "a filter-injection attempt returns no hidden rows",
+  injection.status === 200 && injectionItems.every((m) => m.status === "available"),
+  String(injection.status),
+);
+
+const longTitle = await api(
+  "/api/collections/meals/records",
+  { method: "POST", body: JSON.stringify({ ...draft, user: anon.id, title: "ط".repeat(81) }) },
+  anon.token,
+);
+check("the title limit is enforced", longTitle.status === 400, String(longTitle.status));
+
+const pngHeader = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]);
+const sixPhotos = new FormData();
+sixPhotos.set("user", anon.id);
+sixPhotos.set("title", "ست صور");
+sixPhotos.set("location_text", "اختبار");
+sixPhotos.set("status", "available");
+sixPhotos.set("latitude", "30.04");
+sixPhotos.set("longitude", "31.24");
+for (let i = 0; i < 6; i += 1) {
+  sixPhotos.append("photos", new Blob([pngHeader], { type: "image/png" }), `p${i}.png`);
+}
+const tooMany = await fetch(`${BASE}/api/collections/meals/records`, {
+  method: "POST",
+  headers: { authorization: anon.token },
+  body: sixPhotos,
+});
+check("a sixth photo is refused", tooMany.status === 400, String(tooMany.status));
+
+const notImage = new FormData();
+notImage.set("user", anon.id);
+notImage.set("title", "ملف مش صورة");
+notImage.set("location_text", "اختبار");
+notImage.set("status", "available");
+notImage.set("latitude", "30.04");
+notImage.set("longitude", "31.24");
+notImage.append("photos", new Blob(["not an image"], { type: "text/plain" }), "notes.txt");
+const badUpload = await fetch(`${BASE}/api/collections/meals/records`, {
+  method: "POST",
+  headers: { authorization: anon.token },
+  body: notImage,
+});
+check("a non-image upload is refused", badUpload.status === 400, String(badUpload.status));
+
+// --- pagination, sorting, totals ------------------------------------------------
+const page1 = await api(
+  "/api/collections/meals/records?perPage=2&page=1&sort=-created&skipTotal=1",
+  {},
+  anon.token,
+);
+const page2 = await api(
+  "/api/collections/meals/records?perPage=2&page=2&sort=-created&skipTotal=1",
+  {},
+  anon.token,
+);
+const firstIds = ((page1.body.items as Json[] | undefined) ?? []).map((m) => m.id);
+const secondIds = ((page2.body.items as Json[] | undefined) ?? []).map((m) => m.id);
+check(
+  "pagination returns distinct pages",
+  firstIds.length === 2 &&
+    secondIds.length === 2 &&
+    firstIds.every((id) => !secondIds.includes(id)),
+  `${firstIds.length}/${secondIds.length}`,
+);
+check(
+  "skipTotal keeps totalItems at -1",
+  page1.body.totalItems === -1,
+  String(page1.body.totalItems),
+);
+
+// --- antimeridian discovery -----------------------------------------------------
+await api(
+  "/api/collections/meals/records",
+  {
+    method: "POST",
+    body: JSON.stringify({
+      ...draft,
+      user: anon.id,
+      title: "شرق الخط",
+      latitude: 0,
+      longitude: 179.99,
+    }),
+  },
+  anon.token,
+);
+await api(
+  "/api/collections/meals/records",
+  {
+    method: "POST",
+    body: JSON.stringify({
+      ...draft,
+      user: anon.id,
+      title: "غرب الخط",
+      latitude: 0,
+      longitude: -179.99,
+    }),
+  },
+  anon.token,
+);
+const wrapFilter = encodeURIComponent(
+  "latitude >= -0.1 && latitude <= 0.1 && (longitude >= 179.5 || longitude <= -179.5)",
+);
+const cross = await api(
+  `/api/collections/meals/records?filter=${wrapFilter}&fields=title`,
+  {},
+  anon.token,
+);
+const crossTitles = ((cross.body.items as Json[] | undefined) ?? []).map((m) => String(m.title));
+check(
+  "a box across ±180 finds meals on both sides",
+  crossTitles.includes("شرق الخط") && crossTitles.includes("غرب الخط"),
+  crossTitles.join(", "),
+);
+
+// --- rename keeps the key complete ---------------------------------------------
+await api(
+  `/api/collections/users/records/${anon.id}`,
+  { method: "PATCH", body: JSON.stringify({ display_name: "سلمى" }) },
+  anon.token,
+);
+const byName = await api(
+  `/api/collections/meals/records?filter=${encodeURIComponent('search_key ~ "slmy"')}&fields=title`,
+  {},
+  anon.token,
+);
+const byHandle = await api(
+  `/api/collections/meals/records?filter=${encodeURIComponent(`search_key ~ "${handleA}"`)}&fields=title`,
+  {},
+  anon.token,
+);
+const byNameCount = ((byName.body.items as Json[] | undefined) ?? []).length;
+const byHandleCount = ((byHandle.body.items as Json[] | undefined) ?? []).length;
+check(
+  "renaming the cook rebuilds the key with the new name and the handle",
+  byNameCount > 0 && byHandleCount > 0,
+  `${byNameCount}/${byHandleCount}`,
+);
+
 await api(`/api/collections/users/records/${anon.id}`, { method: "DELETE" }, anon.token);
 const gone = await api(`/api/collections/meals/records/${mealId}`, {}, other.token);
 check("deleting the account cascades to its meals", gone.status === 404, String(gone.status));
