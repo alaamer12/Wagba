@@ -69,6 +69,13 @@ import NavTab from "./_NavTab.vue";
 </script>
 <template><nav><_NavTab label="x" /></nav></template>
 `,
+  // A fact that lives inside its feature folder is still a fact.
+  "pages/BetaPage.vue": `<script setup lang="ts">
+import { useFreshnessState } from "../features/feed/behaviour/useFreshnessState";
+const freshness = useFreshnessState();
+</script>
+<template><div>{{ freshness.hasNew }}</div></template>
+`,
   // Controls: correct shapes that no rule may touch.
   "features/feed/views/FeedPanelView/FeedPanelView.vue": `<script setup lang="ts">
 import { computed } from "vue";
@@ -142,6 +149,7 @@ describe("states-check rules", () => {
     ["features/feed/views/FeedLoadingState.vue", ["FACT_SUFFIX_RENDERS"]],
     ["components/base/AppThing.vue", ["PB_IMPORT_OUTSIDE_SERVICES"]],
     ["components/present/BadShell.vue", ["TAG_UNPARSABLE"]],
+    ["pages/BetaPage.vue", ["PAGE_READS_FACT"]],
   ])("%s is flagged by %j", (file, expected) => {
     expect(rulesFor(file)).toEqual(expected);
   });
@@ -160,7 +168,7 @@ describe("states-check rules", () => {
 
   it("reports nothing outside the fixture that has no rule name", () => {
     expect(findings.every((f) => /^[A-Z_]+$/.test(f.rule))).toBe(true);
-    expect(findings.length).toBe(11);
+    expect(findings.length).toBe(12);
   });
 });
 

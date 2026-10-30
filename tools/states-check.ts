@@ -42,6 +42,23 @@ const importsFrom = (source: string, ...needles: string[]): string[] => {
 
 const renders = (source: string) => /<template[\s>]/.test(source);
 
+// A fact source is also recognisable by the name it ends with, wherever the file lives — a
+// State that moves into its own feature folder must not become invisible to the audit simply
+// by changing path.
+const factByName = (source: string): string[] => {
+  const hits: string[] = [];
+  for (const m of source.matchAll(/(?:^|\n)\s*(?:import|export)[^\n]*?from\s*["']([^"']+)["']/g)) {
+    const base = (m[1] ?? "").split("/").pop() ?? "";
+    if (/(?:State|Condition)$/.test(base)) {
+      hits.push(`${m[1]}:${source.slice(0, m.index).split("\n").length}`);
+    }
+  }
+  return hits;
+};
+
+// One import is one finding, whichever half recognised it.
+const dedupe = (hits: string[]) => [...new Map(hits.map((h) => [h.split(":").pop(), h])).values()];
+
 // Optional chaining is legitimate on a possibly-absent global, so both call shapes count.
 const effects = (source: string) => {
   const add = [...source.matchAll(/\.addEventListener(?:\?\.)?\(\s*["'`]?([A-Za-z]+)/g)].map(
@@ -75,7 +92,7 @@ export function collectFindings(root: string, displayBase = dirname(root)): Find
       push("FACT_SUFFIX_RENDERS", path, `${base} renders markup under a fact name`);
     }
 
-    const factImports = importsFrom(source, ...FACT_PATHS);
+    const factImports = dedupe([...importsFrom(source, ...FACT_PATHS), ...factByName(source)]);
     const isPage = under(path, "pages/");
     const isRendition = /Rendition\.vue$/.test(base) || under(path, "/renditions/");
     const isPresentation =
