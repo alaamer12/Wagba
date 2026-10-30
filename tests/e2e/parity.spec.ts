@@ -17,7 +17,10 @@ test("capture home empty state", async ({ page }, info) => {
 
 test("capture my meals empty state", async ({ page }, info) => {
   await page.goto("/#/mine");
-  await expect(page.locator("[data-kind], .empty")).toBeVisible({ timeout: 30_000 });
+  // Strict mode would refuse this either way: the region stamps `data-kind` and the notice
+  // inside it carries `.empty`, so the selector resolves to both. What matters is that one of
+  // them is on screen before the shutter opens.
+  await expect(page.locator("[data-kind], .empty").first()).toBeVisible({ timeout: 30_000 });
   await expect(page.locator(".empty__title")).toBeVisible({ timeout: 30_000 });
   await page.waitForFunction(() => {
     const img = document.querySelector(".empty__art") as HTMLImageElement | null;
