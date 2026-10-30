@@ -99,3 +99,4 @@ Two traps: both `adb reverse` mappings must be re-created after **every** reconn
 | `pb_data` locked on reset | a serving process holds it | `bun tools/pb.mjs stop`, then reset |
 | Port 8090 already in use | a previous run survived | `netstat -ano | grep 8090`, kill the pid |
 | Playwright cannot launch | `channel: 'chrome'` with no Chrome installed | install Chrome, or switch to bundled Chromium |
+| `bun install` → `failed to link @quasar/app-vite: EPERM` | a real-time antivirus scanner holds files while bun links them; a running `bun dev` holds the same package | stop `bun dev`, exclude the project and `C:\Users\<you>\.bun\install\cache` from the scanner, retry. Ruled out here: permissions, long paths, cross-volume hardlinks (a clean install succeeds with the scanner off and fails with it on) |

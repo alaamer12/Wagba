@@ -21,6 +21,8 @@ Wagba is an Egyptian app for finding homemade meals cooked near you, then messag
 | Android | `JAVA_HOME` = JDK 22, `ANDROID_HOME` = `D:\Android` (platform 36, build-tools 36). Gradle provisions its own **JDK 21 toolchain** via the Foojay resolver; compileSdk 36, minSdk 24 |
 | Browser | system Chrome; Playwright uses `channel: 'chrome'` |
 
+`bun install` failing with `failed to link @quasar/app-vite: EPERM` is a file lock, not a dependency problem: a running `bun dev` or a real-time antivirus scanner is holding the package. Stop the dev server, exclude the project and the bun cache from the scanner, retry — see [dev-loop.md troubleshooting](docs/tech/dev-loop.md#8-troubleshooting).
+
 ## Commands
 
 ```bash
