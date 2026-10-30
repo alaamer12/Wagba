@@ -5,21 +5,18 @@
 // Its own file because `cronAdd` parses the expression at registration and a malformed one aborts
 // the *whole* hooks bundle: a mechanism that can take the app down with it stays where it can only
 // take itself down. Measured in the M0 probe.
-
-const CAIRO_OFFSET_MS = 2 * 60 * 60 * 1000;
-
-// A calendar day, not a timestamp: the claim "at most one view per account per meal per day" is a
-// statement about the date, so the date is what the unique index enforces. Fixed to UTC+2 rather
-// than a real Africa/Cairo conversion because the JS VM carries no zone database — the boundary
-// moves by an hour twice a year when Egypt shifts, and no claim in the product depends on which
-// side of midnight a glance landed.
-function dayKey(offsetMs) {
-  return new DateTime(new Date().getTime() + (offsetMs === undefined ? CAIRO_OFFSET_MS : offsetMs))
-    .toString()
-    .slice(0, 10);
-}
+//
+// Each handler below defines its own day key. Goja does not give handlers the file scope (measured:
+// a top-level function is `undefined` at call time), so shared helpers must be required or
+// redeclared *inside* the handler — the rule is written down in AGENTS.md.
 
 onRecordCreateRequest((e) => {
+  // A calendar day, not a timestamp: "at most one view per account per meal per day" is a
+  // statement about the date, so the date is what the unique index enforces. Fixed to UTC+2
+  // rather than a real Africa/Cairo conversion because the JS VM carries no zone database.
+  const dayKey = () =>
+    new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
   // The client sends its own id because a create rule is evaluated against the *submitted*
   // record before hooks run — a hook cannot stamp what the rule has already had to accept.
   e.record.set('viewed_on', dayKey());
@@ -34,15 +31,26 @@ onRecordCreateRequest((e) => {
   e.next();
 }, 'meal_views');
 
-onRecordAfterCreateSuccessRequest((e) => {
+onRecordAfterCreateSuccess((e) => {
   // Reached only when the insert succeeded, which the unique index makes equivalent to "this
   // viewer has not counted this meal today". No double count, and no per-read increment.
-  const meal = e.app.findRecordById('meals', e.record.getString('meal'));
-  meal.set('views', meal.getInt('views') + 1);
-  e.app.save(meal);
+  try {
+    const meal = e.app.findRecordById('meals', e.record.getString('meal'));
+    meal.set('views', meal.getInt('views') + 1);
+    e.app.save(meal);
+  } catch (err) {
+    // The count is a ranking signal, not a promise to the person who opened the meal: a failure
+    // here must not turn a successful view into an error response.
+    console.log('views: increment failed', String(err));
+  }
 }, 'meal_views');
 
 cronAdd('views: seven-day recount', '0 * * * *', (e) => {
+  const dayKey = (offsetMs) =>
+    new Date(Date.now() + (offsetMs === undefined ? 2 * 60 * 60 * 1000 : offsetMs))
+      .toISOString()
+      .slice(0, 10);
+
   const windowStart = dayKey(-7 * 24 * 60 * 60 * 1000);
   const counts = new Map();
   const rows = e.app.findRecordsByFilter('meal_views', 'viewed_on >= {:since}', '', 0, 0, {

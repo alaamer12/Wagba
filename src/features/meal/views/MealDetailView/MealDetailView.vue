@@ -6,6 +6,7 @@ import AppBar from "../../../../app/_AppBar.vue";
 import { useWhatsApp } from "../../../../composables/useWhatsApp";
 import { type Kind, resolveRegion } from "../../../../lib/region";
 import { photoUrl } from "../../../../services/meals";
+import { recordView } from "../../../../services/views";
 import { useForcedRegionCondition } from "../../../../shared/conditions/useForcedRegionCondition";
 import {
   onReconnect,
@@ -77,6 +78,17 @@ onMounted(async () => {
   // A journal that cannot be read is a background failure: the meal still opens, and the
   // toggle the user actually presses reports its own error.
   await favorites.ensureLoaded().catch(() => {});
+
+  // Virality is counted once per viewer per day, and the write must never delay or fail the
+  // screen: offline means the device already knows it cannot ask, and a refusal changes nothing
+  // a person sees. Session provisioning may still be in flight on a first visit, so it is awaited
+  // inside the background task rather than before the meal renders.
+  if (online.value) {
+    void (async () => {
+      await session.ensureReady().catch(() => {});
+      await recordView(String(route.params.id)).catch(() => {});
+    })();
+  }
 });
 
 // Offline is named and answered by itself: when the connection comes back the read the network

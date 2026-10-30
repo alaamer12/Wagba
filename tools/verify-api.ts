@@ -441,6 +441,58 @@ check(
   crossTitles.join(", "),
 );
 
+// --- meal views: counted once, write-only --------------------------------------
+// The journal has no rules, so the only way to prove its shape is to try it: a member can write,
+// the unique index refuses the second write of the day, a cook cannot count their own meal, and no
+// client can read the journal back.
+const viewsBefore = await api(`/api/collections/meals/records/${mealId}`, {}, other.token);
+const countBefore = Number(((viewsBefore.body as Json).views as number | undefined) ?? 0);
+
+const selfView = await api(
+  "/api/collections/meal_views/records",
+  { method: "POST", body: JSON.stringify({ user: anon.id, meal: mealId }) },
+  anon.token,
+);
+check("a cook cannot count their own meal", selfView.status === 400, String(selfView.status));
+
+const firstView = await api(
+  "/api/collections/meal_views/records",
+  { method: "POST", body: JSON.stringify({ user: other.id, meal: mealId }) },
+  other.token,
+);
+check(
+  "a member can record a view",
+  firstView.status === 200,
+  `${firstView.status} ${JSON.stringify(firstView.body).slice(0, 180)}`,
+);
+
+const secondView = await api(
+  "/api/collections/meal_views/records",
+  { method: "POST", body: JSON.stringify({ user: other.id, meal: mealId }) },
+  other.token,
+);
+check(
+  "the same viewer cannot count twice in a day",
+  secondView.status === 400,
+  String(secondView.status),
+);
+
+const viewsAfter = await api(`/api/collections/meals/records/${mealId}`, {}, other.token);
+const countAfter = Number(((viewsAfter.body as Json).views as number | undefined) ?? 0);
+check(
+  "one accepted view increments the meal's lifetime count once",
+  countAfter === countBefore + 1,
+  `${countBefore} -> ${countAfter}`,
+);
+
+const journalRead = await api("/api/collections/meal_views/records?perPage=5", {}, other.token);
+const journalItems = (journalRead.body.items as Json[] | undefined) ?? [];
+check(
+  "no client can read the views journal",
+  (journalRead.status === 403 || journalRead.status === 200) && journalItems.length === 0,
+  `${journalRead.status}/${journalItems.length}`,
+);
+
 // --- rename keeps the key complete ---------------------------------------------
 await api(
   `/api/collections/users/records/${anon.id}`,
