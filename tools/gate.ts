@@ -29,6 +29,9 @@ function sh(cmd: string, args: string[], log: string, env?: Record<string, strin
 
 const steps = [
   { name: "biome", run: () => sh("bunx", ["biome", "check"], "biome") },
+  // The markup wall: the only place a native control tag or a framework name may appear is
+  // src/ui/base/**. Hard-zero now that the sweep has emptied the debt; text tags stay warnings.
+  { name: "chain", run: () => sh("bun", ["tools/chain-check.ts"], "chain") },
   {
     name: "pvc",
     run: () => sh(".venv/Scripts/python.exe", ["tools/check_pvc.py", "src"], "pvc"),

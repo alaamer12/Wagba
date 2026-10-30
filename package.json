@@ -18,6 +18,7 @@
     "pvc": ".venv/Scripts/python.exe tools/check_pvc.py src",
     "states:check": "bun tools/states-check.ts",
     "chain:check": "bun tools/chain-check.ts",
+    "chain:check": "bun tools/chain-check.ts",
     "gate": "bun tools/gate.ts",
     "gate:full": "bun tools/gate.ts --full",
     "stress": "bun tools/stress.ts",
