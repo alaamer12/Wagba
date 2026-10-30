@@ -66,6 +66,29 @@ Where a state belongs, when it is unclear:
 | One action | a component |
 | A whole section | a page-level view |
 
+## Applicability
+
+Not every kind applies to every screen, and forcing one that does not still renders something —
+which is how Home's `submitting` was photographed as a designed state when it was the fault
+fallback wearing a label (defect C1). The map is data, in
+[`tests/e2e/region-matrix.ts`](../../tests/e2e/region-matrix.ts): each screen classifies each of the
+ten kinds as `case` (it has a display of its own), `fallback` (it has none, and the fault display
+shows under the stamped kind) or `data` (the case is real but needs rows, so a journey proves it).
+
+| Screen | Its own cases | Deliberately fallback | Case proven by a journey |
+|---|---|---|---|
+| Home | loading · blocked · stale · empty · empty-filtered · ready · fault | submitting · rejected · unknown | — |
+| My Meals | loading · stale · empty · empty-filtered · fault | blocked · submitting · rejected · unknown | ready (S2) |
+| Favorites | loading · empty · fault | blocked · stale · empty-filtered · submitting · rejected · unknown | ready (S3) |
+| Meal | loading · empty (the gone case) · fault | blocked · stale · empty-filtered · submitting · rejected · unknown | ready (S1) |
+
+Enforced in two places: `tests/unit/region-matrix.test.ts` checks the table's shape — every screen
+classifies every kind exactly once, `unknown` is never a case, a read-only screen never claims
+`submitting`, and a `data` cell points at a journey that still exists in `stories.spec.ts`;
+`tests/e2e/states.spec.ts` renders it, asserting a `fallback` cell's text **equals** that screen's
+own fault text and a `case` cell's **differs**. Screenshots are captured only for kinds that are
+cases, so an undesigned state can never be archived as one.
+
 ## Reachability
 
 `?state=<kind>` works in development and under the Playwright harness (`window.__WAGBA_FORCE_STATE`). It is read through `useForcedRegionCondition`, which supplies the **facts** that produce that kind, so `resolveRegion` still decides — the matrix tests the ladder, not the override. `unknown` is the one kind with no fact set, because an unclassified region is by definition one the ladder was handed nothing about; it renders the fault display under `data-kind="unknown"`.
