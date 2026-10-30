@@ -25,6 +25,16 @@
   },
   "overrides": [
     {
+      "includes": ["src/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noProcessEnv": "error"
+          }
+        }
+      }
+    },
+    {
       "includes": ["src/css/**"],
       "linter": {
         "rules": {
