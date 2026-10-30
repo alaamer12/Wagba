@@ -27,7 +27,7 @@ import ReadyRendition from "./ReadyRendition.vue";
 // read the detail State to label the chrome would be a Page reading a fact, which is the rule
 // this pass exists to satisfy. `_AppBar` is sticky, so it sits at the top of the shell's content
 // column exactly where the slot put it.
-const { t, te, locale } = useI18n();
+const { t, locale } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const detail = useMealDetailState();
@@ -60,15 +60,10 @@ const priceLabel = computed(() =>
 const offlineFault = computed(() => kind.value === "fault" && !online.value);
 
 // `error.offline.body` promises "the last results", which is a sentence for a screen that has
-// rows to show and not for this one. The exact pair is used the moment it exists in the catalog,
-// and the closest line we own is the fallback; no key is invented here, because a one-sided key
-// fails the parity test and blocks the run.
-const offlineTitle = computed(() =>
-  te("error.offline.fault.title") ? t("error.offline.fault.title") : t("error.offline.body"),
-);
-const offlineBody = computed(() =>
-  te("error.offline.fault.body") ? t("error.offline.fault.body") : "",
-);
+// rows to show and not for this one. These two keys say what Details can actually promise, and
+// both locales carry them, so there is no fallback to drift out of sync.
+const offlineTitle = computed(() => t("error.offline.fault.title"));
+const offlineBody = computed(() => t("error.offline.fault.body"));
 
 // The View resolves the file URLs so the slider stays presentation-only: building them is a
 // service call, and `PRESENTATION_IMPORTS_SERVICE` exists to keep that on this side of the seam.

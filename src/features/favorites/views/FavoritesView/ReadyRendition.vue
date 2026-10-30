@@ -22,11 +22,11 @@ const { t } = useI18n();
       :loading="removing.includes(meal.id)"
       @click="$emit('remove', meal.id)"
     >
-      {{ t("add.photos.remove") }}
+      {{ t("favorites.remove") }}
     </Button>
     <!-- The refusal is this row's, so it is said under this row and nowhere else: the list keeps
          the meal in it, because the journal still holds it. -->
-    <Banner v-if="refused.includes(meal.id)" tone="warning">{{ t("error.fault.title") }}</Banner>
+    <Banner v-if="refused.includes(meal.id)" tone="warning">{{ t("favorites.remove.refused") }}</Banner>
   </div>
 </template>
 

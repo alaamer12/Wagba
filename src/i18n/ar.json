@@ -85,10 +85,14 @@
   "myMeals.empty.body": "ابدأ الآن بإضافة وجبتك الأولى ومشاركتها مع الآخرين في منطقتك.",
   "favorites.title": "المحفوظة",
   "favorites.empty": "مفيش وجبات محفوظة لسه",
+  "favorites.remove": "إزالة من المحفوظة",
+  "favorites.remove.refused": "مش قدرنا نشيلها — جرّب تاني",
   "error.location.title": "وجبة محتاج موقعك",
   "error.location.body": "من غيره مش هنعرف نوريك الأكل القريب منك. تقدر تفعّله من إعدادات الموبايل",
   "error.location.retry": "جرّب تاني",
   "error.offline.body": "انت مش متصل — دي آخر نتائج",
+  "error.offline.fault.title": "انت مش متصل",
+  "error.offline.fault.body": "الوجبة دي مش هتتحمّل غير لما النت يرجع",
   "error.fault.title": "حصلت مشكلة في التحميل",
   "error.fault.body": "جرّب تاني بعد لحظة",
   "error.publish.body": "الوجبة اتنشرتش. جرّب تاني",
@@ -155,6 +159,7 @@
   "meal.delete.body": "مش هينفع ترجعها تاني.",
   "home.banner.new.action": "شوف الجديد",
   "home.refresh.pull": "اسحب للتحديث",
+  "home.refresh.release": "سيب علشان تحدّث",
   "settings.count": "{n}",
   "add.photos.add": "أضف صورة"
 }

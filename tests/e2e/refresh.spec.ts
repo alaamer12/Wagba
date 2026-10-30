@@ -15,8 +15,12 @@ import { expect, type Locator, type Page, test } from "@playwright/test";
 // server refuses it.
 
 const LABELS = {
-  ar: { save: "احفظ في المحفوظة", remove: "امسح", refused: "حصلت مشكلة في التحميل" },
-  en: { save: "Save it", remove: "Remove", refused: "Something went wrong" },
+  ar: {
+    save: "احفظ في المحفوظة",
+    remove: "إزالة من المحفوظة",
+    refused: "مش قدرنا نشيلها — جرّب تاني",
+  },
+  en: { save: "Save it", remove: "Remove from saved", refused: "Couldn't remove it — try again" },
 } as const;
 
 const labelsFor = (project: string) => (project === "en" ? LABELS.en : LABELS.ar);
@@ -209,4 +213,46 @@ test("a refused remove keeps the row and says so", async ({ page }, info) => {
     timeout: 15_000,
   });
   await expect(page.locator('[data-kind="empty"]')).toHaveCount(0);
+});
+
+// C13: Details caches nothing, so "showing the last results" is a sentence it can never honour.
+// The screen must name offline with its own copy — and the ladder must still call the kind `fault`.
+test("an offline meal page names offline, not the cached-rows sentence", async ({ page }, info) => {
+  const ar = info.project.name !== "en";
+  await page.goto("/#/home");
+  await expect(page.locator('[data-kind="ready"] article').first()).toBeVisible({
+    timeout: 30_000,
+  });
+
+  const id = await page.evaluate(async () => {
+    const res = await fetch(
+      "http://127.0.0.1:8090/api/collections/meals/records?perPage=1&sort=-created",
+    );
+    const json = (await res.json()) as { items?: Array<{ id: string }> };
+    return json.items?.[0]?.id ?? "";
+  });
+  expect(id).not.toBe("");
+
+  // Two things at once, without reloading the document: the data path dies, and the device says
+  // it is offline. `context.setOffline` is wrong here — it also blocks the bundle, so the page
+  // would never boot. A hash change keeps the loaded app and remounts the detail view.
+  await page.route(/\/api\/collections\/meals\/records/, (route) => route.abort());
+  await page.evaluate(() => {
+    Object.defineProperty(navigator, "onLine", { configurable: true, get: () => false });
+    window.dispatchEvent(new Event("offline"));
+  });
+  await page.evaluate((mealId) => {
+    window.location.hash = `#/meal/${mealId}`;
+  }, id);
+
+  await expect(page.locator('[data-kind="fault"]')).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByText(ar ? "انت مش متصل" : "You are offline").first()).toBeVisible();
+  await expect(
+    page.getByText(
+      ar
+        ? "الوجبة دي مش هتتحمّل غير لما النت يرجع"
+        : "This meal can't load until you're back online",
+    ),
+  ).toBeVisible();
+  await expect(page.getByText(ar ? "دي آخر نتائج" : "showing the last results")).toHaveCount(0);
 });

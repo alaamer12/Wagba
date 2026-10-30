@@ -85,10 +85,14 @@
   "myMeals.empty.body": "Start now by adding your first meal and sharing it with people in your area.",
   "favorites.title": "Saved",
   "favorites.empty": "Nothing saved yet",
+  "favorites.remove": "Remove from saved",
+  "favorites.remove.refused": "Couldn't remove it — try again",
   "error.location.title": "Wagba needs your location",
   "error.location.body": "Without it we cannot show you food near you. You can turn it on in your phone settings",
   "error.location.retry": "Try again",
   "error.offline.body": "You are offline — showing the last results",
+  "error.offline.fault.title": "You are offline",
+  "error.offline.fault.body": "This meal can't load until you're back online",
   "error.fault.title": "Something went wrong",
   "error.fault.body": "Try again in a moment",
   "error.publish.body": "The meal was not posted. Try again",
@@ -155,6 +159,7 @@
   "meal.delete.body": "This cannot be undone.",
   "home.banner.new.action": "See what's new",
   "home.refresh.pull": "Pull to refresh",
+  "home.refresh.release": "Release to refresh",
   "settings.count": "{n}",
   "add.photos.add": "Add a photo"
 }
