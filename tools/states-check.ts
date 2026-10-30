@@ -14,7 +14,7 @@ const ROOT = resolve(import.meta.dirname, "..");
 const BASELINE = join(ROOT, "tools", "arch-baseline.json");
 
 const FACT_PATHS = ["stores/", "services/", "shared/state/", "shared/conditions/", "composables/"];
-const UI_ELEMENT_DIRS = ["components/base/", "ui/base/", "ui/adaptive/"];
+const UI_ELEMENT_DIRS = ["ui/base/", "ui/adaptive/"];
 
 export type Finding = { rule: string; file: string; detail: string };
 

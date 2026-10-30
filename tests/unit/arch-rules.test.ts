@@ -12,7 +12,7 @@ const FIXTURE: Record<string, string> = {
   // Violations, one per rule.
   "pages/AlphaPage.vue": `<script setup lang="ts">
 import { useMealsStore } from "../stores/meals";
-import AppButton from "../components/base/AppButton.vue";
+import AppButton from "../ui/base/AppButton.vue";
 const meals = useMealsStore();
 </script>
 <template><div><AppButton />{{ meals.items.length }}</div></template>
@@ -58,7 +58,7 @@ export function useVisibilityProbe() {
   return { visible };
 }
 `,
-  "components/base/AppThing.vue": `<script setup lang="ts">
+  "ui/base/AppThing.vue": `<script setup lang="ts">
 import { ClientResponseError } from "pocketbase";
 const isClientError = (e: unknown) => e instanceof ClientResponseError;
 </script>
@@ -147,7 +147,7 @@ describe("states-check rules", () => {
     ["features/feed/views/MealFeedView/ReadyRendition.vue", ["RENDITION_CONSULTS_FACT"]],
     ["shared/conditions/useNetCondition.ts", ["CONDITION_EXPOSES_SETTER"]],
     ["features/feed/views/FeedLoadingState.vue", ["FACT_SUFFIX_RENDERS"]],
-    ["components/base/AppThing.vue", ["PB_IMPORT_OUTSIDE_SERVICES"]],
+    ["ui/base/AppThing.vue", ["PB_IMPORT_OUTSIDE_SERVICES"]],
     ["components/present/BadShell.vue", ["TAG_UNPARSABLE"]],
     ["pages/BetaPage.vue", ["PAGE_READS_FACT"]],
   ])("%s is flagged by %j", (file, expected) => {
