@@ -6,8 +6,10 @@
 
 | Command | What it runs | Time |
 |---|---|---|
-| `bun run gate` | biome → types → unit → generated → db (reset, superuser, serve, seed) → api → audit → build → serve → e2e ar → e2e en → docs | ~2–3 min |
+| `bun run gate` | biome → pvc → states → types → unit → generated → db (reset, superuser, serve, seed) → api → audit → build → serve → e2e ar → e2e en → docs | ~2–3 min |
 | `bun run gate:full` | the above + `stress` (2 000 meals, 50 readers) before docs | ~5–8 min |
+| `bun run pvc` | the `/pvc` role-tree audit alone (`tools/check_pvc.py src`) | ~1 s |
+| `bun run states:check` | the fact/role ratchet alone; add `-- --bless` to lower a baseline deliberately | <1 s |
 | `bun run stress -- --rows=200 --readers=12` | a quick volume probe | ~10 s |
 | `bun run audit` | the SQLite audit alone | ~1 s |
 
@@ -79,6 +81,19 @@ Dependency-free audit of six screens: accessible names on every visible control,
 
 4× CPU throttle and Fast 3G; Home must reach `ready` within 15 s (measured ≈ 8 s on the dev box). The budget catches hangs, not milliseconds.
 
+### 10. Architecture conformance (`tools/check_pvc.py`, `tools/states-check.ts`)
+
+Two auditors, deliberately orthogonal, because one kind of pattern cannot see the other's defect.
+
+| Audit | Sees | Cannot see |
+|---|---|---|
+| `check_pvc.py` (vendored from the `/pvc` skill) | a markup unit wearing a `…State`/`…Condition` name, a `…Rendition` calling a fact source, a `…View` that consults nothing, imports that skip the `base → adaptive → component` tiers or run upward, tier-locked folders crossed | anything Vue-specific that is not a name or an import path — `useI18n`, prop-fed branching, template-only Quasar auto-imports |
+| `states-check.ts` (this repo) | a Page reading a fact or composing a UI Element, presentation importing a service, a listener or timer with no teardown, a `shared/conditions/` module exporting a setter, a direct `pocketbase` import outside `src/services/` | whether a fact is *semantically* a State or a Condition — that is a `/states` judgement, owned by the fact ledger in [../decisions.md](../decisions.md) until `docs/tech/facts.md` is written — and any assignment seen through an alias or a re-export |
+
+**The ratchet.** `states-check` writes per-rule counts to `tools/arch-baseline.json` when blessed, and otherwise exits non-zero only when a count **grows**. Lowering a number is progress and must be followed by `bun run states:check -- --bless`; raising one is a regression the gate refuses. This exists because a permanently-red audit is switched off within a milestone, and because the first baseline was blessed at 23 findings across 6 rules on 2026-10-30 — the register in [../decisions.md](../decisions.md) says why each one is scheduled away rather than excused.
+
+**Known blind spot at baseline:** `check_pvc.py` reports *no findings* on this tree while the stores are still named `useMealsStore` and `useNetwork`, because its fact-source regex matches `use*State|Condition`. Renaming them (milestone M1) is what makes the auditor able to see this app; a clean report before then proves only that it had nothing to match.
+
 ## Locales
 
 Both projects run every spec. Stories take their labels from `tests/e2e/stories.spec.ts`; smoke and a11y are locale-agnostic; the state matrix captures both directions.
@@ -96,4 +111,5 @@ Fix the cause. Every row in this file names the test that enforces it; if a docu
 | A rule, hook, or field | `verify-api.ts` |
 | A geospatial edge | `geo.test.ts` + the GPS matrix above |
 | A reusable unit | `units.md` row + a unit test |
+| A role or fact-ownership rule | a `states-check.ts` rule (or a `check_pvc.py` finding) + a blessed baseline that names the count |
 | A screen | a11y + both locales |
