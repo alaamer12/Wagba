@@ -53,7 +53,7 @@ Order is the contract: a blocking gate outranks a spinner; cached rows outrank a
 
 A View stamps `data-kind` on the region root and renders exactly one Rendition inside it. Tests and screenshots address state through that attribute instead of guessing from copy.
 
-`components/layout/AppRegion.vue` — one slot per kind, chosen by a `kind` prop the page computed — is the shape the pages that have not been converted still use. It stays until Milestone M2c has a View for each of them, and it is deleted in that change rather than kept as a fallback: a second way to render a region is a second authority over which case a screen is in.
+`components/layout/AppRegion.vue` — one slot per kind, chosen by a `kind` prop the *page* computed — is gone, deleted in the change that removed its last user. It was a second authority over which case a screen showed: the prop let a page declare a kind without running the ladder, which is how two screens came to disagree about the same facts.
 
 ## Placement rule
 
@@ -68,7 +68,7 @@ Where a state belongs, when it is unclear:
 
 ## Reachability
 
-`?state=<kind>` works in development and under the Playwright harness (`window.__WAGBA_FORCE_STATE`). In a View it is read through `useForcedRegionCondition`, which supplies the **facts** that produce that kind, so `resolveRegion` still decides — the matrix tests the ladder, not the override. `unknown` is the one kind with no fact set, because an unclassified region is by definition one the ladder was handed nothing about; it renders the fault display under `data-kind="unknown"`. Pages still on `AppRegion` pass the kind straight through, which is one more reason that file is scheduled to go.
+`?state=<kind>` works in development and under the Playwright harness (`window.__WAGBA_FORCE_STATE`). It is read through `useForcedRegionCondition`, which supplies the **facts** that produce that kind, so `resolveRegion` still decides — the matrix tests the ladder, not the override. `unknown` is the one kind with no fact set, because an unclassified region is by definition one the ladder was handed nothing about; it renders the fault display under `data-kind="unknown"`.
 
 All ten kinds are exercised in both locales by `tests/e2e/states.spec.ts`, which asserts `data-kind`, captures `artifacts/states/<locale>/<kind>.png`, and fails on any page error. Layering and the other proof layers: [verification.md](verification.md).
 

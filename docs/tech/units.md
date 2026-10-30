@@ -56,7 +56,7 @@ profile form came to type into a field that never updated its model.
 | MainNavigationView | View | `app/MainNavigationView.vue` | reads the route Condition, decides which tab is active and where each tab goes | Implemented |
 | NavTab | component | `app/_NavTab.vue` | icon + word + active state; emits `select`, never navigates | Implemented |
 | AddMealAction | component | `app/AddMealAction.vue` | the raised center button; emits `select` | Implemented |
-| Region | layout | `components/layout/AppRegion.vue` | renders exactly one slot from `kind`, stamps `data-kind` | Implemented — replaced by the Views in M2c |
+| Region | layout | `components/layout/AppRegion.vue` | rendered exactly one slot from a `kind` the page had computed | **Absorbed** — deleted with the last page that used it; the Views stamp `data-kind` and pick the rendition (`states.md` §Region model) |
 
 A leading `_` marks a unit that is local to its family (`placement.md` §3). In Vue it has to stay
 on the **file** and leave the **template**: the tokenizer only opens a tag when the name begins

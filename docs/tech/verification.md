@@ -41,7 +41,7 @@ All ten kinds — `ready`, `empty`, `empty-filtered`, `stale`, `fault`, `loading
 
 In a View the override is read through `useForcedRegionCondition`, which supplies the **facts** for that kind and lets `resolveRegion` answer — so the matrix exercises the ladder rather than a bypass. That closes the half of defect F39 that was about the injection itself.
 
-**What this does not prove.** It shows that a case renders, nothing about how it is *reached* by real events: measured against genuine fact combinations, five kinds come from driving facts (`ready`, `empty-filtered`, `stale`, `fault`, `blocked`), four still need the override (`empty`, `loading`, `submitting`, `rejected`), and `submitting`/`rejected` on a read-only screen have no fact producer at all — the View renders its fault fallback behind a `data-kind` the code never chose. Pages still on `AppRegion` take the kind directly, so for them the matrix is only a render check. M3 adds a reachability test per case, marks unreachable kinds `N/A` instead of photographing them, and removes `AppRegion`.
+**What this does not prove.** It shows that a case renders, nothing about how it is *reached* by real events: measured against genuine fact combinations, five kinds come from driving facts (`ready`, `empty-filtered`, `stale`, `fault`, `blocked`), four still need the override (`empty`, `loading`, `submitting`, `rejected`), and `submitting`/`rejected` on a read-only screen have no fact producer at all — the View renders its fault fallback behind a `data-kind` the code never chose. M3 adds a reachability test per case and marks unreachable kinds `N/A` instead of photographing them.
 
 ### 3. Unit matrix (`tests/unit`)
 
