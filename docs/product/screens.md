@@ -22,7 +22,7 @@ Each screen below follows the same shape: **Purpose → Elements → Behavior �
 
 **Elements.**
 - Logo or title
-- Search field with quick suggestion chips
+- Search field with quick suggestion chips — «قريب» plus the areas currently posting, derived from the loaded feed, never a hard-coded list
 - Meal card list, nearest first
 - Bottom navigation
 
@@ -82,7 +82,7 @@ Each screen below follows the same shape: **Purpose → Elements → Behavior �
 7. **Pickup method** — pickup only, or delivery available.
 8. **Location text** — required, free text, exactly what the cook types is what buyers see. It is a label only and never used for matching.
 
-**Actions.** Save/publish. In edit mode: delete, and toggle available/unavailable.
+**Actions.** Save/publish. Delete and the available/unavailable toggle live on My Meals, next to the meal they affect.
 
 **Behavior.**
 - On entry the app captures a GPS fix. Publishing requires one. If permission is denied the form cannot be submitted, with a clear reason and a retry.
@@ -134,18 +134,30 @@ Same fields as Profile Setup with a save-changes action. Reached from Settings.
 **Purpose.** The account and app surface. There is no separate profile tab; everything personal is here.
 
 **Sections.**
-- **Account** — avatar, name, WhatsApp number, location text, social links, edit button.
+- **Account** — when a profile exists: generated or uploaded avatar, name, handle, WhatsApp number, location text, social links, and an edit button. When no profile exists yet: a single call to action that completes the account and lands on Add Meal. There is no empty account card.
 - **Lists** — My Meals with a count, Favorites with a count.
-- **App** — notifications (present but disabled), share app, location info.
-- **About** — about Wagba, terms and privacy, contact us, rate app, version.
+- **App** — language, share app. **No notifications row**: notifications are out of scope, and a switch that does nothing is worse than no switch.
+- **About** — about Wagba, terms and privacy, contact us, rate app (only when a store URL is configured), version.
 
-**States.** The notifications row is a visible placeholder for a deferred feature; it does not toggle and says nothing about being unavailable.
+**States.** Every row navigates or acts. A row whose channel is unconfigured (rate, support) is hidden rather than shown disabled.
 
 ## 10. About
 
 **Purpose.** What Wagba is, in the app's own words, plus legal and contact links.
 
 **Elements.** Logo, tagline, short description, three value rows, links to terms and contact, version.
+
+## 10a. Terms & Privacy
+
+**Purpose.** A truthful summary of what the app stores and what it never exposes — not legal advice.
+
+**Elements.** Intro, then five short sections: what is stored; what is never shown (coordinates, credentials); content ownership; the WhatsApp handoff; the account (no sign-up, no SMS, deleting the app can lose ownership).
+
+## 10b. Contact
+
+**Purpose.** How to reach the people behind the app.
+
+**Elements.** One paragraph separating app support from meal contact (WhatsApp on the meal page), plus a support WhatsApp button when a support number is configured. When it is not configured, the page says so instead of showing a dead button.
 
 ## Navigation
 

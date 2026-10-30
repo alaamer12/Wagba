@@ -36,8 +36,19 @@ export function useWhatsApp() {
       }
     }
 
-    const win = globalThis.open?.(webLink, "_blank", "noopener");
-    return win ? "web" : "missing";
+    // `window.open(url, "_blank", "noopener")` returns null by spec, so using the
+    // feature string makes a successful handoff look like a failure. Open first,
+    // then sever the opener reference.
+    const win = globalThis.open?.(webLink, "_blank");
+    if (win) {
+      try {
+        win.opener = null;
+      } catch {
+        /* cross-origin window: nothing to null */
+      }
+      return "web";
+    }
+    return "missing";
   }
 
   return { open };

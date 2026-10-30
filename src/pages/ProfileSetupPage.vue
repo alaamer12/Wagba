@@ -27,9 +27,11 @@ const error = ref("");
 const saving = ref(false);
 
 const frozenHandle = computed(() => session.profile?.handle ?? "");
-const handlePreview = computed(() =>
-  frozenHandle.value ? frozenHandle.value : slugify(displayName.value) || "…",
-);
+const handleBase = ref("");
+const handlePreview = computed(() => {
+  if (frozenHandle.value) return frozenHandle.value;
+  return (handleBase.value || slugify(displayName.value) || "…").replace(/[^a-z0-9]/g, "");
+});
 const avatarSrc = computed(() => {
   const profile = session.profile;
   return profile?.avatar
@@ -41,14 +43,15 @@ async function save() {
   error.value = "";
   saving.value = true;
   try {
-    await session.save({
+    const payload = {
       displayName: displayName.value,
       whatsapp: whatsapp.value,
       locationText: locationText.value,
       facebook: facebook.value,
       instagram: instagram.value,
       tiktok: tiktok.value,
-    });
+    };
+    await session.save(handleBase.value ? { ...payload, handle: handleBase.value } : payload);
     const from = route.query.from as string | undefined;
     router.replace({ name: from ?? "settings" });
   } catch (err) {
@@ -86,7 +89,16 @@ onMounted(async () => {
       <AppField v-model="displayName" :label="t('profile.name.label')" :placeholder="t('profile.name.placeholder')" required />
       <div class="handle">
         <span class="handle__label">{{ t('profile.handle.label') }}</span>
-        <span class="handle__value" :class="{ 'is-frozen': frozenHandle }">@{{ handlePreview }}</span>
+        <span v-if="frozenHandle" class="handle__value is-frozen">@{{ frozenHandle }}</span>
+        <input
+          v-else
+          v-model="handleBase"
+          class="handle__input"
+          :placeholder="handlePreview"
+          aria-label="handle"
+          autocapitalize="off"
+          spellcheck="false"
+        />
         <span class="handle__hint">{{ frozenHandle ? t('profile.handle.frozen') : t('profile.handle.hint') }}</span>
       </div>
       <AppField v-model="whatsapp" :label="t('profile.whatsapp.label')" :placeholder="t('profile.whatsapp.placeholder')" type="tel" required />
@@ -144,6 +156,20 @@ onMounted(async () => {
 }
 .handle__value.is-frozen {
   color: var(--brown-mid);
+}
+.handle__input {
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-field);
+  padding: 10px 14px;
+  width: 100%;
+}
+.handle__input:focus {
+  outline: 2px solid var(--butter);
 }
 .handle__hint {
   font-size: 12px;

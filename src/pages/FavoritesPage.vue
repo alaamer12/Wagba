@@ -10,16 +10,19 @@ import PageShell from "../components/layout/PageShell.vue";
 import MealCard from "../components/present/MealCard.vue";
 import { getMeal } from "../services/meals";
 import { useFavoritesStore } from "../stores/favorites";
+import { useSessionStore } from "../stores/session";
 import type { Meal } from "../types/schemas";
 
 const { t } = useI18n();
 const router = useRouter();
 const favorites = useFavoritesStore();
+const session = useSessionStore();
 const meals = ref<Meal[]>([]);
 const loading = ref(true);
 
 onMounted(async () => {
   try {
+    await session.ensureReady();
     if (!favorites.loaded) await favorites.load();
     const results = await Promise.allSettled([...favorites.ids].map((id) => getMeal(id)));
     meals.value = results

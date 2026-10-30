@@ -1,0 +1,99 @@
+<script setup lang="ts">
+import { useI18n } from "vue-i18n";
+import { useRouter } from "vue-router";
+import AppCard from "../components/base/AppCard.vue";
+import BrandMark from "../components/base/BrandMark.vue";
+import AppBar from "../components/layout/AppBar.vue";
+import PageShell from "../components/layout/PageShell.vue";
+
+const { t } = useI18n();
+const router = useRouter();
+const version = "0.1.0";
+
+const points = [
+  { title: "about.point.home.title", body: "about.point.home.body" },
+  { title: "about.point.near.title", body: "about.point.near.body" },
+  { title: "about.point.direct.title", body: "about.point.direct.body" },
+];
+</script>
+
+<template>
+  <PageShell :with-bar="false">
+    <template #bar>
+      <AppBar :title="t('about.title')" back />
+    </template>
+
+    <div class="intro">
+      <BrandMark :size="40" />
+      <p class="intro__tagline">{{ t('welcome.tagline') }}</p>
+      <p class="intro__body">{{ t('about.body') }}</p>
+    </div>
+
+    <AppCard v-for="point in points" :key="point.title">
+      <h3 class="point__title">{{ t(point.title) }}</h3>
+      <p class="point__body">{{ t(point.body) }}</p>
+    </AppCard>
+
+    <div class="links">
+      <button type="button" class="link" @click="router.push({ name: 'terms' })">{{ t('settings.terms') }}</button>
+      <span aria-hidden="true">·</span>
+      <button type="button" class="link" @click="router.push({ name: 'contact' })">{{ t('settings.contact') }}</button>
+    </div>
+
+    <p class="version">{{ t('settings.version', { v: version }) }}</p>
+  </PageShell>
+</template>
+
+<style scoped>
+.intro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  text-align: center;
+  padding: var(--space-4) 0;
+}
+.intro__tagline {
+  margin: 0;
+  font-weight: 700;
+}
+.intro__body {
+  margin: 0;
+  color: var(--brown-mid);
+  font-size: 14px;
+  line-height: 1.8;
+  max-width: 34ch;
+}
+.point__title {
+  margin: 0 0 4px;
+  font-size: 16px;
+  font-weight: 800;
+}
+.point__body {
+  margin: 0;
+  color: var(--brown-mid);
+  font-size: 14px;
+}
+.links {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-2);
+  color: var(--brown-mid);
+}
+.link {
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--brown-mid);
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 4px;
+}
+.version {
+  margin: 0;
+  text-align: center;
+  font-size: 12px;
+  color: var(--brown-mid);
+}
+</style>

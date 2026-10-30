@@ -216,3 +216,34 @@ No mockup or spec source; drafted here because the flows require them.
 1. **English is unreviewed.** Every `en` cell is a first draft for a native reviewer, not approved copy.
 2. **Dialect.** Deferred. The `msa` column is recorded as a candidate variant, and `dialect` stores `ar` until `eg` exists. See [../decisions.md](../decisions.md#dialect-is-a-reserved-dimension).
 3. **Mockup transcriptions.** Rows sourced from `mockups/*.png` were read off images and may carry small errors, including at least one typo in the original («أبدأ» where the imperative is «ابدأ»).
+
+## Settings, legal, and shared
+
+| Key                                | ar                                | en (draft)                          |
+| ---------------------------------- | --------------------------------- | ----------------------------------- |
+| `settings.account.incomplete.title` | خلّص حسابك الأول                  | Finish your account first           |
+| `settings.account.incomplete.body`  | بعد ما تحط اسمك ورقمك تقدر تنشر أول وجبة وتستقبل رسايل | Add your name and number to post your first meal and get messages |
+| `settings.account.incomplete.cta`   | أضف أول وجبة                      | Add your first meal                 |
+| `settings.edit`                    | تعديل البيانات                    | Edit details                        |
+| `settings.share.done`              | اتنسخ اللينك                      | Link copied                         |
+| `settings.count`                   | {n}                               | {n}                                 |
+| `about.title`                      | عن وجبة                           | About Wagba                         |
+| `about.body`                       | وجبة بسيطة: أكل بيتي من ناس قريبة منك، وتكلمهم على واتساب. | A small idea: home-cooked food from people near you, reached over WhatsApp. |
+| `about.point.home.title` / `.body` | أكل بيتي حقيقي / من مطابخ البيت، مش مطاعم. | Real home food / From home kitchens, not restaurants. |
+| `about.point.near.title` / `.body` | قريب منك / بندور حوالين مكانك بالكيلومتر. | Near you / We search by distance around you. |
+| `about.point.direct.title` / `.body` | تواصل مباشر / واتساب بس، من غير وسيط. | Direct contact / WhatsApp only, no middleman. |
+| `terms.title`                      | الشروط والخصوصية                  | Terms and privacy                   |
+| `terms.intro`                      | الصفحة دي بتشرح اللي التطبيق بيعمله ببياناتك. مش نصيحة قانونية. | This page explains what the app does with your data. It is not legal advice. |
+| `terms.{data,privacy,content,handoff,account}.title` / `.body` | five short sections, see `TermsPage.vue` | same |
+| `contact.title` / `.body`          | تواصل معنا / …                    | Contact us / …                      |
+| `contact.whatsapp`                 | كلم الدعم على واتساب              | Message support on WhatsApp         |
+| `contact.none`                     | قناة الدعم لسه هتتفتح             | The support channel is not open yet |
+| `common.confirm` / `common.cancel` | أيوه / لأ                         | Yes / No                            |
+| `myMeals.edit`                     | تعديل                             | Edit                                |
+| `add.editTitle`                    | تعديل الوجبة                      | Edit meal                           |
+| `add.photos.add` / `.remove` / `.cover` / `.moveUp` / `.moveDown` | أضف صورة / امسح / الغلاف / قدّم / أخّر | Add a photo / Remove / Cover / Move up / Move down |
+| `meal.delete.title` / `.body`      | تمسح الوجبة؟ / مش هينفع ترجعها تاني. | Delete this meal? / This cannot be undone. |
+| `home.banner.new.action`           | شوف الجديد                        | See what's new                      |
+| `home.refresh.pull`                | اسحب للتحديث                      | Pull to refresh                     |
+
+Two keys have no shipped surface yet: `contact.whatsapp` and `settings.rate` render only when `src/config.ts` holds a support number or store URL.

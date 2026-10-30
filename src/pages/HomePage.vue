@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
 import potUrl from "../assets/illustrations/pot-empty.png";
@@ -14,6 +14,7 @@ import AppRegion from "../components/layout/AppRegion.vue";
 import BottomBar from "../components/layout/BottomBar.vue";
 import PageShell from "../components/layout/PageShell.vue";
 import MealCard from "../components/present/MealCard.vue";
+import { hasNewer } from "../services/meals";
 import { useLocationStore } from "../stores/location";
 import { useMealsStore } from "../stores/meals";
 import { type Kind, normaliseKind } from "../stores/region";
@@ -28,14 +29,23 @@ const query = ref("");
 const field = ref<HTMLInputElement>();
 let debounce: ReturnType<typeof setTimeout> | undefined;
 
-// Dish words stay Arabic in both locales: they are search terms for Arabic
-// meal names, not interface copy.
-const DISHES = ["محشي", "فراخ", "كشري"];
-
-const chips = computed(() => [
-  { term: "", label: t("home.chips.nearby"), active: !query.value.trim() },
-  ...DISHES.map((term) => ({ term, label: term, active: query.value.trim() === term })),
-]);
+// Chips are derived from the feed: the areas people are actually posting from.
+const chips = computed(() => {
+  const counts = new Map<string, number>();
+  for (const meal of meals.items) {
+    const area = meal.location_text.trim();
+    if (!area) continue;
+    counts.set(area, (counts.get(area) ?? 0) + 1);
+  }
+  const areas = [...counts.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .slice(0, 4)
+    .map(([area]) => area);
+  return [
+    { term: "", label: t("home.chips.nearby"), active: !query.value.trim() },
+    ...areas.map((area) => ({ term: area, label: area, active: query.value.trim() === area })),
+  ];
+});
 
 function applyChip(chip: { term: string }) {
   query.value = chip.term;
@@ -59,11 +69,67 @@ const kind = computed<Kind>(() => {
   return meals.kind;
 });
 
+const newest = ref("");
+const hasNew = ref(false);
+const refreshing = ref(false);
+const pulling = ref(0);
+
+function noteNewest() {
+  let latest = "";
+  for (const meal of meals.items) if (meal.created > latest) latest = meal.created;
+  if (latest) newest.value = latest;
+}
+
 async function refresh() {
   const center = await location.ensure();
   if (!center) return;
   if (query.value.trim()) await meals.search(query.value, center);
   else await meals.load(center);
+  noteNewest();
+}
+
+async function refreshNow() {
+  refreshing.value = true;
+  try {
+    location.reset();
+    await refresh();
+    hasNew.value = false;
+  } finally {
+    refreshing.value = false;
+  }
+}
+
+async function probe() {
+  const center = location.fix;
+  if (!center || !newest.value) return;
+  hasNew.value = await hasNewer(center, newest.value);
+}
+
+let startY = 0;
+let tracking = false;
+
+function onPointerDown(event: PointerEvent) {
+  if (event.button !== 0 || globalThis.scrollY > 0) return;
+  startY = event.clientY;
+  tracking = true;
+}
+
+function onPointerMove(event: PointerEvent) {
+  if (!tracking) return;
+  const dy = event.clientY - startY;
+  pulling.value = dy > 0 ? Math.min(120, dy * 0.6) : 0;
+}
+
+async function onPointerUp() {
+  if (!tracking) return;
+  tracking = false;
+  const armed = pulling.value >= 70;
+  pulling.value = 0;
+  if (armed) await refreshNow();
+}
+
+function onVisible() {
+  if (document.visibilityState === "visible") void probe();
 }
 
 function retry() {
@@ -80,6 +146,13 @@ watch(query, (value) => {
 
 onMounted(() => {
   void refresh();
+  document.addEventListener("visibilitychange", onVisible);
+  globalThis.addEventListener("online", onVisible);
+});
+
+onUnmounted(() => {
+  document.removeEventListener("visibilitychange", onVisible);
+  globalThis.removeEventListener("online", onVisible);
 });
 </script>
 
@@ -98,6 +171,17 @@ onMounted(() => {
       </AppBar>
     </template>
 
+    <div
+      class="home"
+      @pointerdown="onPointerDown"
+      @pointermove="onPointerMove"
+      @pointerup="onPointerUp"
+      @pointercancel="onPointerUp"
+    >
+    <div class="pull" :style="{ height: `${pulling}px` }" aria-hidden="true">
+      <span v-if="pulling > 0">{{ t("home.refresh.pull") }}</span>
+    </div>
+
     <div class="search">
       <svg class="search__icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
       <input
@@ -105,6 +189,7 @@ onMounted(() => {
         v-model="query"
         class="search__input"
         :placeholder="t('home.search.placeholder')"
+        :aria-label="t('home.search.open')"
         type="search"
       />
     </div>
@@ -114,6 +199,13 @@ onMounted(() => {
         {{ chip.label }}
       </AppChip>
     </nav>
+
+    <AppBanner v-if="hasNew" tone="info" class="new">
+      <span>{{ t("home.banner.new") }}</span>
+      <button type="button" class="new__action" @click="refreshNow">
+        {{ t("home.banner.new.action") }}
+      </button>
+    </AppBanner>
 
     <AppRegion :kind="kind" class="home__region">
       <template #ready>
@@ -156,6 +248,7 @@ onMounted(() => {
         </AppEmpty>
       </template>
     </AppRegion>
+    </div>
 
     <template #bottom>
       <BottomBar />
@@ -164,6 +257,37 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.home {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.pull {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: hidden;
+  font-size: 12px;
+  color: var(--brown-mid);
+  transition: height 120ms ease;
+}
+.new {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+.new__action {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  background: none;
+  border: none;
+  color: var(--ink);
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+}
 .home__bar {
   padding-top: 26px;
   padding-bottom: 13px;

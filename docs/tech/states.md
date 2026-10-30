@@ -68,6 +68,8 @@ Where a state belongs, when it is unclear:
 
 `?state=<kind>` forces a kind in development and under the Playwright harness (`window.__WAGBA_FORCE_STATE`). It injects **facts**, never a bypassed function — the ladder still runs.
 
+All ten kinds are exercised in both locales by `tests/e2e/states.spec.ts`, which asserts `data-kind`, captures `artifacts/states/<locale>/<kind>.png`, and fails on any page error. Layering and the other proof layers: [verification.md](verification.md).
+
 ## Copy
 
 Every kind maps to a key in `src/i18n/{ar,en}.json`; a missing key falls back to Arabic and fails the parity test. Blocked and fault carry a title, a body, and a retry action.

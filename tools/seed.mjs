@@ -34,18 +34,18 @@ const COOKS = [
 
 // title, lat, lng, price, quantity, status, photo index
 const MEALS = [
-  ["محشي بيتي", 30.0333, 31.2447, 120, 5, "available", 0],
-  ["كشري مصري", 30.0626, 31.2467, 45, 10, "available", 1],
+  ["محشي بيتي", 30.0333, 31.2447, 120, 5, "available", 1],
+  ["كشري مصري", 30.0626, 31.2467, 45, 10, "available", 0],
   ["فراخ بالرز", 30.0514, 31.2057, 150, 4, "available", 2],
   ["مكرونة بشاميل", 30.0589, 31.2008, 90, 6, "available", 3],
   ["ملوخية بالأرانب", 30.0698, 31.3256, 180, 3, "available", 4],
-  ["سمك مشوي", 30.0097, 31.2557, 210, 2, "available", 0],
-  ["فطير مشلتت", 30.0131, 31.2089, 60, 8, "available", 1],
-  ["بامية باللحمة", 30.0786, 31.2108, 170, 3, "available", 2],
-  ["شكشوكة", 30.0557, 31.2247, 55, 12, "available", 3],
-  ["ترمس", 30.0167, 31.3, 40, 20, "available", 4],
-  ["كبدة إسكندراني", 30.0459, 31.234, 130, 0, "unavailable", 0],
-  ["٦ أكتوبر كيك", 30.03, 31.25, 200, 4, "available", 1],
+  ["سمك مشوي", 30.0097, 31.2557, 210, 2, "available", 5],
+  ["فطير مشلتت", 30.0131, 31.2089, 60, 8, "available", 3],
+  ["بامية باللحمة", 30.0786, 31.2108, 170, 3, "available", 4],
+  ["شكشوكة", 30.0557, 31.2247, 55, 12, "available", 1],
+  ["ترمس", 30.0167, 31.3, 40, 20, "available", 0],
+  ["كبدة إسكندراني", 30.0459, 31.234, 130, 0, "unavailable", 2],
+  ["٦ أكتوبر كيك", 30.03, 31.25, 200, 4, "available", 3],
 ];
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -117,9 +117,8 @@ for (const cook of COOKS) {
   console.log("cook", id, cook.display_name);
 }
 
-// Brand-toned placeholder dishes, not photographs: the fixtures are simple shapes
-// so a screenshot reads as a food card rather than as a phone screenshot.
-const photoNames = ["p1.png", "p2.png", "p3.png", "p4.png", "p5.png"];
+// Real, licensed dish photos. Provenance and licences: tests/fixtures/photos/SOURCES.md.
+const photoNames = ["p1.jpg", "p2.jpg", "p3.jpg", "p4.jpg", "p5.jpg", "p6.jpg"];
 const photos = photoNames.map((name) => readFileSync(`tests/fixtures/photos/${name}`));
 
 const mealsUrl = `${BASE}/api/collections/meals/records`;
@@ -141,7 +140,7 @@ for (let i = 0; i < MEALS.length; i++) {
   form.set("location_text", cook.location_text);
   form.set("latitude", String(lat));
   form.set("longitude", String(lng));
-  form.set("photos", new Blob([photos[photo]], { type: "image/png" }), photoNames[photo]);
+  form.set("photos", new Blob([photos[photo]], { type: "image/jpeg" }), photoNames[photo]);
   await upsert(mealsUrl, id, form, cookTokens.get(cook.id), true);
   console.log("meal", id, title, status);
 }

@@ -45,9 +45,24 @@ async function toggle(meal: Meal) {
   meal.status = next;
 }
 
-async function remove(meal: Meal) {
-  await deleteMeal(meal.id);
-  meals.value = meals.value.filter((m) => m.id !== meal.id);
+const pendingDelete = ref<Meal | null>(null);
+const deleting = ref(false);
+
+function askDelete(meal: Meal) {
+  pendingDelete.value = meal;
+}
+
+async function confirmDelete() {
+  const meal = pendingDelete.value;
+  if (!meal) return;
+  deleting.value = true;
+  try {
+    await deleteMeal(meal.id);
+    meals.value = meals.value.filter((m) => m.id !== meal.id);
+    pendingDelete.value = null;
+  } finally {
+    deleting.value = false;
+  }
 }
 
 onMounted(load);
@@ -81,10 +96,13 @@ onMounted(load);
         </div>
         <MealCard :meal="meal" @click="router.push({ name: 'meal', params: { id: meal.id } })" />
         <div class="item__actions">
+          <AppButton variant="ghost" @click="router.push({ name: 'edit-meal', params: { id: meal.id } })">
+            {{ t("myMeals.edit") }}
+          </AppButton>
           <AppButton variant="secondary" @click="toggle(meal)">
             {{ meal.status === 'available' ? t('myMeals.hide') : t('myMeals.show') }}
           </AppButton>
-          <AppButton variant="ghost" @click="remove(meal)">{{ t('myMeals.delete') }}</AppButton>
+          <AppButton variant="ghost" @click="askDelete(meal)">{{ t('myMeals.delete') }}</AppButton>
         </div>
       </div>
     </template>
@@ -95,6 +113,17 @@ onMounted(load);
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
       </AppButton>
     </AppEmpty>
+    <div v-if="pendingDelete" class="overlay" role="dialog" aria-modal="true" :aria-label="t('meal.delete.title')">
+      <div class="dialog">
+        <h2 class="dialog__title">{{ t("meal.delete.title") }}</h2>
+        <p class="dialog__body">{{ t("meal.delete.body") }}</p>
+        <div class="dialog__actions">
+          <AppButton :block="false" :loading="deleting" @click="confirmDelete">{{ t("common.confirm") }}</AppButton>
+          <AppButton :block="false" variant="ghost" @click="pendingDelete = null">{{ t("common.cancel") }}</AppButton>
+        </div>
+      </div>
+    </div>
+
     <template #bottom>
       <BottomBar />
     </template>
@@ -131,6 +160,40 @@ onMounted(load);
 }
 .my-empty {
   padding-top: 90px;
+}
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgb(63 34 5 / 45%);
+  display: grid;
+  place-items: center;
+  padding: var(--space-4);
+  z-index: 20;
+}
+.dialog {
+  width: min(320px, 100%);
+  background: var(--surface);
+  border-radius: var(--radius-card);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  box-shadow: var(--shadow-soft);
+}
+.dialog__title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 800;
+}
+.dialog__body {
+  margin: 0;
+  font-size: 13px;
+  color: var(--brown-mid);
+}
+.dialog__actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
 }
 .cta {
   display: inline-flex;

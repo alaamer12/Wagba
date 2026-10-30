@@ -1,14 +1,23 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
+import { useExternal } from "../../composables/useExternal";
 import { fileUrl } from "../../services/pb";
 import type { Meal } from "../../types/schemas";
 import AppAvatar from "../base/AppAvatar.vue";
 
 const props = defineProps<{ meal: Meal }>();
 const { t } = useI18n();
+const external = useExternal();
 const avatar = computed(() =>
   props.meal.cook.avatar ? fileUrl(props.meal, props.meal.cook.avatar as string) : "",
+);
+const socials = computed(() =>
+  [
+    { label: "Facebook", url: props.meal.cook.facebook_url ?? "" },
+    { label: "Instagram", url: props.meal.cook.instagram_url ?? "" },
+    { label: "TikTok", url: props.meal.cook.tiktok_url ?? "" },
+  ].filter((s) => s.url.length > 0),
 );
 </script>
 
@@ -19,6 +28,11 @@ const avatar = computed(() =>
       <span class="cook-row__label">{{ t('meal.cook.label') }}</span>
       <span class="cook-row__name">{{ meal.cook.display_name }}</span>
       <span v-if="meal.cook.handle" class="cook-row__handle">@{{ meal.cook.handle }}</span>
+      <div v-if="socials.length" class="cook-row__socials">
+        <button v-for="social in socials" :key="social.label" type="button" class="social" @click="external.open(social.url)">
+          {{ social.label }}
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -44,5 +58,21 @@ const avatar = computed(() =>
 .cook-row__handle {
   font-size: 12px;
   color: var(--brown-mid);
+}
+.cook-row__socials {
+  display: flex;
+  gap: 8px;
+  margin-top: 2px;
+}
+.social {
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--brown-mid);
+  background: none;
+  border: none;
+  padding: 0;
+  text-decoration: underline;
+  cursor: pointer;
 }
 </style>

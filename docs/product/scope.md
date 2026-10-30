@@ -33,7 +33,7 @@
 
 - Arabic and English, with direction switched per locale.
 - Warm visual identity per [../design/design-system.md](../design/design-system.md).
-- Settings: account, my meals, favorites, share app, about, terms and privacy, contact us, version.
+- Settings: account (or a first-meal call to action), my meals, favorites, language, share app, about, terms and privacy, contact us, version. Notifications are not listed anywhere in the UI.
 - Cached last feed with a staleness banner when offline; freshness probe on reconnect. Behavior in [screens.md#home](screens.md#2-home--meals) and [../tech/discovery.md](../tech/discovery.md#offline).
 - Empty and error states for: no meals nearby, no search results, location denied, publish failure.
 

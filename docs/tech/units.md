@@ -36,7 +36,7 @@ Location is `src/components/`.
 | Unit | Tier | Base path | Mechanism | Status |
 |---|---|---|---|---|
 | MealCard | present | `present/MealCard.vue` | cover, title, 2-line description, cook avatar+name, distance | Implemented |
-| CookRow | present | `present/CookRow.vue` | avatar + name + `@handle` on the details page | Implemented |
+| CookRow | present | `present/CookRow.vue` | avatar + name + `@handle` + social links (external open) on the details page | Implemented |
 
 ## Known gaps
 

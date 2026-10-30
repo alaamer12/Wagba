@@ -14,6 +14,7 @@ import { useWhatsApp } from "../composables/useWhatsApp";
 import { getMeal, photoUrl } from "../services/meals";
 import { useFavoritesStore } from "../stores/favorites";
 import type { Kind } from "../stores/region";
+import { useSessionStore } from "../stores/session";
 import { AppError } from "../types/errors";
 import type { Meal } from "../types/schemas";
 
@@ -22,11 +23,20 @@ const route = useRoute();
 const router = useRouter();
 const whatsapp = useWhatsApp();
 const favorites = useFavoritesStore();
+const session = useSessionStore();
 
 const meal = ref<Meal | null>(null);
 const kind = ref<Kind>("loading");
 const saved = ref(false);
 const waMissing = ref(false);
+const slides = ref<HTMLImageElement[]>([]);
+const gallery = computed(() =>
+  meal.value ? meal.value.photos.map((name) => photoUrl(meal.value as Meal, name)) : [],
+);
+
+function goTo(index: number) {
+  slides.value[index]?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+}
 
 async function load() {
   kind.value = "loading";
@@ -40,6 +50,7 @@ async function load() {
 
 async function toggleSave() {
   if (!meal.value) return;
+  await session.ensureReady();
   saved.value = await favorites.toggle(meal.value.id);
 }
 
@@ -74,7 +85,26 @@ onMounted(async () => {
     <AppRegion :kind="kind">
       <template #ready>
         <div v-if="hero" class="hero">
-          <img :src="hero" :alt="meal?.title" />
+          <div class="slider" :class="{ 'is-multi': gallery.length > 1 }">
+            <img
+              v-for="(src, index) in gallery"
+              :key="src"
+              :ref="(el) => { if (el) slides[index] = el as HTMLImageElement }"
+              :src="src"
+              :alt="meal?.title"
+              class="slide"
+            />
+          </div>
+          <div v-if="gallery.length > 1" class="dots">
+            <button
+              v-for="(src, index) in gallery"
+              :key="`dot-${src}`"
+              type="button"
+              class="dot"
+              :aria-label="`${index + 1} / ${gallery.length}`"
+              @click="goTo(index)"
+            />
+          </div>
         </div>
 
         <AppCard>
@@ -141,11 +171,40 @@ onMounted(async () => {
   overflow: hidden;
   background: var(--cream);
 }
-.hero img {
+.slider {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+.slider::-webkit-scrollbar {
+  display: none;
+}
+.slide {
   width: 100%;
   aspect-ratio: 4 / 3;
   object-fit: cover;
   display: block;
+  flex: 0 0 100%;
+  scroll-snap-align: center;
+}
+.dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 0;
+}
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: none;
+  background: var(--border);
+  cursor: pointer;
+  padding: 0;
+}
+.dot:focus-visible {
+  outline: 2px solid var(--butter);
 }
 .title {
   margin: 0 0 6px;
