@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 import AppBadge from "../components/base/AppBadge.vue";
 import AppButton from "../components/base/AppButton.vue";
 import AppEmpty from "../components/base/AppEmpty.vue";
+import AppSegmented from "../components/base/AppSegmented.vue";
 import AppSkeleton from "../components/base/AppSkeleton.vue";
 import AppBar from "../components/layout/AppBar.vue";
+import BottomBar from "../components/layout/BottomBar.vue";
 import PageShell from "../components/layout/PageShell.vue";
 import MealCard from "../components/present/MealCard.vue";
 import { deleteMeal, listMine, setMealStatus } from "../services/meals";
@@ -16,6 +18,17 @@ const { t } = useI18n();
 const router = useRouter();
 const meals = ref<Meal[]>([]);
 const loading = ref(true);
+const filter = ref<"all" | "available" | "unavailable">("all");
+
+const options = computed(() => [
+  { value: "all" as const, label: t("myMeals.filter.all") },
+  { value: "available" as const, label: t("myMeals.status.available") },
+  { value: "unavailable" as const, label: t("myMeals.status.unavailable") },
+]);
+
+const visible = computed(() =>
+  filter.value === "all" ? meals.value : meals.value.filter((meal) => meal.status === filter.value),
+);
 
 async function load() {
   loading.value = true;
@@ -41,15 +54,26 @@ onMounted(load);
 </script>
 
 <template>
-  <PageShell :with-bar="false">
+  <PageShell>
     <template #bar>
-      <AppBar :title="t('myMeals.title')" back />
+      <AppBar :title="t('myMeals.title')" centered back>
+        <template #actions>
+          <button type="button" class="gear" :aria-label="t('settings.title')" @click="router.push({ name: 'settings' })">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 8.9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 8.9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34H9a1.7 1.7 0 0 0 1-1.56V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87V9a1.7 1.7 0 0 0 1.56 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1z" />
+            </svg>
+          </button>
+        </template>
+      </AppBar>
     </template>
+
+    <AppSegmented v-model="filter" :options="options" />
 
     <AppSkeleton v-if="loading" :rows="3" />
 
-    <template v-else-if="meals.length">
-      <div v-for="meal in meals" :key="meal.id" class="item">
+    <template v-else-if="visible.length">
+      <div v-for="meal in visible" :key="meal.id" class="item">
         <div class="item__head">
           <AppBadge :tone="meal.status === 'available' ? 'neutral' : 'muted'">
             {{ meal.status === 'available' ? t('myMeals.status.available') : t('myMeals.status.unavailable') }}
@@ -65,13 +89,25 @@ onMounted(load);
       </div>
     </template>
 
-    <AppEmpty v-else :title="t('myMeals.empty.title')" :body="t('myMeals.empty.body')">
-      <AppButton @click="router.push({ name: 'add-meal' })">{{ t('home.empty.cta') }}</AppButton>
+    <AppEmpty v-else :title="t('myMeals.empty.title')" :body="t('myMeals.empty.body')" :art-size="215">
+      <AppButton class="cta" @click="router.push({ name: 'add-meal' })">+ {{ t('myMeals.empty.cta') }}</AppButton>
     </AppEmpty>
+    <template #bottom>
+      <BottomBar />
+    </template>
   </PageShell>
 </template>
 
 <style scoped>
+.gear {
+  display: inline-flex;
+  background: none;
+  border: none;
+  color: var(--ink);
+  color: var(--ink);
+  cursor: pointer;
+  padding: 4px 8px;
+}
 .item {
   display: flex;
   flex-direction: column;
@@ -89,5 +125,9 @@ onMounted(load);
   flex: 1;
   padding: 10px 14px;
   font-size: 14px;
+}
+.cta {
+  margin-top: var(--space-3);
+  max-width: 280px;
 }
 </style>

@@ -13,7 +13,7 @@ test("home renders seeded meals nearest-first", async ({ page }, info) => {
   const count = await cards.count();
   expect(count).toBeGreaterThanOrEqual(5);
 
-  const first = await cards.first().locator("h3").innerText();
+  const first = (await cards.first().locator("h3").textContent()) ?? "";
   expect(first.length).toBeGreaterThan(0);
 
   await page.locator('[data-kind="ready"] article img').first().waitFor({ state: "visible" });

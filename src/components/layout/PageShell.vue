@@ -22,7 +22,7 @@ withDefaults(defineProps<{ withBar?: boolean }>(), { withBar: true });
 }
 .shell__content {
   flex: 1;
-  padding: var(--space-4);
+  padding: var(--space-2) var(--space-4) var(--space-4);
   padding-bottom: calc(96px + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;

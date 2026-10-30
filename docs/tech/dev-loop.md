@@ -33,6 +33,7 @@ Order matters: PocketBase must be healthy before the app asks it for a feed, and
 | `pocketbase/pb_hooks/**` | `bun tools/build-hooks.mjs && bun tools/pb.mjs restart` |
 | `shared/normalize.ts` | rebuild hooks **and** reload the app (both consume it) |
 | `pocketbase/pb_migrations/**` | `bun tools/pb.mjs reset && bun tools/seed.mjs` |
+| `reference/avatar-rig/**` | `bun tools/build-avatar.ts` (regenerates `src/lib/avatar-parts.ts`) |
 | `capacitor.config.ts`, plugins, manifest | `bunx cap sync android`, rebuild the APK |
 
 The one that catches people: editing `shared/normalize.ts` changes the app immediately but **not** the hook until the bundle is rebuilt — the two then disagree about `search_key`, and search silently stops matching.

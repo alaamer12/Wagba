@@ -70,8 +70,8 @@
   "settings.rate": "Rate the app",
   "settings.version": "Version {v}",
   "myMeals.title": "My meals",
-  "myMeals.empty.title": "No meals yet",
-  "myMeals.empty.body": "Your first meal is the one that gets seen",
+  "myMeals.empty.title": "You haven't added a meal yet",
+  "myMeals.empty.body": "Start now by adding your first meal and sharing it with people in your area.",
   "favorites.title": "Saved",
   "favorites.empty": "Nothing saved yet",
   "error.location.title": "Wagba needs your location",
@@ -94,5 +94,7 @@
   "myMeals.status.unavailable": "Not available",
   "myMeals.hide": "Hide",
   "myMeals.show": "Show",
-  "myMeals.delete": "Delete"
+  "myMeals.delete": "Delete",
+  "myMeals.empty.cta": "Add a meal",
+  "myMeals.filter.all": "All"
 }

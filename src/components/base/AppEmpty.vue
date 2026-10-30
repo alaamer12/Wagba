@@ -1,10 +1,16 @@
 <script setup lang="ts">
-defineProps<{ title: string; body?: string }>();
+import chefUrl from "../../assets/illustrations/chef-wandering.png";
+
+withDefaults(defineProps<{ title: string; body?: string; art?: string; artSize?: number }>(), {
+  body: "",
+  art: chefUrl,
+  artSize: 300,
+});
 </script>
 
 <template>
   <div class="empty">
-    <img src="../../assets/brand/chef-hat.svg" alt="" class="empty__art" />
+    <img :src="art" alt="" class="empty__art" :style="{ width: `${artSize}px` }" />
     <p class="empty__title">{{ title }}</p>
     <p v-if="body" class="empty__body">{{ body }}</p>
     <slot />
@@ -17,22 +23,22 @@ defineProps<{ title: string; body?: string }>();
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: var(--space-2);
-  padding: var(--space-6) var(--space-4);
+  gap: 6px;
+  padding: 0 0 var(--space-4);
 }
 .empty__art {
-  width: 88px;
-  height: 88px;
-  opacity: 0.9;
+  max-width: 100%;
+  height: auto;
   margin-bottom: var(--space-2);
 }
 .empty__title {
-  font-size: 17px;
-  font-weight: 700;
+  font-size: 22px;
+  font-weight: 800;
   margin: 0;
 }
 .empty__body {
   font-size: 14px;
+  line-height: 1.8;
   color: var(--brown-mid);
   margin: 0;
   max-width: 30ch;

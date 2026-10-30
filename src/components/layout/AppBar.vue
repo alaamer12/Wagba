@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import { useRouter } from "vue-router";
 
-withDefaults(defineProps<{ title?: string; back?: boolean }>(), { title: "", back: false });
+withDefaults(defineProps<{ title?: string; back?: boolean; centered?: boolean }>(), {
+  title: "",
+  back: false,
+  centered: false,
+});
 const router = useRouter();
 </script>
 
 <template>
-  <header class="bar">
+  <header class="bar" :class="{ 'is-centered': centered }">
     <button v-if="back" type="button" class="bar__back" aria-label="back" @click="router.back()">‹</button>
     <h1 class="bar__title">{{ title }}</h1>
     <slot name="actions" />
@@ -18,7 +22,7 @@ const router = useRouter();
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-3) var(--space-4);
+  padding: 6px var(--space-4) 8px;
   background: var(--cream);
   position: sticky;
   top: 0;
@@ -33,8 +37,15 @@ const router = useRouter();
   cursor: pointer;
   padding: 0 6px;
 }
+.bar.is-centered {
+  justify-content: center;
+}
+.bar.is-centered .bar__title {
+  flex: 0;
+  text-align: center;
+}
 .bar__title {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 800;
   margin: 0;
   flex: 1;

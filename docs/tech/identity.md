@@ -98,6 +98,10 @@ The SVG carries a generated `aria-label` naming the visible parts, in the user's
 
 ### Art source
 
-**v1 ships a programmatic part set**, not hand-drawn art: one flat SVG character assembled from the axes above, in the construction language of the reference (`avatar.html` — flat fills, no face outline, soft backdrop). The hand-drawn part set built from that reference with the avatar skill is deferred; because the assembler takes parts by id, replacing the art later means replacing `AvatarArt.vue` and bumping `AVATAR_VERSION`, with no change to selection logic.
+The part set is a **real modular rig**, built from the character in `reference/avatar.html` and kept at `reference/avatar-rig/`: `rig.json` plus `parts/<slot>/<id>.svg`, each part painting inside `<g data-layer>` groups in the rig's viewBox. Twelve slots, 22 parts — seven hair styles (bun, buzz, crop, curly, **hijab**, long, wavy), three facial-hair states, three glasses states, plus the reference's backdrop, shirt, neck, ears, head, nose, mouth, eyes and brows. The default combination is the reference drawing transcribed path-for-path.
 
-Assembly lives in `src/lib/avatar.ts` (hash, draw order, hijab rule) and `src/components/base/AvatarArt.vue` (the drawing). The unit test asserts determinism, three distinct faces for three handles, and that the hijab clears facial hair on every probe that draws it.
+Skin, shirt and backdrop are **palette axes**, not parts: five skin tones, six shirts, five backdrops, each carrying its own shade colour.
+
+The rig is verified with the avatar skill's checker (`verify_parts.py`): lint, isolation, gap and sampled-combination checks — **PASS, 0 errors, 91% of interacting slot-pair tuples covered**. Its sheets live in `reference/avatar-rig/verify/`.
+
+`bun tools/build-avatar.ts` compiles the rig into `src/lib/avatar-parts.ts`; the app never reads the SVG files at runtime. Replacing art is: edit the rig, rebuild, and bump `AVATAR_VERSION` if existing faces must change.

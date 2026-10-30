@@ -70,8 +70,8 @@
   "settings.rate": "قيّم التطبيق",
   "settings.version": "الإصدار {v}",
   "myMeals.title": "وجباتي",
-  "myMeals.empty.title": "لسه مفيش وجبات",
-  "myMeals.empty.body": "أول وجبة ليك ممكن تجيبلك أكل جديد",
+  "myMeals.empty.title": "لم تقم بإضافة أي وجبة بعد",
+  "myMeals.empty.body": "ابدأ الآن بإضافة وجبتك الأولى ومشاركتها مع الآخرين في منطقتك.",
   "favorites.title": "المحفوظة",
   "favorites.empty": "مفيش وجبات محفوظة لسه",
   "error.location.title": "وجبة محتاج موقعك",
@@ -94,5 +94,7 @@
   "myMeals.status.unavailable": "غير متاحة",
   "myMeals.hide": "إخفاء",
   "myMeals.show": "إظهار",
-  "myMeals.delete": "حذف"
+  "myMeals.delete": "حذف",
+  "myMeals.empty.cta": "إضافة وجبة",
+  "myMeals.filter.all": "الكل"
 }
