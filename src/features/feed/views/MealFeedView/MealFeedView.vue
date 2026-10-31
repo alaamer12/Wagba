@@ -113,8 +113,13 @@ function open(id: string) {
     <PullRefresh :on-refresh="refresh">
       <LoadingRendition v-if="kind === 'loading'" :rows="4" />
 
-      <BlockedRendition v-else-if="kind === 'blocked'" :retryable="retryable" @retry="retry" />
-      <ReadyRendition v-if="kind === 'blocked' && snapshotUnderBlock" :items="rows" @open="open" />
+      <!-- The blocked case owns the whole branch: the cached rows ride *inside* it. A `v-if`
+           sibling here would restart the chain and let the trailing `v-else` paint a fault
+           under the location notice — two error states in one view. -->
+      <template v-else-if="kind === 'blocked'">
+        <BlockedRendition :retryable="retryable" @retry="retry" />
+        <ReadyRendition v-if="snapshotUnderBlock" :items="rows" @open="open" />
+      </template>
 
       <OfflineRendition v-else-if="cachedRows && !online">
         <ReadyRendition :items="rows" @open="open" />

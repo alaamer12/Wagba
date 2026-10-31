@@ -59,6 +59,8 @@ is terminal, a timeout is not).
 
 A View stamps `data-kind` on the region root and renders exactly one Rendition inside it. Tests and screenshots address state through that attribute instead of guessing from copy.
 
+The one notice is the whole point of the ladder, so it is asserted and not trusted: every cell of `tests/e2e/states.spec.ts` counts the notices inside the region it forced and fails on a second one. The way to break it is a `v-if` in the middle of a `v-else-if` chain — the trailing `v-else` then belongs to the *new* chain, so a blocked region with no cached rows also paints the fault display, and one screen reads "Wagba needs your location" *and* "Something went wrong". A case that shows content under its notice (rows under `blocked`, under `stale`) wraps both in one `<template v-else-if>`; the content is not a second Rendition.
+
 `components/layout/AppRegion.vue` — one slot per kind, chosen by a `kind` prop the *page* computed — is gone, deleted in the change that removed its last user. It was a second authority over which case a screen showed: the prop let a page declare a kind without running the ladder, which is how two screens came to disagree about the same facts.
 
 ## Placement rule

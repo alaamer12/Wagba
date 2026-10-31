@@ -92,6 +92,15 @@ for (const screen of SCREENS) {
           }
         }
         expect(errors).toEqual([]);
+        // One message per region. The ladder picks a single kind, so two notices inside the same
+        // `[data-kind]` mean the template restarted the `v-else-if` chain and let the trailing
+        // `v-else` paint a fault under the real answer — which is how one screen came to read
+        // "Wagba needs your location" *and* "Something went wrong". Cached rows riding under a
+        // block are the only extra content allowed, and they are not a notice.
+        expect(
+          await region.locator(".empty").count(),
+          `${screen.name} paints one notice for ${item.kind}`,
+        ).toBeLessThanOrEqual(1);
       });
     }
   });

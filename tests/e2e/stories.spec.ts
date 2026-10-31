@@ -257,13 +257,25 @@ test("S4 search works by dish, cook name, handle, area, fold, digits and stopwor
   await expect(page.locator('[data-kind="empty-filtered"]')).toBeVisible({ timeout: 20_000 });
 });
 
-test("S5 a denied location is explained and retry recovers", async ({ page, context }) => {
+test("S5 a denied location is explained, offers nothing that cannot work, and recovers on the next visit", async ({
+  page,
+  context,
+}) => {
   await context.clearPermissions();
   await page.goto("/#/home");
-  await expect(page.locator('[data-kind="blocked"]')).toBeVisible({ timeout: 30_000 });
+  const blocked = page.locator('[data-kind="blocked"]');
+  await expect(blocked).toBeVisible({ timeout: 30_000 });
 
+  // F38: a refusal is terminal, because the setting has to change — so the notice must not
+  // offer a button that cannot do anything. This story used to click one, and it only ever
+  // found it because the broken `v-else-if` chain was painting a fault display underneath.
+  await expect(blocked.getByRole("button")).toHaveCount(0);
+  await expect(blocked.locator(".empty")).toHaveCount(1);
+
+  // The recovery is the next visit, which is what the words promise: the permission changed,
+  // so the read is made again from the start.
   await context.grantPermissions(["geolocation"]);
-  await page.locator('[data-kind="blocked"]').getByRole("button").click();
+  await page.reload();
   await waitForFeed(page);
 });
 
