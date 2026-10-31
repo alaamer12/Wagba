@@ -203,7 +203,14 @@ const raceResults = await Promise.all(
 );
 const handleWins = raceResults.filter((r) => r.status === 200).length;
 
-const favMeal = await request(`/api/collections/meals/records?perPage=1&fields=id`, {}, token);
+// The race below PATCHes this meal as the stress cook, so it must be one they own: the first
+// row of an unfiltered list can belong to any cook and the update rule would refuse it (measured:
+// 0/10 accepted).
+const favMeal = await request(
+  `/api/collections/meals/records?perPage=1&fields=id&filter=${encodeURIComponent(`user = "${cookId}"`)}`,
+  {},
+  token,
+);
 const favMealId = String(((favMeal.body.items as Json[] | undefined) ?? [{}])[0]?.id ?? "");
 const racId = cookId;
 const racToken = token;

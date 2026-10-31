@@ -9,12 +9,21 @@ test("home renders the seeded feed nearest-first", async ({ page }, info) => {
   const cards = page.locator('[data-kind="ready"] article');
   expect(await cards.count()).toBeGreaterThanOrEqual(5);
 
-  const distance = async (index: number) => {
+  // F47: a row without a distance must never make the ordering assertion vacuous. The measured
+  // rows are a sorted prefix; the unmeasured tail (F44) is allowed only after it.
+  const distance = async (index: number): Promise<number | null> => {
     const text = ((await cards.nth(index).textContent()) ?? "").replace(/\u200f/g, "");
     const match = text.match(/([\d.]+)\s*(كم|km)/);
-    return match ? Number(match[1]) : Number.POSITIVE_INFINITY;
+    return match ? Number(match[1]) : null;
   };
-  expect(await distance(0)).toBeLessThanOrEqual(await distance(3));
+  const values: Array<number | null> = [];
+  for (let i = 0; i < (await cards.count()); i += 1) values.push(await distance(i));
+  const firstUnmeasured = values.findIndex((value) => value === null);
+  const measured = (firstUnmeasured === -1 ? values : values.slice(0, firstUnmeasured)) as number[];
+  const tail = firstUnmeasured === -1 ? [] : values.slice(firstUnmeasured);
+  expect(measured.length).toBeGreaterThanOrEqual(4);
+  expect(measured).toEqual([...measured].sort((a, b) => a - b));
+  expect(tail.every((value) => value === null)).toBe(true);
 
   await page.waitForFunction(() => {
     const img = document.querySelector(
