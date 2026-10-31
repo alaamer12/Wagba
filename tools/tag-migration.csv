@@ -1,6 +1,6 @@
 path,code,detail
-src/components/present/MealCard.vue,TEXT_TAG_OUTSIDE_BASE,<h3> at line 76
-src/components/present/MealCard.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 77
+src/components/present/MealCard.vue,TEXT_TAG_OUTSIDE_BASE,<h3> at line 77
+src/components/present/MealCard.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 78
 src/features/meal/views/MealDetailView/ReadyRendition.vue,TEXT_TAG_OUTSIDE_BASE,<h2> at line 28
 src/features/meal/views/MealDetailView/ReadyRendition.vue,TEXT_TAG_OUTSIDE_BASE,<h3> at line 40
 src/features/meal/views/MealDetailView/ReadyRendition.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 29
@@ -8,7 +8,7 @@ src/features/meal/views/MealDetailView/ReadyRendition.vue,TEXT_TAG_OUTSIDE_BASE,
 src/features/mine/views/DeleteConfirmationView/DeleteConfirmationView.vue,TEXT_TAG_OUTSIDE_BASE,<h2> at line 63
 src/features/mine/views/DeleteConfirmationView/DeleteConfirmationView.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 64
 src/features/mine/views/DeleteConfirmationView/DeleteConfirmationView.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 65
-src/features/onboarding/views/WelcomeView/WelcomeView.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 23
+src/features/onboarding/views/WelcomeView/WelcomeView.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 24
 src/features/profile/views/AccountCtaView/AccountCtaView.vue,TEXT_TAG_OUTSIDE_BASE,<h2> at line 39
 src/features/profile/views/AccountCtaView/AccountCtaView.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 40
 src/features/profile/views/ProfileFormView/ProfileFormView.vue,TEXT_TAG_OUTSIDE_BASE,<h3> at line 285
