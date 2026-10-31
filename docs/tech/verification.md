@@ -13,7 +13,11 @@
 | `bun run stress -- --rows=200 --readers=12` | a quick volume probe | ~10 s |
 | `bun run audit` | the SQLite audit alone | ~1 s |
 
-Every step streams to `artifacts/logs/<step>.log`. The servers are always torn down, even on failure.
+Every step streams to `artifacts/logs/<step>.log`. Every run also writes
+`artifacts/gate-verdict.json` — start/end, each step's status and duration, the built bundle's
+SHA-256 and entry asset, whether the served bundle matched it, and the teardown result — and appends
+one line to `artifacts/logs/gate.log`. The servers are always torn down, even on failure, and the
+teardown verifies the ports are actually free rather than trusting the kill.
 
 ## Layers
 

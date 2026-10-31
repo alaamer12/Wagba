@@ -1,6 +1,6 @@
 path,code,detail
-src/components/present/MealCard.vue,TEXT_TAG_OUTSIDE_BASE,<h3> at line 49
-src/components/present/MealCard.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 50
+src/components/present/MealCard.vue,TEXT_TAG_OUTSIDE_BASE,<h3> at line 76
+src/components/present/MealCard.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 77
 src/features/meal/views/MealDetailView/ReadyRendition.vue,TEXT_TAG_OUTSIDE_BASE,<h2> at line 28
 src/features/meal/views/MealDetailView/ReadyRendition.vue,TEXT_TAG_OUTSIDE_BASE,<h3> at line 40
 src/features/meal/views/MealDetailView/ReadyRendition.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 29
@@ -11,11 +11,11 @@ src/features/mine/views/DeleteConfirmationView/DeleteConfirmationView.vue,TEXT_T
 src/features/onboarding/views/WelcomeView/WelcomeView.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 23
 src/features/profile/views/AccountCtaView/AccountCtaView.vue,TEXT_TAG_OUTSIDE_BASE,<h2> at line 39
 src/features/profile/views/AccountCtaView/AccountCtaView.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 40
-src/features/profile/views/ProfileFormView/ProfileFormView.vue,TEXT_TAG_OUTSIDE_BASE,<h3> at line 273
-src/features/profile/views/ProfileFormView/ProfileFormView.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 230
-src/features/profile/views/ProfileFormView/ProfileFormView.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 233
-src/features/profile/views/ProfileFormView/ProfileFormView.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 236
-src/features/profile/views/ProfileFormView/ProfileFormView.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 278
+src/features/profile/views/ProfileFormView/ProfileFormView.vue,TEXT_TAG_OUTSIDE_BASE,<h3> at line 285
+src/features/profile/views/ProfileFormView/ProfileFormView.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 242
+src/features/profile/views/ProfileFormView/ProfileFormView.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 245
+src/features/profile/views/ProfileFormView/ProfileFormView.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 248
+src/features/profile/views/ProfileFormView/ProfileFormView.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 290
 src/features/publish/views/MealFormView/MealFormView.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 349
 src/features/publish/views/MealFormView/MealFormView.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 350
 src/features/publish/views/MealFormView/MealFormView.vue,TEXT_TAG_OUTSIDE_BASE,<p> at line 401
