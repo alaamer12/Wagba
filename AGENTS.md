@@ -95,6 +95,7 @@ scratch/ artifacts/   ignored: probes and gate evidence. Never durable.
 - **Never `await` a Capacitor plugin object.** `registerPlugin` returns a Proxy that answers any unknown member — `then` included — with a rejecting call, so awaiting it throws `"Preferences.then()" is not implemented on android` before one key is read. Return a plain adapter instead (`src/services/storage.ts`).
 - Plugins do not declare their Android permissions. `@capacitor/geolocation` without `ACCESS_FINE_LOCATION`/`ACCESS_COARSE_LOCATION` in the manifest can never prompt; the absence of a prompt reads as a refusal.
 - The WebView origin is `https://localhost`, and `http://127.0.0.1:8090` is a **trustworthy origin** — so a local backend needs the platform's cleartext allowance (the debug manifest `bun android` writes), not a mixed-content one. `android.allowMixedContent` (gated on `WAGBA_LOCAL_HTTP=1`) matters only for a LAN-address http backend. `server.cleartext` is a no-op here: the CLI writes it only into a Cordova plugin manifest.
+- Hardware back does not reach the router by default — from a detail screen it closes the app. `src/boot/hardware-back.ts` owns that rule (D26); nothing else reads `history.state`.
 - `adb emu geo fix <lon> <lat>` prints `OK` and only reaches the framework while something is requesting a position — cold-start the app after it. `adb root` restarts adbd and **clears every `adb reverse` rule**, which turns a dead tunnel into a feed fault that looks like an app bug.
 
 ## Documentation obligations
