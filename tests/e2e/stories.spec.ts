@@ -465,8 +465,11 @@ test("S14 Saved: a row that could not be read is named, and a journal with nothi
   }
 
   await page.goto("/#/favorites");
-  await expect(page.locator('[data-kind="ready"]')).toBeVisible({ timeout: 30_000 });
-  const total = await page.locator('[data-kind="ready"] article').count();
+  // The feed's ready region also matches `[data-kind="ready"]`; count inside the Saved section or
+  // a slow hash navigation makes the assertion below measure the wrong screen.
+  const saved = page.locator('.saved[data-kind="ready"]');
+  await expect(saved).toBeVisible({ timeout: 30_000 });
+  const total = await saved.locator("article").count();
   expect(total).toBeGreaterThanOrEqual(2);
 
   // Exactly one saved row fails to read: the rest still render, and the screen says why.
@@ -484,7 +487,7 @@ test("S14 Saved: a row that could not be read is named, and a journal with nothi
   const partial = page.locator("[data-partial]");
   await expect(partial).toBeVisible({ timeout: 30_000 });
   expect(await partial.getAttribute("data-partial")).toBe("1");
-  await expect(page.locator('[data-kind="ready"] article')).toHaveCount(total - 1, {
+  await expect(saved.locator("article")).toHaveCount(total - 1, {
     timeout: 20_000,
   });
 
@@ -564,4 +567,51 @@ test("S16 a refused hide says so under its row and keeps the row's state", async
   await item.getByRole("button", { name: t.del }).click();
   await page.getByRole("dialog").getByRole("button", { name: t.confirm }).click();
   await expect(page.getByText(meal)).toHaveCount(0, { timeout: 20_000 });
+});
+
+// S17 — the hard case behind "stale": the cache is only worth anything if the *next* run, with no
+// network, paints the rows the first run saw. S6 proves the kind; this proves the contents.
+test("S17 a first run caches the feed, and the next run paints those rows under the stale strip", async ({
+  page,
+}, info) => {
+  const ar = info.project.name !== "en";
+  const staleCopy = ar
+    ? "دي آخر حاجة وصلتنا — التحديث فشل"
+    : "These are the last results we got — refreshing failed";
+
+  // First run: a real read, no cache on this device yet.
+  await page.goto("/#/home");
+  await waitForFeed(page);
+  const firstRun = page.locator('[data-kind="ready"] article');
+  await expect(firstRun.first()).toBeVisible({ timeout: 30_000 });
+  const cachedTitles = (await firstRun.locator("h3").allTextContents()).map((t) => t.trim());
+  expect(cachedTitles.length).toBeGreaterThan(0);
+  await expect(page.locator('[data-kind="stale"]')).toHaveCount(0);
+
+  // Second run, same device, no network: the rows must be the ones the first run cached.
+  await page.route("**/api/collections/meals/records**", (route) => route.abort());
+  await page.reload();
+  const stale = page.locator('[data-kind="stale"]');
+  await expect(stale).toBeVisible({ timeout: 30_000 });
+  await expect(stale.getByText(staleCopy)).toBeVisible();
+  const staleTitles = (await stale.locator("article h3").allTextContents()).map((t) => t.trim());
+  expect(staleTitles.length).toBe(cachedTitles.length);
+  expect(staleTitles).toEqual(cachedTitles);
+
+  // Proof by image: fonts and images settled, the strip and the cached rows in one frame.
+  await page.waitForFunction(() => document.fonts?.status === "loaded");
+  await page.waitForFunction(() => {
+    const images = [...document.querySelectorAll('[data-kind="stale"] article img')];
+    return images.every((img) => (img as HTMLImageElement).complete);
+  });
+  await page.screenshot({
+    path: `artifacts/screenshots/${info.project.name}/stale-after-first-run.png`,
+    fullPage: false,
+  });
+
+  // Third run with the network back: the same cache is replaced by a fresh read.
+  await page.unroute("**/api/collections/meals/records**");
+  await page.reload();
+  await expect(page.locator('[data-kind="ready"]').first()).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator('[data-kind="stale"]')).toHaveCount(0);
 });
