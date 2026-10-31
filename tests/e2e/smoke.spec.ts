@@ -9,6 +9,17 @@ test("home renders the seeded feed nearest-first", async ({ page }, info) => {
   const cards = page.locator('[data-kind="ready"] article');
   expect(await cards.count()).toBeGreaterThanOrEqual(5);
 
+  // The lockup's hat is an asset passed to Photo. A string path handed to a component is not
+  // rewritten by the bundler, so it 404s and paints nothing — silently. Decode is the proof.
+  await expect
+    .poll(() =>
+      page
+        .locator(".brand__hat")
+        .evaluate((img) => (img as HTMLImageElement).naturalWidth)
+        .catch(() => 0),
+    )
+    .toBeGreaterThan(0);
+
   // F47: a row without a distance must never make the ordering assertion vacuous. The measured
   // rows are a sorted prefix; the unmeasured tail (F44) is allowed only after it.
   const distance = async (index: number): Promise<number | null> => {

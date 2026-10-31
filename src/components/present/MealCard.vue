@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
+import chefHat from "../../assets/brand/chef-hat.svg";
 import { photoUrl } from "../../services/meals";
 import { fileUrl } from "../../services/pb";
 import type { Meal } from "../../types/schemas";
@@ -66,7 +67,7 @@ const distance = computed(() => Number(props.meal.distance_km ?? 0));
       <Photo v-if="photo" :src="cover" :alt="meal.title" @failed="broken = true" />
       <Photo
         v-else
-        src="../../assets/brand/chef-hat.svg"
+        :src="chefHat"
         alt=""
         fit="auto"
         class="meal-card__placeholder"

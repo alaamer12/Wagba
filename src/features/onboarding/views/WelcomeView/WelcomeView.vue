@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
+import chefHat from "../../../../assets/brand/chef-hat.svg";
 import BrandMark from "../../../../shared/decorations/BrandMark.vue";
 import Button from "../../../../ui/adaptive/Button.vue";
 import Photo from "../../../../ui/adaptive/Photo.vue";
@@ -24,7 +25,7 @@ function start() {
     <!-- The wrapper carries the softening: opacity is paint, and a seam tag's paint is the
          seam's to set (`fit="auto"` is the drawing's own shape, not a treatment). -->
     <div class="welcome__illustration">
-      <Photo src="../../../../assets/brand/chef-hat.svg" alt="" fit="auto" />
+      <Photo :src="chefHat" alt="" fit="auto" />
     </div>
     <Button class="welcome__cta" @click="start">{{ t('welcome.cta') }}</Button>
   </div>

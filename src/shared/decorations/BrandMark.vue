@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import chefHat from "../../assets/brand/chef-hat.svg";
 import Photo from "../../ui/adaptive/Photo.vue";
 
 withDefaults(defineProps<{ size?: number }>(), { size: 36 });
@@ -7,7 +8,7 @@ withDefaults(defineProps<{ size?: number }>(), { size: 36 });
 <template>
   <span class="brand" :style="{ fontSize: `${size}px` }">
     <span class="brand__word">وجبة</span>
-    <Photo src="../../assets/brand/chef-hat.svg" alt="" fit="auto" class="brand__hat" />
+    <Photo :src="chefHat" alt="" fit="auto" class="brand__hat" />
   </span>
 </template>
 

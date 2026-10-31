@@ -18,7 +18,7 @@ in `src/components/`, the platform re-exports in `src/ui/`.
 | BrandMark | decoration | `shared/decorations/BrandMark.vue` | chef hat over «وجبة», sized by `size`; never mirrors | Implemented |
 | Field | adaptive | `ui/adaptive/Field.vue` | label (`for`-linked to the control's `id`) + input/textarea + hint/error; `defineModel` | Implemented |
 | Avatar | adaptive | `ui/adaptive/Avatar.vue` | uploaded photo, else `AvatarArt` from the handle; a photo that fails to load degrades to the art. The brand hat is never used as a person (decision D3) | Implemented |
-| Photo | adaptive | `ui/adaptive/Photo.vue` | lazy image, covering its box, `failed` event and a `fallback` slot for the no-image case | Implemented |
+| Photo | adaptive | `ui/adaptive/Photo.vue` | lazy image, covering its box, `failed` event and a `fallback` slot for the no-image case. `src` must be an **imported** asset URL — a relative path string is not rewritten by the bundler and 404s silently (`tests/unit/asset-imports.test.ts`) | Implemented |
 | AvatarArt | adaptive | `ui/adaptive/AvatarArt.vue` | the verified rig: 12 slots, 22 parts, palette axes for skin/shirt/backdrop | Implemented |
 | EmptyNotice | component | `shared/components/EmptyNotice.vue` | title + body + action slot; the illustration is passed in because it is per screen, not per kind | Implemented |
 | Skeleton | adaptive | `ui/adaptive/Skeleton.vue` | card-shaped shimmer blocks | Implemented |
