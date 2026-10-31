@@ -43,6 +43,12 @@ const { forced } = useForcedRegionCondition();
 const displayName = ref(session.profile?.display_name ?? "");
 const whatsapp = ref(session.profile?.whatsapp ?? "");
 const locationText = ref(session.profile?.location_text ?? "");
+// Captured at mount: the only values provisioning is allowed to overwrite are these untouched ones.
+const pristine = {
+  name: displayName.value,
+  whatsapp: whatsapp.value,
+  location: locationText.value,
+};
 const facebook = ref(session.profile?.facebook_url ?? "");
 const instagram = ref(session.profile?.instagram_url ?? "");
 const tiktok = ref(session.profile?.tiktok_url ?? "");
@@ -200,9 +206,15 @@ async function start() {
     // provision again rather than re-reading the same failure.
     await session.ensureReady();
     await session.refresh();
-    displayName.value = session.profile?.display_name ?? displayName.value;
-    whatsapp.value = session.profile?.whatsapp ?? whatsapp.value;
-    locationText.value = session.profile?.location_text ?? locationText.value;
+    // On a slow boot provisioning can resolve after the person has begun typing. Stored values may
+    // only fill a field that is still exactly as it was when this run started — otherwise the first
+    // keystrokes are silently replaced, and a validation test finds a valid name it never typed.
+    if (displayName.value === pristine.name)
+      displayName.value = session.profile?.display_name ?? displayName.value;
+    if (whatsapp.value === pristine.whatsapp)
+      whatsapp.value = session.profile?.whatsapp ?? whatsapp.value;
+    if (locationText.value === pristine.location)
+      locationText.value = session.profile?.location_text ?? locationText.value;
   } catch {
     bootFailed.value = true;
   } finally {
