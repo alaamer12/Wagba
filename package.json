@@ -24,6 +24,8 @@
     "audit": ".venv/Scripts/python.exe tools/db-audit.py",
     "docs:check": "bun tools/linkcheck.ts",
     "pb": "bun tools/pb.mjs",
+    "android": "bun tools/android-setup.mjs",
+    "android:check": "bun tools/android-setup.mjs --check",
     "seed": "bun tools/seed.mjs",
     "hooks": "bun tools/build-hooks.mjs",
     "postinstall": "quasar prepare --silent",

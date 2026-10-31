@@ -27,15 +27,17 @@ docker run --rm -p 8090:8090 \
 Then:
 
 ```
-pnpm install
-quasar dev          # browser target, fastest loop
-quasar build -m capacitor -T android
-npx cap run android
+bun install            # bun only; never npm, pnpm or yarn
+bun dev                # Quasar dev server on :9000, browser target
+bun tools/pb.mjs serve # PocketBase on :8090
+bun tools/seed.mjs     # deterministic: 3 cooks, 12 meals
 ```
+
+For a device, see [Android](#android) below: `bun build`, `bun android`, then Gradle.
 
 Native features degrade in the browser target: GPS falls back to the browser geolocation API, camera to a file input, and `AppLauncher` to `window.open`. That is enough to build against, and it is **not** enough to claim a feature works — see the manual device pass in [conventions.md#verification](conventions.md#verification).
 
-Seed data lives in `pb_migrations/seed/` as a migration guarded by an environment check, so a fresh local instance has meals to look at without anyone hand-entering them.
+Seed data is `bun tools/seed.mjs` (deterministic ids, so a re-run upserts), not a migration.
 
 ## PocketBase on Railway
 
@@ -53,17 +55,46 @@ PocketBase's own S3 backup target works if the keys are set, and is preferable t
 
 ## Android
 
-The shipping target.
+The shipping target, and the target the emulator run is measured against. `android/` is
+generated, so nothing in it is authored here: **`bun android`** (`tools/android-setup.mjs`)
+creates the project if it is missing, applies every native edit the app depends on, and syncs.
+`tests/unit/android-setup.test.ts` fails the gate when the folder drifts from the tool, which is
+what makes deleting `android/` a recovery step instead of a data-loss event.
 
 ```
-quasar build -m capacitor -T android
-cd android && ./gradlew bundleRelease
+bun build                        # SPA into dist/spa
+bun android                      # cap add/sync + the native invariants below
+cd android && ./gradlew assembleDebug
+adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
+
+The native invariants the tool owns, each one measured on a device rather than assumed:
+
+| Invariant | What its absence looks like |
+|---|---|
+| `ACCESS_FINE_LOCATION` + `ACCESS_COARSE_LOCATION` in the main manifest | no permission prompt is ever possible; the app reads that as a refusal and shows the location notice forever |
+| `usesCleartextTraffic` in the **debug** manifest only | every http request to a local backend dies at the platform's network policy (API 28+ denies cleartext) and the feed shows its fault case. `server.cleartext` does **not** do this — the CLI only writes that into a manifest it generates for Cordova plugins |
+| `android.allowMixedContent`, stamped by a sync run with `WAGBA_LOCAL_HTTP=1` | needed only when the backend is a **non-localhost** http origin (a LAN address). `http://127.0.0.1:8090` behind `adb reverse` is a trustworthy origin, so Chromium never treats it as mixed content — the failure there is the tunnel or the cleartext policy, not this |
+| the `<queries>` block for WhatsApp ([integrations.md#native-configuration](integrations.md#native-configuration)) | the handoff silently does nothing on Android 11+ |
+
+A release sync must run **without** `WAGBA_LOCAL_HTTP`; a shell that keeps both allowances can be
+downgraded to plain http. The debug manifest is the only place cleartext is permitted.
+
+Driving it from a host:
+
+```
+adb reverse tcp:8090 tcp:8090            # the app's default PB_URL
+adb emu geo fix 31.2243 30.0459          # longitude first
+```
+
+`geo fix` is accepted (`OK`) and only reaches the framework when something is asking for a
+position, so a cold start after the fix is the reliable order. `adb root` restarts adbd and
+**clears every reverse rule** — re-arm it or the feed's fault case is an artefact of the probe,
+not of the app.
 
 - Signing key in CI secrets, never in the repo. `keystore.properties` is gitignored.
 - `versionCode` increments on every upload; `versionName` follows the app's public version.
 - Play Store **internal testing track** first. Production only after a week of real cooks posting from real phones.
-- The `<queries>` block for WhatsApp must be present in the merged manifest; see [integrations.md#native-configuration](integrations.md#native-configuration).
 - Location permission strings live in `AndroidManifest.xml` and must read as a reason, not a demand.
 
 ## iOS

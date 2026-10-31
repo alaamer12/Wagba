@@ -37,6 +37,7 @@ bun run states:check    # /states + role ratchet — fails only when a count GRO
 bun run chain:check     # markup wall — control/framework tags, QSL classes, seam overrides outside src/ui/base
 bun run docs:check      # link checker over docs/
 bun tools/pb.mjs reset|serve|restart|stop|superuser
+bun android           # regenerate android/, apply the native invariants, cap sync (drift test: tests/unit/android-setup.test.ts)
 bun tools/seed.mjs      # deterministic: 3 cooks, 12 meals
 bun tools/verify-api.ts # the API contract: privacy, fold, handle freeze, cascade
 bun tools/build-hooks.mjs   # esbuild the shared fold into the goja bundle
@@ -87,6 +88,14 @@ scratch/ artifacts/   ignored: probes and gate evidence. Never durable.
 - Quasar's typography leaves `h1`–`h6` on **6rem/3.5rem line boxes**; `app.scss` sets `line-height: 1.3` for headings, and every component still sets its own size.
 - A profile form can be submitted before anonymous provisioning finishes; `useSessionStore().ensureReady()` is awaited before anything that needs an account.
 - Vue's template tokenizer only opens a tag whose name starts with an ASCII letter: `<_NavTab>` parses as **text**, renders nothing, and warns about nothing. `_`-prefixed units stay `_` on disk (placement reads the path) and are imported under an aliased binding (`import NavTab from "./_NavTab.vue"`) — `TAG_UNPARSABLE` in `states-check` refuses the tag form.
+
+## Capacitor rules — learned by running a device
+
+- `android/` is generated. Never hand-edit it: `bun android` owns every native invariant (permissions, the debug cleartext manifest, `cap sync`). `tests/unit/android-setup.test.ts` fails if the folder drifts from the tool.
+- **Never `await` a Capacitor plugin object.** `registerPlugin` returns a Proxy that answers any unknown member — `then` included — with a rejecting call, so awaiting it throws `"Preferences.then()" is not implemented on android` before one key is read. Return a plain adapter instead (`src/services/storage.ts`).
+- Plugins do not declare their Android permissions. `@capacitor/geolocation` without `ACCESS_FINE_LOCATION`/`ACCESS_COARSE_LOCATION` in the manifest can never prompt; the absence of a prompt reads as a refusal.
+- The WebView origin is `https://localhost`, and `http://127.0.0.1:8090` is a **trustworthy origin** — so a local backend needs the platform's cleartext allowance (the debug manifest `bun android` writes), not a mixed-content one. `android.allowMixedContent` (gated on `WAGBA_LOCAL_HTTP=1`) matters only for a LAN-address http backend. `server.cleartext` is a no-op here: the CLI writes it only into a Cordova plugin manifest.
+- `adb emu geo fix <lon> <lat>` prints `OK` and only reaches the framework while something is requesting a position — cold-start the app after it. `adb root` restarts adbd and **clears every `adb reverse` rule**, which turns a dead tunnel into a feed fault that looks like an app bug.
 
 ## Documentation obligations
 
