@@ -30,6 +30,8 @@ Design mockups live in `../mockups/` as binary assets.
 **Tech**
 - `tech/system-components.md` — the running parts and what each owns
 - `tech/units.md` — reusable UI units and their status
+- `tech/facts.md` — every fact source, what it reads, who consumes it, and the test that proves it
+- `tech/roles.md` — Page → View → Component → adaptive → base: what each may import, and why labels are not facts
 - `tech/states.md` — region kinds and the precedence ladder
 - `tech/error-ux.md` — error codes and their surfaces
 - `tech/structure.md` — folder authority, boundary prohibitions, the authority table

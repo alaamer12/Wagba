@@ -8,6 +8,8 @@ How Wagba is built. Everything a user cannot see.
 | [verification.md](verification.md)           | Stories, state matrix, API contract, GPS matrix, SQLite audit, stress, accessibility, budgets    |
 | [system-components.md](system-components.md)  | The running parts and what each owns                                                              |
 | [units.md](units.md)                         | Reusable UI units and their status                                                                |
+| [facts.md](facts.md)                         | The fact spine: every State and Condition, what it reads, who consumes it, and its proof         |
+| [roles.md](roles.md)                         | Page → View → Component → adaptive → base: what each may import, and the audits that refuse the rest |
 | [states.md](states.md)                       | Region kinds and the precedence ladder                                                            |
 | [error-ux.md](error-ux.md)                   | Error codes and their surfaces                                                                    |
 | [lifecycle.md](lifecycle.md)                 | Launch gate, cold/warm start, budgets                                                             |

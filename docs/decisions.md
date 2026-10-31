@@ -390,7 +390,7 @@ The fourteen decisions taken while closing the audit that produced plan v4.
 **Chosen:** «قريب» plus the most frequent `location_text` values in the loaded feed, capped at four.
 **Rejected:** hard-coded dish words (the first attempt), governorate names (not matching keys).
 **Why:** filters must reflect what is on screen; it also matches the mockup's area-chip idea.
-**Status:** settled; the chips smoke test.
+**Status:** superseded by [D18](#d18--the-suggestion-chips-are-the-dishes-people-open): the chips are now the dishes people open, not the areas that happen to be on screen.
 
 ### D5 — search covers the handle, and drops stopwords
 **Chosen:** `search_key` includes the cook's handle; query tokens drop connectors (في، من، على، عن، عند، مع، و) and single letters, keeping single digits.
@@ -457,3 +457,90 @@ The fourteen decisions taken while closing the audit that produced plan v4.
 ## The views journal is private (2026-10-31)
 
 **Chosen:** `meal_views` list/view/delete rules are `null` (admin-only), and its hooks define their own day key inside the handler. **Why:** in PocketBase `''` means public, not admin-only — the opposite of what the migration assumed — and goja gives handlers no file scope, so a top-level `dayKey` was undefined at call time and every view create returned a generic 400. Asserted in `tools/verify-api.ts`: 403 on the journal, unique per viewer per day, +1 lifetime on the first accepted view, and a cook cannot count their own meal.
+
+## Architecture and behaviour pass (2026-10-31)
+
+The ten decisions the v5 plan owed (`§5 M9`), written after the tree settled. Each names what it
+replaces, the test that holds it, and the point at which it may be reopened. Where a later
+measurement overturned a decision, the entry says so and points at the entry that replaced it
+rather than restating it.
+
+### D15 — a pending position read is `loading`, never `fault`
+**Chosen:** the GPS read happens *inside* the feed's request window — `useMealFeedState.load(getCenter)` keeps `inFlight` true until the position and the rows have both settled — so a slow fix renders the skeleton. A position that never arrives becomes `GEO_UNAVAILABLE`, and the permission side, not the read, decides `blocked`.
+**Rejected:** a separate `locating` fact on the location State (the plan's first shape, F2). That State reports the *outcome* of our attempt (`none · ready · denied · unavailable`); a second "in flight" source would let the request window and the location read disagree about which frame the screen is in.
+**Why:** with every ladder fact false for the whole GPS read, `resolveRegion` answered `fault` — "a problem occurred loading" said about a device that is merely finding you.
+**Evidence:** `src/shared/state/useMealFeedState.ts:13-19,76-87`, `src/shared/state/useLocationState.ts:16-21`; `tests/unit/feed-state.test.ts` "is loading while the position is still being read, never fault"; e2e `stories.spec.ts` S5 covers the terminal half (denied, explained, retry recovers).
+**Reversal boundary:** a screen that needs the position without loading the feed (the publish form) brings its own window. If a `locating` fact is ever added it enters the ladder as a fact, never as a component flag.
+**Status:** settled.
+
+### D16 — a denied position with a cached snapshot
+**Chosen:** a denied or unavailable position **with** a cached snapshot renders the cached rows under a warning strip; **without** one it fails fast to `blocked`, with one retry.
+**Rejected:** the strict reading of `GPS mandatory on both sides` for the cached case — a wall in front of rows the device already holds; and a newest-first or nationwide fallback feed, which that rule refuses and keeps refusing.
+**Why:** it amends the accepted cost of that rule — "a user who denies location sees an error instead of an app" — for the one case where refusing shows less than the device knows, without pretending the feed is fresh.
+**Evidence, and the gap:** the decision is recorded, the cached branch is **not built**. `resolveRegion` answers `blocked` before it looks at rows (`src/lib/region.ts:42`) and MealFeedView renders `BlockedRendition` ahead of any rows (`src/features/feed/views/MealFeedView/MealFeedView.vue:46,108`), even though a failed load does restore the snapshot (`src/shared/state/useMealFeedState.ts:63-69`). The no-cache branch is proven by S5; the cached branch has no case and no test.
+**Reversal boundary:** implementing it is a ladder change — rows must outrank `blocked` when a snapshot exists, which in turn needs a second `blocked` display for the no-cache case — and it needs an e2e test that seeds a snapshot and clears the permission. A View-only patch would hide the difference instead of modelling it.
+**Status:** settled as the ruling; the cached branch is a known gap, stated rather than assumed.
+
+### D17 — the banner says the situation, not the age
+**Chosen:** `stale` shows one generic warning strip — no age, no origin area, no instruction. Offline is a separate sentence over the same cached rows (`OfflineRendition`, calmer tone: nothing failed, the app cannot ask), and the feed re-asks on reconnect with no action from the user.
+**Rejected:** rendering `cachedAt` as an age ("from this morning"); naming the area the rows came from; a refresh button or "reopen the app".
+**Why:** an age invites a fight about whether the data is wrong, and the timestamp was stored and rendered by nothing. The offline sentence is separate because "refreshing failed" is not honest about a device that has no connection to fail.
+**Evidence:** `src/ui/renditions/StaleRendition.vue` (no timestamp in the markup; the comment names this ruling), `src/ui/renditions/OfflineRendition.vue`, `MealFeedView.vue:49-51,94,110-116`; e2e `smoke.spec.ts` "offline keeps the rows and shows the stale banner", `refresh.spec.ts` "an offline meal page names offline, not the cached-rows sentence", S6. The snapshot still records `at` (`src/lib/feedCache.ts:10`) and nothing renders it. The reconnect itself has no e2e driver — review rule.
+**Reversal boundary:** a screen that must say how old the rows are needs an age **fact** and a test first; the string is not the place to invent it.
+**Status:** settled. This entry also carries the owner's rule that offline is named and the feed heals itself on reconnect — the plan's list numbered ten rows, so it lives here rather than as an eleventh.
+
+### D18 — the suggestion chips are the dishes people open
+**Chosen:** «قريب» plus up to four dish titles ranked by the server's seven-day view count, read from the chips' **own** query; tapping a chip filters the feed by that exact title, tapping the active one clears it.
+**Rejected:** area chips derived from the loaded feed's `location_text` ([D4](#d4--suggestion-chips-are-derived-from-the-feed)), which were text search wearing a label and collapsed after one tap; hard-coded dish words.
+**Why:** a filter must survive the viewer scrolling somewhere else, and what people search for is a dish, not a neighbourhood. **Supersedes D4:** with this entry no area filter exists anywhere in the app.
+**Evidence:** `src/services/viral.ts` (sort `-views_7d`, dedupe by title, cap), `src/features/feed/views/MealSearchView/MealSearchView.vue` (the chips, the toggle, the debounce); e2e `smoke.spec.ts` "suggestion chips are the dishes people open, and a chip filters the feed" (the row is longer than «قريب» alone, the dish chip fills the field, every surviving row carries the term, a re-tap clears it). Gaps, stated: the ranking query carries no radius or `status` filter, and the dedupe/cap has no unit test — review rule.
+**Reversal boundary:** a chip stays a **dish with a server-side count**. If the count is withdrawn the chips go with it; the answer is never a list guessed from the loaded rows.
+**Status:** settled.
+
+### D19 — a view counts once per viewer per day
+**Chosen:** a write-only `meal_views` journal (`meal`, `user`, `viewed_on`) with a unique index on that triple; the day key stamped server-side as a fixed UTC+2 date (`Date.now() + 2h` — the VM carries no zone database), which stands in for Africa/Cairo; lifetime `views` incremented in `onRecordAfterCreateSuccess`, which is reached only when the insert succeeded and the unique index makes that equivalent to "this viewer has not counted this meal today"; `views_7d` **recounted** hourly from the journal; a self-view refused by the hook.
+**Rejected:** incrementing before the insert (needs "insert succeeded ⇒ +1", unprovable across a unique violation with no `Dao()`); incrementing `views_7d` per view (drifts with every cascade delete); a timestamp instead of a day key; trusting a client-supplied date; the claim "cannot be inflated".
+**Why:** the claim is **one per account per meal per day**. Anonymous account creation is a designed path, so more accounts are always available — and a client that can name its own day can insert a row per fabricated day.
+**Evidence:** `pocketbase/pb_migrations/0002_meal_views.js`, `pocketbase/pb_hooks/views.pb.js`; `tools/verify-api.ts` — a cook cannot count their own meal (400), a member can record one view, the same viewer cannot count twice in a day (400), one accepted view adds exactly one to the lifetime count, no client can read the journal. The journal's rules are their own entry, [the views journal is private](#the-views-journal-is-private-2026-10-31), and are not restated here.
+**Reversal boundary:** moving the day boundary or the unique key moves the recount with it in the same change. A counter that can drift from the journal is worse than no counter.
+**Status:** settled.
+
+### D20 — pull-to-refresh is `QPullToRefresh` — superseded
+**Chosen (as taken):** `QPullToRefresh` on Home, My Meals and Favorites, all three phases real, deleting the bespoke pointer gesture and its dead `refreshing` ref.
+**Rejected (as taken):** keeping the hand-rolled drag.
+**Superseded before it shipped, 2026-10-31:** measured in 2.35, `QPullToRefresh` keeps `state`, `pulling` and `pullRatio` private, emits `refresh` only *after* release, and its puller is a fixed overlay outside the list's flow — so `pulling` and `armed` have nothing to assert while the pointer is down, which is the one thing the case needed. What shipped is the four-phase machine over Quasar's `TouchPan` (`src/shared/behaviour/PullRefresh.vue`) — the primitive `QPullToRefresh` is itself built from. The measurement and the argument live in [QPullToRefresh was not adopted](#qpulltoprefresh-was-not-adopted); this entry exists so a reader following the plan finds the ruling instead of a hole.
+**What survived:** the intent (three named screens, three real phases, one gesture) and D10's contract (70 px threshold, one indicator).
+**Evidence:** `tests/e2e/refresh.spec.ts` — four phases, a drag stopped short arms nothing, My Meals, Saved; `tests/unit/pull-refresh.test.ts` pins the phase sequence and the release-only request.
+**Status:** superseded. Do not implement from this entry; implement from the 2026-10-31 one.
+
+### D21 — the feed is nearest-first, fetched wide and painted in pages
+**Chosen:** one wide read per request (`FEED_FETCH_LIMIT = 500`, newest-first on the wire), distance order computed on the client with **unmeasured rows last**, the first 20 rows painted, 20 more each time the end sentinel becomes visible.
+**Rejected:** a server page of 50 newest and then a sort (the nearer older meal falls off the page — the measured mechanism behind it); `sort=geoDistance(…)` (HTTP 400: `sort` is column-only); virtualisation up front.
+**Why:** PocketBase 0.28.4 cannot sort by the enriched `distance_km`, so "page on the server" and "order on the client" are the same decision, and only one of them can be right. Virtualisation is pre-committed rather than argued: if the 200-loaded-row budget in `perf.spec.ts` misses, `QVirtualScroll` arrives in the same change.
+**Evidence:** `src/services/meals.ts:37-95` (`FEED_FETCH_LIMIT`, `nearestFirst`, `measuredKm`), `src/features/feed/behaviour/useFeedWindow.ts`, `FeedEndSentinel.vue`, `MealFeedView.vue:56-66`; `tests/unit/feed-window.test.ts` (first twenty, one page per append, no append past the end, a distance-less row sorts last); `tests/e2e/perf.spec.ts` "a 200-row feed paints twenty under the budget and appends to the end"; `smoke.spec.ts` nearest-first.
+**Reversal boundary:** the 200-row budget. Missing it adopts `QVirtualScroll`; it does not soften the budget.
+**Status:** settled.
+
+### D22 — Welcome is a first launch, not a stop on the way Home
+**Chosen:** a persisted `welcome-seen` flag read by the router's `beforeEach` **before** the screen paints; any value at the key means visited; the visit is marked when the screen is first shown, not when its button is pressed. A device that refuses storage repeats the screen.
+**Rejected:** the earlier profile-based rule (having a name does not mean having seen the intro); redirecting from inside `WelcomeView` (a View can only redirect after it mounts, so the skipped screen flashes first); "acknowledged" semantics.
+**Why:** the owner's condition is *visited*, once. A first-run screen that keeps returning is a bug the person cannot report, and a redirect that paints a frame first is the same bug with a flicker.
+**Evidence:** `src/shared/conditions/useWelcomeSeenCondition.ts`, `src/router/index.ts:34-51`; `tests/unit/welcome-seen.test.ts` (the key, any value counts, a refusing store reads as never visited, one shared read); e2e `account.spec.ts` C15 twice — a second visit goes Home, and a device that refuses storage shows the screen again.
+**Reversal boundary:** the flag is a Condition — the device's past — so no View clears it. Resetting it means a new key or a migration, never a setter.
+**Status:** settled.
+
+### D23 — the plus button names the account before the meal
+**Chosen:** `MainNavigationView.openAdd` awaits provisioning and then routes to Add Meal when the profile is complete, or to Profile Setup with `?from=add-meal`; Profile Setup renders one line saying why it appeared, and saving returns to the form in one hop. The Settings card takes the same route for the same reason.
+**Rejected:** pushing the form and letting its guard bounce the user back — two screens, a GPS prompt for a form nobody meant to open, and the account at the end of it anyway.
+**Why:** the app's one action must not fail silently at the first tap, and the destination has to be one function so that it stays one decision.
+**Evidence:** `src/app/MainNavigationView.vue:22-33`, `src/features/profile/views/ProfileFormView/ProfileFormView.vue:36-38,246-248`, `src/features/profile/views/AccountCtaView/AccountCtaView.vue` (`finishAccount`), and the key `profile.setup.reason.add` in both catalogs; e2e `account.spec.ts` "F51 · the call to action goes where its words say" proves the journey from the Settings card, C16 proves the failed-provisioning branch. Gap: no e2e clicks the plus button itself — review rule.
+**Reversal boundary:** a second place that routes to the meal form calls this route, it does not copy the `isComplete` test.
+**Status:** settled; the plus control's own path is a review rule until a story clicks it.
+
+### D24 — `/pvc` and `/states` are the architecture spine
+**Chosen:** every unit has one of five roles (Page, View, Component, adaptive, base) and every fact is a State or a Condition; one ladder decides a region; `bun run pvc` and `bun run states:check` run in the gate; a fact source never renders, a Page never reads a fact or composes a UI Element, a Condition exposes no setter, and a unit releases the listener it registers.
+**Rejected:** `components/base | layout | present` as the organising idea; a page-computed `kind` prop (`AppRegion`, deleted — it let two screens disagree about the same facts); one boolean flag per case.
+**Why:** the defects this pass closed were not style. A pending fix rendered "a problem occurred loading" and an offline cook was told they had no meals, and neither is visible to a type-checker or to a screen test that only drives the happy path.
+**Evidence:** `tools/check_pvc.py` (`FACT_CALL` now recognises `use…Store`, the Pinia shape — which is what made the audit able to see this app at all), `tools/states-check.ts` with `tools/arch-baseline.json` (a ratchet that may only shrink), `tests/unit/arch-rules.test.ts` (a planted violation per rule, and the repo inside its baseline), `tests/unit/region-matrix.test.ts` + `tests/e2e/states.spec.ts` (each screen's cases), `tests/unit/chain-rules.test.ts` (the markup wall). The law and today's standing findings are [tech/roles.md](tech/roles.md) and [tech/facts.md](tech/facts.md), not restated here.
+**Reversal boundary:** a new kind is a ladder change plus a matrix row first (`states.md`: ten is the ceiling); a new role is a change to the audit and to `roles.md` first. An audit is only evidence once it has been shown to refuse something, which is why `arch-rules.test.ts` plants violations before anyone trusts a green run.
+**Status:** settled.

@@ -115,7 +115,7 @@ screen stays with the screen.
 | AccountCtaView | profile | Session State (`isComplete`) | the call to action, or nothing |
 | SettingsRowsView | profile | Session State (`ensureReady`), Favorites State, `listMine` | the three cards of rows, their tallies, and where each row goes |
 | ProfileFormView | profile | Session State, the handle service | one case; the server's refusal is shown inside it, and the bar it renders says completing or editing |
-| WelcomeView | onboarding | none yet — the first-visit skip is decision D10′ and needs `useWelcomeSeenCondition`, which is **not implemented** | one case |
+| WelcomeView | onboarding | Session State, Welcome-Seen Condition (the first-visit skip, decision D10′) | one case |
 | MainNavigationView | app shell | Active Route Condition | which tab reads as active, and what each control does |
 
 The feed View is the only place the ladder is called for the feed: the State reports facts and
