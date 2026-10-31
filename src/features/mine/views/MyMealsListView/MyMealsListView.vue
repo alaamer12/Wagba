@@ -38,7 +38,14 @@ const rows = ref<Meal[]>([]);
 const read = ref(false);
 const inFlight = ref(false);
 const filter = ref<Filter>("all");
+// C7: two writes live on a row and each answers for itself. `pendingId` is the hide/show in
+// flight for exactly one meal, `refusedId` is the write the server refused for exactly one
+// meal, and `pendingDeleteId` is the confirmation dialog's row. None of them is a boolean:
+// a global `busy` flag greys out every row for one cook's tap, and a global error turns a
+// single refusal into a screen-wide claim.
 const pendingId = ref<string | null>(null);
+const refusedId = ref<string | null>(null);
+const pendingDeleteId = ref<string | null>(null);
 
 const options = computed(() => [
   { value: "all" as const, label: t("myMeals.filter.all") },
@@ -50,7 +57,9 @@ const visible = computed(() =>
   filter.value === "all" ? rows.value : rows.value.filter((meal) => meal.status === filter.value),
 );
 
-const pending = computed(() => rows.value.find((meal) => meal.id === pendingId.value) ?? null);
+const pending = computed(
+  () => rows.value.find((meal) => meal.id === pendingDeleteId.value) ?? null,
+);
 
 const kind = computed<Kind>(() => {
   const override = forced.value;
@@ -95,8 +104,14 @@ onMounted(load);
 
 async function toggle(id: string) {
   const meal = rows.value.find((row) => row.id === id);
-  if (!meal) return;
+  // A row whose own write is still out refuses a second press; the rest of the list is
+  // untouched, which is what makes this per-row rather than a global lock.
+  if (!meal || pendingId.value === id) return;
   const next: Meal["status"] = meal.status === "available" ? "unavailable" : "available";
+  pendingId.value = id;
+  // A refusal belongs to its row: pressing another row's action does not erase it, and pressing
+  // this one again does — the retry is the only thing that unsays it.
+  if (refusedId.value === id) refusedId.value = null;
   try {
     await setMealStatus(meal.id, next);
     // F43: the loaded record is a snapshot of what the server said, and writing `meal.status`
@@ -104,9 +119,15 @@ async function toggle(id: string) {
     // row is replaced with a copy carrying the status our own write just confirmed.
     rows.value = rows.value.map((row) => (row.id === meal.id ? { ...row, status: next } : row));
   } catch {
-    // The write did not land, so the rows on screen are the last honest answer: the ladder says
-    // `stale` over them rather than the page swallowing the failure into a silent button.
-    read.value = false;
+    // The write did not land, so this row keeps the state the server last confirmed and says
+    // so under itself. It used to set `read = false`, which turned one refused tap into the
+    // whole list claiming to be stale — a screen-wide answer to a row-sized question.
+    refusedId.value = id;
+  } finally {
+    // The marker is one slot and it names the row that is working, so a row that starts its own
+    // write while this one is out takes the marker over — and this one must not clear it on the
+    // way out. Every row's *result* is still its own either way.
+    if (pendingId.value === id) pendingId.value = null;
   }
 }
 
@@ -120,7 +141,7 @@ function edit(id: string) {
 
 function removed(id: string) {
   rows.value = rows.value.filter((meal) => meal.id !== id);
-  pendingId.value = null;
+  pendingDeleteId.value = null;
 }
 </script>
 
@@ -135,20 +156,24 @@ function removed(id: string) {
         <OfflineRendition v-else-if="cachedRows && !online">
           <ReadyRendition
             :items="visible"
+            :pending-id="pendingId"
+            :refused-id="refusedId"
             @open="open"
             @edit="edit"
             @toggle="toggle"
-            @ask-delete="(id) => (pendingId = id)"
+            @ask-delete="(id) => (pendingDeleteId = id)"
           />
         </OfflineRendition>
 
         <StaleRendition v-else-if="cachedRows">
           <ReadyRendition
             :items="visible"
+            :pending-id="pendingId"
+            :refused-id="refusedId"
             @open="open"
             @edit="edit"
             @toggle="toggle"
-            @ask-delete="(id) => (pendingId = id)"
+            @ask-delete="(id) => (pendingDeleteId = id)"
           />
         </StaleRendition>
 
@@ -173,10 +198,12 @@ function removed(id: string) {
         <ReadyRendition
           v-else-if="kind === 'ready'"
           :items="visible"
+          :pending-id="pendingId"
+          :refused-id="refusedId"
           @open="open"
           @edit="edit"
           @toggle="toggle"
-          @ask-delete="(id) => (pendingId = id)"
+          @ask-delete="(id) => (pendingDeleteId = id)"
         />
 
         <FaultRendition v-else @retry="load" />
@@ -186,7 +213,7 @@ function removed(id: string) {
     <DeleteConfirmationView
       :meal="pending"
       @deleted="removed"
-      @cancel="pendingId = null"
+      @cancel="pendingDeleteId = null"
     />
   </div>
 </template>

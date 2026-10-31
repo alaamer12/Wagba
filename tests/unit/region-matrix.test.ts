@@ -1,25 +1,11 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import type { Kind } from "@/lib/region";
-import { SCREENS } from "../e2e/region-matrix";
+import { KINDS, SCREENS } from "../e2e/region-matrix";
 
 // The applicability matrix is data, so it can be checked for shape without a browser: every
 // screen must classify every kind exactly once, and no cell may point at a journey that has been
 // renamed away. A matrix that quietly stops matching the specs is worse than no matrix.
-
-const KINDS: Kind[] = [
-  "blocked",
-  "submitting",
-  "rejected",
-  "loading",
-  "stale",
-  "fault",
-  "empty",
-  "empty-filtered",
-  "ready",
-  "unknown",
-];
 
 const stories = readFileSync(join(import.meta.dirname, "../e2e/stories.spec.ts"), "utf8");
 
@@ -61,6 +47,40 @@ describe("the region applicability matrix", () => {
     for (const screen of SCREENS) {
       expect(screen.cells.find((c) => c.kind === "unknown")?.outcome).toBe("fallback");
       expect(screen.cells.find((c) => c.kind === "submitting")?.outcome).not.toBe("case");
+    }
+  });
+
+  // C17: the matrix used to cover four screens, which let a screen present a kind it had no case
+  // for — or no region at all — go unmentioned. The scope is pinned here, so adding a screen to
+  // the app means classifying it rather than silently widening the gap.
+  it("classifies every screen the app routes to", () => {
+    expect(SCREENS.map((s) => s.name).sort()).toEqual([
+      "favorites",
+      "home",
+      "meal",
+      "my meals",
+      "profile",
+      "settings",
+      "welcome",
+    ]);
+  });
+
+  it("gives a screen without a ladder no case to force, and a landmark to prove it painted", () => {
+    for (const screen of SCREENS) {
+      if (screen.region) {
+        expect(
+          screen.cells.some((c) => c.outcome === "case"),
+          `${screen.name} has a region but no case`,
+        ).toBe(true);
+        continue;
+      }
+      // No ladder means every kind is a fallback by absence — a `case` or `data` here would
+      // claim a display that does not exist, which is the C1 mistake one screen over.
+      expect(screen.cells.every((c) => c.outcome === "fallback")).toBe(true);
+      expect(screen.landmark, `${screen.name} has nothing to prove it rendered`).toBeTruthy();
+      expect(screen.shots, `${screen.name} has no case, so there is nothing to photograph`).toBe(
+        false,
+      );
     }
   });
 });

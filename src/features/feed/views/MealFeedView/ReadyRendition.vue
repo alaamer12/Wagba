@@ -12,10 +12,11 @@ defineProps<{ items: Meal[] }>();
 <template>
   <ul class="cards">
     <li v-for="meal in items" :key="meal.id">
-      <!-- The card is the press target: MealCard already draws a pointer and takes a click, and
-           wrapping it in a button put a heading list inside a control and needed a skin of its
-           own. The cook's own list opens a card the same way. -->
-      <MealCard :meal="meal" @click="$emit('open', meal.id)" />
+      <!-- The card *is* the control: `interactive` gives it `role="link"`, a tab stop and
+           Enter/Space, so the row is reachable without a pointer. Wrapping it in a button put a
+           heading list inside a control and needed a skin of its own; a wrapper div could not be
+           focused at all, which is how the card was pointer-only. -->
+      <MealCard :meal="meal" interactive @open="$emit('open', meal.id)" />
     </li>
   </ul>
 </template>

@@ -38,16 +38,22 @@ A View assembles the facts and calls `resolveRegion` once; a Page never passes a
 ```ts
 if (blocked) return 'blocked'
 if (submitting) return 'submitting'
+if (!read && hasRows) return 'stale'
 if (rejected) return 'rejected'
 if (inFlight && !hasRows) return 'loading'
-if (!read && hasRows) return 'stale'
 if (!read) return 'fault'
 if (!hasRows && narrowing) return 'empty-filtered'
 if (!hasRows) return 'empty'
 return 'ready'
 ```
 
-Order is the contract: a blocking gate outranks a spinner; cached rows outrank an error; a filter outranks a genuine emptiness.
+Order is the contract: a blocking gate outranks a spinner; cached rows outrank both a rejection and
+an error (a rejected position still leaves the last read on screen); a filter outranks a genuine
+emptiness.
+
+`resolveRegion` returns the kind; `composeRegion` adds the two facts a *display* needs about it —
+whether cached rows exist under a `blocked` notice, and whether the failure is retryable (`denied`
+is terminal, a timeout is not).
 
 ## Region model
 
@@ -81,6 +87,13 @@ shows under the stamped kind) or `data` (the case is real but needs rows, so a j
 | My Meals | loading · stale · empty · empty-filtered · fault | blocked · submitting · rejected · unknown | ready (S2) |
 | Favorites | loading · empty · fault | blocked · stale · empty-filtered · submitting · rejected · unknown | ready (S3) |
 | Meal | loading · empty (the gone case) · fault | blocked · stale · empty-filtered · submitting · rejected · unknown | ready (S1) |
+| Profile | loading · fault · empty | blocked · stale · empty-filtered · submitting · rejected · unknown | ready (S10) |
+| Welcome | — | all ten (no region) | — |
+| Settings | — | all ten (no region) | — |
+
+A screen with `region: false` has no ladder at all: the matrix still classifies every kind — as
+`fallback` by absence — and `states.spec.ts` asserts it paints its landmark with zero `[data-kind]`
+nodes, so a forced kind cannot masquerade as a designed state there either.
 
 Enforced in two places: `tests/unit/region-matrix.test.ts` checks the table's shape — every screen
 classifies every kind exactly once, `unknown` is never a case, a read-only screen never claims

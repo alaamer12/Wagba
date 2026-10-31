@@ -7,8 +7,28 @@ import type { Meal } from "../../types/schemas";
 import Avatar from "../../ui/adaptive/Avatar.vue";
 import Photo from "../../ui/adaptive/Photo.vue";
 
-const props = defineProps<{ meal: Meal }>();
+const props = withDefaults(defineProps<{ meal: Meal; interactive?: boolean }>(), {
+  interactive: false,
+});
+// `open` is this card's own verb: the parent View decides what opening means (a route), so the
+// card never routes. A card that is not `interactive` still renders and still takes a click from
+// a wrapper — it is simply not a control, which is the honest shape for a presentational use.
+const emit = defineEmits<{ open: [] }>();
 const { t } = useI18n();
+
+function activate(): void {
+  if (props.interactive) emit("open");
+}
+
+// A card is a link, not a button: it navigates. Enter is the activation key; Space is the
+// browser's scroll key unless the element handles it, so it is swallowed here — a card that
+// scrolled the feed instead of opening would be reachable by keyboard and still unusable.
+function onKeydown(event: KeyboardEvent): void {
+  if (!props.interactive) return;
+  if (event.key !== "Enter" && event.key !== " " && event.key !== "Spacebar") return;
+  event.preventDefault();
+  emit("open");
+}
 
 const cover = computed(() =>
   props.meal.photos[0] ? photoUrl(props.meal, props.meal.photos[0]) : "",
@@ -34,7 +54,14 @@ const distance = computed(() => Number(props.meal.distance_km ?? 0));
 </script>
 
 <template>
-  <article class="meal-card">
+  <article
+    class="meal-card"
+    :class="{ 'is-interactive': interactive }"
+    :role="interactive ? 'link' : undefined"
+    :tabindex="interactive ? 0 : undefined"
+    @click="activate"
+    @keydown="onKeydown"
+  >
     <div class="meal-card__photo">
       <Photo v-if="photo" :src="cover" :alt="meal.title" @failed="broken = true" />
       <Photo
@@ -69,6 +96,12 @@ const distance = computed(() => Number(props.meal.distance_km ?? 0));
   box-shadow: var(--shadow-soft);
   padding: var(--space-3);
   cursor: pointer;
+}
+/* Paint only when the card is the control: the focus ring is the one thing a keyboard user gets
+   instead of the pointer's hover, and it is drawn on the card's own edge. */
+.meal-card.is-interactive:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 2px;
 }
 .meal-card__photo {
   width: 92px;

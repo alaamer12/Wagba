@@ -413,3 +413,155 @@ test("S12 a meal tab narrows; an empty tab is not an empty cook", async ({ page 
   await page.getByRole("tab").nth(1).click();
   await expect(page.locator('[data-kind="empty-filtered"]')).toBeVisible({ timeout: 15_000 });
 });
+
+test("S13 a failed My Meals read is a fault with a retry, never an empty list", async ({
+  page,
+}) => {
+  // C5: the screen used to catch the error into an empty list, so a cook with no connection was
+  // told they had never posted a meal. The read is aborted at the transport, which is the one
+  // failure a UI cannot mistake for an answer.
+  await page.route("**/api/collections/meals/**", (route) => route.abort());
+  await page.goto("/#/mine");
+
+  const fault = page.locator('[data-kind="fault"]');
+  await expect(fault).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator('[data-kind="empty"]')).toHaveCount(0);
+
+  // The retry is a real request, not a re-read of the failure.
+  await page.unroute("**/api/collections/meals/**");
+  await fault.getByRole("button").click();
+  await expect(page.locator('[data-kind="fault"]')).toHaveCount(0, { timeout: 20_000 });
+  await expect(page.locator('[data-kind="empty"]')).toBeVisible({ timeout: 20_000 });
+});
+
+test("S14 Saved: a row that could not be read is named, and a journal with nothing readable is a fault", async ({
+  page,
+}) => {
+  // C8: the saved journal is one read per id, and it silently dropped the ones that failed —
+  // fewer rows, drawn as if they were all of them. Two saves make one failure a *partial* one.
+  const t = T();
+  await page.goto("/#/home");
+  await waitForFeed(page);
+
+  for (const index of [0, 1]) {
+    const card = page.locator('[data-kind="ready"] article').nth(index);
+    await expect(card).toBeVisible({ timeout: 30_000 });
+    await card.click();
+    const save = page.getByRole("button", { name: t.saveMeal });
+    await expect(save).toBeVisible({ timeout: 20_000 });
+    // The label flips optimistically; the journal is the promise. Wait for the write, or the
+    // assertion below counts a save that never landed.
+    const saved = page.waitForResponse(
+      (res) =>
+        res.url().includes("/api/collections/favorites/records") &&
+        res.request().method() === "POST" &&
+        res.status() < 400,
+      { timeout: 20_000 },
+    );
+    await save.click();
+    await saved;
+    await page.goto("/#/home");
+    await waitForFeed(page);
+  }
+
+  await page.goto("/#/favorites");
+  await expect(page.locator('[data-kind="ready"]')).toBeVisible({ timeout: 30_000 });
+  const total = await page.locator('[data-kind="ready"] article').count();
+  expect(total).toBeGreaterThanOrEqual(2);
+
+  // Exactly one saved row fails to read: the rest still render, and the screen says why.
+  let allowed = 1;
+  await page.route("**/api/collections/meals/records/*", async (route) => {
+    if (allowed > 0) {
+      allowed -= 1;
+      await route.abort();
+      return;
+    }
+    await route.continue();
+  });
+
+  await page.reload();
+  const partial = page.locator("[data-partial]");
+  await expect(partial).toBeVisible({ timeout: 30_000 });
+  expect(await partial.getAttribute("data-partial")).toBe("1");
+  await expect(page.locator('[data-kind="ready"] article')).toHaveCount(total - 1, {
+    timeout: 20_000,
+  });
+
+  // Every saved row fails: that is a read that did not happen, not an empty journal.
+  allowed = Number.POSITIVE_INFINITY;
+  await page.reload();
+  await expect(page.locator('[data-kind="fault"]')).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator("[data-partial]")).toHaveCount(0);
+  await page.unroute("**/api/collections/meals/records/*");
+});
+
+test("S15 a meal card is reachable and openable by keyboard", async ({ page }) => {
+  // A card that only answers a pointer is a dead row for anyone with a keyboard or a switch:
+  // `role="link"`, a tab stop and Enter/Space are what make the same row usable.
+  await page.goto("/#/home");
+  await waitForFeed(page);
+
+  const card = page.locator('[data-kind="ready"] article').first();
+  expect(await card.getAttribute("role")).toBe("link");
+  expect(await card.getAttribute("tabindex")).toBe("0");
+  await card.focus();
+  expect(await card.evaluate((el) => el === document.activeElement)).toBe(true);
+
+  await page.keyboard.press("Enter");
+  await expect(page).toHaveURL(/#\/meal\//, { timeout: 20_000 });
+
+  // Space is the same activation and must not scroll the feed instead.
+  await page.goBack();
+  await waitForFeed(page);
+  const again = page.locator('[data-kind="ready"] article').first();
+  await again.focus();
+  await page.keyboard.press("Space");
+  await expect(page).toHaveURL(/#\/meal\//, { timeout: 20_000 });
+});
+
+test("S16 a refused hide says so under its row and keeps the row's state", async ({ page }) => {
+  // C7: the hide/show write had no pending state and no failure surface, so a refused tap looked
+  // like a successful one until the next reload. The refusal is the row's, and so is the wait.
+  const t = T();
+  // A cook needs an account before a meal can be theirs — the server refuses the write otherwise.
+  await completeProfile(page, t, "هالة سمير");
+  await page.goto("/#/add");
+  const meal = `طاجن ${Date.now()}`;
+  await page.getByLabel(t.mealName, { exact: false }).fill(meal);
+  await page.locator("#photos").setInputFiles("tests/fixtures/photos/p2.jpg");
+  await page.getByLabel(t.area, { exact: false }).fill("المعادي");
+  await page.getByRole("button", { name: t.publish }).click();
+  await waitForFeed(page);
+  await expect(page.getByText(meal).first()).toBeVisible({ timeout: 20_000 });
+
+  await page.goto("/#/mine");
+  const item = page.locator(".item").filter({ hasText: meal });
+  await expect(item).toBeVisible({ timeout: 20_000 });
+
+  // Slow enough to see the row working on it, then refused.
+  await page.route("**/api/collections/meals/records/*", async (route) => {
+    if (route.request().method() !== "PATCH") {
+      await route.continue();
+      return;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 2_000));
+    await route.abort();
+  });
+
+  const hide = item.getByRole("button", { name: t.hide });
+  await hide.click();
+  await expect(hide).toBeDisabled({ timeout: 10_000 });
+
+  await expect(item.locator("[data-refused]")).toBeVisible({ timeout: 20_000 });
+  await expect(item.getByRole("button", { name: t.hide })).toBeEnabled();
+  // One refused tap is not a screen-wide claim: the list is still the answer it was.
+  await expect(page.locator('[data-kind="ready"]')).toBeVisible();
+  await expect(page.locator('[data-kind="stale"]')).toHaveCount(0);
+
+  // Restore the account: the run after this one must not inherit a published meal.
+  await page.unroute("**/api/collections/meals/records/*");
+  await item.getByRole("button", { name: t.del }).click();
+  await page.getByRole("dialog").getByRole("button", { name: t.confirm }).click();
+  await expect(page.getByText(meal)).toHaveCount(0, { timeout: 20_000 });
+});

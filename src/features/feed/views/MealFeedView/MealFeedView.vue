@@ -2,7 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
-import { type Kind, resolveRegion } from "../../../../lib/region";
+import { composeRegion, type Kind } from "../../../../lib/region";
 import PullRefresh from "../../../../shared/behaviour/PullRefresh.vue";
 import { useForcedRegionCondition } from "../../../../shared/conditions/useForcedRegionCondition";
 import {
@@ -37,14 +37,22 @@ const location = useLocationState();
 const { online } = useNetworkCondition();
 const { forced } = useForcedRegionCondition();
 
-const kind = computed<Kind>(() => {
+const regionCase = computed(() => {
   const override = forced.value;
   // The harness injects facts, so the ladder still decides. `unknown` is the single kind with
   // no fact set: an unclassified region is one the ladder was handed nothing about.
-  if (override?.facts) return resolveRegion(override.facts);
-  if (override) return override.kind;
-  return resolveRegion({ ...meals.facts, blocked: location.blocked });
+  if (override?.facts) return composeRegion(override.facts);
+  if (override) return { kind: override.kind, snapshot: false, retry: override.kind === "fault" };
+  // `blocked` gates asking, not showing: rows already read stay under the notice, and only a
+  // transient device failure offers the retry (F38).
+  return composeRegion(
+    { ...meals.facts, blocked: location.blocked },
+    { snapshot: meals.hasRows, cause: location.cause },
+  );
 });
+const kind = computed<Kind>(() => regionCase.value.kind);
+const retryable = computed(() => regionCase.value.retry);
+const snapshotUnderBlock = computed(() => regionCase.value.snapshot && rows.value.length > 0);
 
 // Cached rows are the same case in the ladder either way; the network decides which strip the
 // user reads over them — "refreshing failed" is not honest when the device is offline.
@@ -105,7 +113,8 @@ function open(id: string) {
     <PullRefresh :on-refresh="refresh">
       <LoadingRendition v-if="kind === 'loading'" :rows="4" />
 
-      <BlockedRendition v-else-if="kind === 'blocked'" @retry="retry" />
+      <BlockedRendition v-else-if="kind === 'blocked'" :retryable="retryable" @retry="retry" />
+      <ReadyRendition v-if="kind === 'blocked' && snapshotUnderBlock" :items="rows" @open="open" />
 
       <OfflineRendition v-else-if="cachedRows && !online">
         <ReadyRendition :items="rows" @open="open" />

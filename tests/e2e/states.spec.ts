@@ -9,9 +9,48 @@ import { SCREENS } from "./region-matrix";
 // not an override. A kind with no case of its own must render the fault display and say so:
 // asserting equality with that screen's own fault text is what stops an undesigned state being
 // photographed as though it were one (defect C1).
+//
+// C17: every screen is in the matrix, including the ones with no ladder. For those the proof is
+// the other way round — a forced kind must change nothing and stamp no region — because "this
+// screen has no cases" is a claim the old four-screen matrix could not make at all.
 
 for (const screen of SCREENS) {
   test.describe(`state matrix: ${screen.name}`, () => {
+    if (!screen.region) {
+      test("every kind is a fallback: nothing can be forced onto a screen with no region", async ({
+        page,
+      }) => {
+        // Welcome is a first launch, and the app sends a device that has seen it home; the mark
+        // is cleared before every load so the screen under test stays on screen.
+        if (screen.route.includes("/welcome")) {
+          await page.addInitScript(() => {
+            // Runs on about:blank too, where storage is denied; the hop is deliberate.
+            try {
+              globalThis.localStorage?.removeItem("wagba:welcome-seen");
+              globalThis.localStorage?.removeItem("welcome-seen");
+            } catch {
+              /* no storage on this document */
+            }
+          });
+        }
+        const errors: string[] = [];
+        page.on("pageerror", (error) => errors.push(String(error)));
+        for (const item of screen.cells) {
+          // A different document first: a hash-only change keeps the app alive, so the guard keeps
+          // its cached "seen" answer and would redirect before the reload. about:blank forces the
+          // next load to be a real first launch, and the init script clears the mark each time.
+          await page.goto("about:blank");
+          await page.goto(`${screen.route}?state=${item.kind}`);
+          if (screen.landmark) {
+            await expect(page.locator(screen.landmark)).toBeVisible({ timeout: 30_000 });
+          }
+          await expect(page.locator("[data-kind]"), item.note ?? "").toHaveCount(0);
+        }
+        expect(errors).toEqual([]);
+      });
+      return;
+    }
+
     let faultText = "";
 
     test.beforeEach(async ({ page }) => {

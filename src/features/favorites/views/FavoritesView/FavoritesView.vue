@@ -34,6 +34,11 @@ const inFlight = ref(false);
 // tap must not grey out the whole journal, and a refusal must not look like a successful remove.
 const removing = ref<string[]>([]);
 const refused = ref<string[]>([]);
+// C8: the saved ids whose own read failed. The batch is one request per id, so a journal can be
+// half-readable — and rendering the half that arrived as the whole journal told the person their
+// other saved meals were gone. The rows still show (they are real); this is what the screen owes
+// them on top.
+const failed = ref<string[]>([]);
 
 const kind = computed<Kind>(() => {
   const override = forced.value;
@@ -60,12 +65,17 @@ async function load() {
     rows.value = settled
       .filter((result): result is PromiseFulfilledResult<Meal> => result.status === "fulfilled")
       .map((result) => result.value);
+    // Which of the saved ids answered with nothing. Kept as ids rather than a count so the
+    // strip cannot outlive the rows it describes (a reload replaces both).
+    failed.value = wanted.filter((_, index) => settled[index]?.status === "rejected");
     // Nothing saved and nothing *readable* are different claims, and the batch answers with
     // both as a silence. An empty journal is `empty`; a journal whose every row failed to load
-    // is `fault`, which is what the all-but-swallowed `allSettled` used to hide.
+    // is `fault`, which is what the all-but-swallowed `allSettled` used to hide. A journal that
+    // only partly answered is neither: it is `ready` with the failure named (C8).
     read.value = wanted.length === 0 || rows.value.length > 0;
   } catch {
     read.value = false;
+    failed.value = [];
   } finally {
     inFlight.value = false;
   }
@@ -110,6 +120,7 @@ async function remove(id: string) {
         :items="rows"
         :removing="removing"
         :refused="refused"
+        :failed="failed"
         @open="open"
         @remove="remove"
       />
