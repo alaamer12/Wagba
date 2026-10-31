@@ -24,8 +24,9 @@ const READERS = arg("readers", 50);
 const WRITERS = arg("writers", 20);
 const STAMP = Date.now().toString(36);
 
-// Dev-box ceilings; documented in docs/tech/verification.md. The hot cost is
-// the per-row cook enrichment in the meals hook, not the SQLite query.
+// Dev-box ceilings; documented in docs/tech/verification.md. The reader cost used to be the
+// per-row cook enrichment (two SELECTs per returned meal); since the snapshot is written at write
+// time, a miss here is the query itself rather than the enrichment.
 const budgets = { list: 800, search: 700, publish: 600 };
 
 type Json = Record<string, unknown>;

@@ -517,6 +517,16 @@ check(
   `${byNameCount}/${byHandleCount}`,
 );
 
+// The feed reads `cook` from the row, not from a per-record lookup, so a rename that updated only
+// the search key would leave every card showing the old name.
+const renamedMeal = await api(`/api/collections/meals/records/${mealId}`, {}, other.token);
+const renamedCook = (renamedMeal.body.cook ?? {}) as Json;
+check(
+  "renaming the cook also rebuilds the stored snapshot on their meals",
+  String(renamedCook.display_name ?? "") === "سلمى",
+  String(renamedCook.display_name ?? ""),
+);
+
 await api(`/api/collections/users/records/${anon.id}`, { method: "DELETE" }, anon.token);
 const gone = await api(`/api/collections/meals/records/${mealId}`, {}, other.token);
 check("deleting the account cascades to its meals", gone.status === 404, String(gone.status));

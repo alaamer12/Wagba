@@ -82,7 +82,7 @@ PocketBase creates this collection; `0001_schema.js` extends it rather than defi
 | `longitude` | number | −180…180, same zero/required caveat as latitude. Zeroed on every response | `Meal.location` |
 | `search_key` | text | Required, max 400, **denormalized** | — (derived) |
 | `distance_km` | number | **Response-only**: written by enrich, cleared on write | — (derived) |
-| `cook` | json | **Response-only**: public subset incl. the cook's own `id`/`collectionId`, written by enrich | — (derived) |
+| `cook` | json | **Denormalized at write time**: the ten public keys incl. the cook's `id`/`collectionId`, written by the meal create/update hooks and rebuilt for that cook's meals when their profile changes; enrich re-applies the allow-list and never queries per row (legacy `{}` rows fall back until saved) | `Meal.cook` |
 | `created`, `updated` | autodate | `onCreate`; `onUpdate` only for `updated` | `Meal.createdAt/updatedAt` |
 
 **Indexes, each justified by a read path:**
@@ -132,12 +132,12 @@ Every copy needs a named writer, a rebuild rule, and a home here — not in the 
 | Copy | Writer | Rebuild | Why sanctioned |
 |---|---|---|---|
 | `meals.search_key` | `onRecordCreateRequest` + `onRecordUpdateRequest` (meals); `onRecordUpdateRequest` (users, on rename) | Drop and recompute from `title + description + location_text + cook.display_name + cook.handle` | PocketBase cannot filter across a relation, and SQLite `LIKE` folds ASCII only — the Arabic fold must be pre-applied. The handle is in the key so a username search works |
-| `meals.cook` (json, response-only) | `onRecordEnrich` | Recomputed per request; never saved | `users` is owner-readable only, but buyers need name/handle/whatsapp/location/socials — and the cook's own ids to resolve an avatar URL |
+| `meals.cook` (json) | `onRecordCreateRequest` + `onRecordUpdateRequest` (meals), and the users update hook on any profile change | Written at write time from the same user record; the users hook rebuilds it for every meal of that cook | `users` is owner-readable only, but buyers need name/handle/whatsapp/location/socials — and the cook's own ids to resolve an avatar URL. A response-time rebuild cost two SELECTs per row (2 000 for a 500-row feed); the snapshot removes both |
 | `meals.distance_km` (number, response-only) | `onRecordEnrich`, from the request's `lat`/`lng` | Recomputed per request; never saved | Ordering and labels are view data, not facts |
 
 **Refused:** a `favorites_count` cache, a duplicate of `description`, storing the viewer's position anywhere, and any column that can be derived from one query.
 
-Consequence of the `search_key` copy: a renamed cook must re-derive every one of their meals. The `users` update hook does exactly that, and it is the one place a denormalization is actively maintained rather than rebuilt on demand.
+Consequence of the `search_key` copy: a renamed cook must re-derive every one of their meals. The `users` update hook does exactly that, and it is the one place a denormalization is actively maintained rather than rebuilt on demand. The `cook` snapshot follows the same rule: the same hook rebuilds it for every meal of that cook, on any profile field that appears in the snapshot.
 
 ## 6. Canonical queries
 
